@@ -1,0 +1,19 @@
+name = "domain-parkour"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Uncomment and configure for your domain
+# routes = [
+#   { pattern = "example.com", zone_name = "example.com" }
+# ]
+
+# Environment variables can be set here or in the Cloudflare dashboard
+# [vars]
+# DOMAIN = "example.com"
+# TITLE = "Premium Domain For Sale"
+# DESCRIPTION = "This premium domain is available for purchase."
+# DOMAIN_AGE = "Registered since 2010"
+# CONTACT_EMAIL = "contact@example.com"
+# BG_COLOR = "#0f172a"
+# TEXT_COLOR = "#f1f5f9"
+# ACCENT_COLOR = "#3b82f6"
