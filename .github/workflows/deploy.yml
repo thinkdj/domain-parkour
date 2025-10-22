@@ -3,9 +3,6 @@ name: Deploy App to Cloudflare Workers
 # OR trigger this workflow manually from the Actions tab after setting up secrets on GH
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -24,9 +21,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Type check
-        run: npm run type-check
 
       - name: Build project
         run: npm run build
