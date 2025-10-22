@@ -1,9 +1,10 @@
 {
-  "domain": "example.com",
+  "domain": "cdn.farm",
   "title": "Premium Domain For Sale",
-  "description": "This premium domain is available for purchase. Contact us for pricing and acquisition details.",
-  "domainAge": "Registered since 2010",
-  "contactEmail": "contact@example.com",
+  "description": "Contact me for more information about acquiring this domain.",
+  "registrationDate": "2015-12-01",
+  "salePrice": "25,000 USD",
+  "contactEmail": "shout@think.dj",
   "backgroundColor": "#0f172a",
   "textColor": "#f1f5f9",
   "accentColor": "#3b82f6"

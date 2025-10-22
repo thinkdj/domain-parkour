@@ -1,14 +1,38 @@
-import config from '../config.json';
+import config from "../config.json";
 
 /**
  * Load configuration with environment variable overrides
  */
 function getConfig(env) {
+  const registrationDate = env.REGISTRATION_DATE || config.registrationDate;
+  let domainAgeYears = "";
+  let domainRegistration = "";
+  let domainExtension = "";
+
+  const domain = env.DOMAIN || config.domain;
+  if (domain) {
+    const parts = domain.split(".");
+    if (parts.length > 1) {
+      domainExtension = `.${parts.pop()}`;
+    }
+  }
+
+  if (registrationDate) {
+    const regDate = new Date(registrationDate);
+    const ageInMs = Date.now() - regDate.getTime();
+    const ageInYears = ageInMs / (1000 * 60 * 60 * 24 * 365.25);
+    domainAgeYears = `${Math.floor(ageInYears)}+`;
+    domainRegistration = `Registered in ${regDate.getFullYear()}`;
+  }
+
   return {
-    domain: env.DOMAIN || config.domain,
+    domain: domain,
     title: env.TITLE || config.title,
     description: env.DESCRIPTION || config.description,
-    domainAge: env.DOMAIN_AGE || config.domainAge,
+    domainAgeYears: domainAgeYears,
+    domainRegistration: domainRegistration,
+    domainExtension: domainExtension,
+    salePrice: env.SALE_PRICE || config.salePrice,
     contactEmail: env.CONTACT_EMAIL || config.contactEmail,
     backgroundColor: env.BG_COLOR || config.backgroundColor,
     textColor: env.TEXT_COLOR || config.textColor,
@@ -83,14 +107,18 @@ function generateHTML(cfg) {
     <div class="flex items-center justify-center min-h-screen px-6 py-24">
         <div class="max-w-4xl w-full">
             <!-- Domain Badge -->
-            ${cfg.domainAge ? `
+            ${
+              cfg.domainRegistration
+                ? `
             <div class="flex justify-center mb-8">
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border dark:border-gray-800 border-gray-200 dark:bg-gray-900 bg-gray-50">
                     <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-xs font-medium dark:text-gray-400 text-gray-600">${cfg.domainAge}</span>
+                    <span class="text-xs font-medium dark:text-gray-400 text-gray-600">${cfg.domainRegistration}</span>
                 </div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <!-- Main Content -->
             <div class="text-center space-y-8">
@@ -105,18 +133,22 @@ function generateHTML(cfg) {
                 <!-- Domain Stats -->
                 <div class="flex flex-wrap justify-center gap-6 sm:gap-8 py-4">
                     <div class="text-center">
-                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">15+</div>
+                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${
+                          cfg.domainAgeYears
+                        }</div>
                         <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Years Old</div>
                     </div>
                     <div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>
                     <div class="text-center">
-                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">.com</div>
+                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${
+                          cfg.domainExtension
+                        }</div>
                         <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Extension</div>
                     </div>
                     <div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>
                     <div class="text-center">
                         <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">SEO</div>
-                        <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Optimized</div>
+                        <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Friendly</div>
                     </div>
                 </div>
                 
@@ -126,12 +158,19 @@ function generateHTML(cfg) {
                 </h2>
                 
                 <!-- Description -->
-                <p class="text-lg sm:text-xl dark:text-gray-400 text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                    ${cfg.description}
-                </p>
+                <p class="text-lg sm:text-xl md:text-2xl dark:text-gray-400 text-gray-600 max-w-2xl mx-auto">
+                    <span class="font-normal block mt-2 mb-4">${
+                      cfg.description
+                    }</span>
+                    This domain is for sale for <strong>${
+                      cfg.salePrice
+                    }</strong>
+                    </p>
                 
                 <!-- Contact CTA -->
-                ${cfg.contactEmail ? `
+                ${
+                  cfg.contactEmail
+                    ? `
                 <div class="pt-6">
                     <a id="contact-link" href="#" 
                        class="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg dark:bg-white bg-black dark:text-black text-white font-medium transition-all hover:scale-105 hover:shadow-lg dark:hover:shadow-white/20 hover:shadow-black/20">
@@ -141,7 +180,9 @@ function generateHTML(cfg) {
                         </svg>
                     </a>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
             
             <!-- Footer -->
@@ -155,17 +196,21 @@ function generateHTML(cfg) {
 
     <script>
         // Email protection - inject mailto link via JavaScript
-        ${cfg.contactEmail ? `
+        ${
+          cfg.contactEmail
+            ? `
         (function() {
-            const user = '${cfg.contactEmail.split('@')[0]}';
-            const domain = '${cfg.contactEmail.split('@')[1]}';
+            const user = '${cfg.contactEmail.split("@")[0]}';
+            const domain = '${cfg.contactEmail.split("@")[1]}';
             const email = user + '@' + domain;
             const link = document.getElementById('contact-link');
             if (link) {
                 link.href = 'mailto:' + email;
             }
         })();
-        ` : ''}
+        `
+            : ""
+        }
         
         // Dark mode toggle functionality
         const themeToggleBtn = document.getElementById('theme-toggle');
@@ -205,13 +250,13 @@ function generateHTML(cfg) {
 export default {
   async fetch(request, env, ctx) {
     const cfg = getConfig(env);
-    
+
     const html = generateHTML(cfg);
-    
+
     return new Response(html, {
       headers: {
-        'content-type': 'text/html;charset=UTF-8',
-        'cache-control': 'public, max-age=3600',
+        "content-type": "text/html;charset=UTF-8",
+        "cache-control": "public, max-age=3600",
       },
     });
   },
