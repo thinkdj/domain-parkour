@@ -113,6 +113,17 @@ Uncomment and edit the `[vars]` section in `wrangler.toml`.
 3. Navigate to Settings > Variables
 4. Add environment variables
 
+### Optional: GitHub Actions (CI) Deployment
+
+You can deploy automatically from GitHub using Actions. Create the following repository secrets in GitHub (Settings > Secrets & variables > Actions):
+
+- `CLOUDFLARE_API_TOKEN` — a scoped API token that can publish workers
+- `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account ID
+
+There is an example workflow in `.github/workflows/deploy.yml` that will run on pushes to `main` and on manual dispatch. It checks out the repo, installs dependencies, and runs `npx wrangler deploy` using the secrets above.
+
+Important: when using GH Actions, configure your environment variables either via `wrangler.toml` in the repository or using repository-level secrets and environment variables in the Actions workflow.
+
 ## Customization Examples
 
 ### Dark Purple Theme
