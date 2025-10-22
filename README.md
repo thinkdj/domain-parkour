@@ -1,14 +1,16 @@
-# Domain Parkour 🚀
+# Domain Parkour
 
-Ultra minimal domain parking page built for Cloudflare Workers. Perfect for showcasing domains that are for sale with a clean, centered design.
+A super-minimal domain parking page built for Cloudflare Workers for showcasing domains that are for sale with a clean, centered design.
+
+![Screenshot of domain parkour](assets/ss-parkour.png)
 
 ## Features
 
-✨ **Ultra Minimal Design** - Clean, centered layout focused on the domain name  
-🎨 **Fully Customizable** - Configure via `config.json` or environment variables  
-⚡ **Cloudflare Workers** - Deploy globally in seconds  
-🔧 **Easy Configuration** - Override any setting with environment variables  
-📱 **Responsive** - Looks great on all devices
+**Ultra Minimal Design** - Clean, centered layout focused on the domain name and details
+**Fully Customizable** - Configure via `config.json` or environment variables  
+**Cloudflare Workers** - Deploy globally in seconds  
+**Easy Configuration** - Override any setting with environment variables  
+**Responsive** - Looks great on all devices
 
 ## Configuration
 
@@ -47,7 +49,7 @@ Set these in `wrangler.toml` under `[vars]` or in the Cloudflare dashboard.
 ### Prerequisites
 
 - Node.js 16+ installed
-- Cloudflare account
+- A Cloudflare Account
 - Wrangler CLI
 
 ### Installation
@@ -145,7 +147,7 @@ Uncomment and edit the `[vars]` section in `wrangler.toml`.
 
 ## Project Structure
 
-```
+```text
 domain-parkour/
 ├── src/
 │   └── index.js          # Main worker script
