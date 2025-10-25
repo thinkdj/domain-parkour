@@ -1,4 +1,5 @@
 import { renderBase } from './base.js';
+import { renderSocialLinks } from './components.js';
 
 /**
  * Generate the links section with minimalist cards
@@ -75,10 +76,15 @@ function renderLandingContent(cfg) {
                 ${renderLinks(cfg.links)}
             </div>
 
+            <!-- Social Links -->
+            <div class="fade-in-delay-2">
+                ${renderSocialLinks(cfg.socialLinks)}
+            </div>
+
             <!-- Footer -->
             <div class="text-center mt-20 fade-in-delay-2">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${cfg.footerText || cfg.domainTitle}
+                    ${cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle}
                 </p>
             </div>
         </div>
@@ -93,10 +99,29 @@ const landingStyles = `
     a.link-card {
         transition: all 0.2s ease;
         border: 1px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Subtle accent border on hover */
+    a.link-card::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--accent-color);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    a.link-card:hover::before {
+        opacity: 0.5;
     }
 
     a.link-card:hover {
-        border-color: var(--accent-color);
+        border-color: rgba(var(--accent-color-rgb), 0.3);
         background: transparent !important;
     }
 
@@ -107,14 +132,27 @@ const landingStyles = `
     /* Accent color for link arrow on hover */
     a.link-card:hover .arrow-icon {
         color: var(--accent-color);
-        transform: translateX(2px);
+        transform: translateX(3px);
+    }
+
+    /* Smooth text color transition */
+    a.link-card span {
+        transition: color 0.2s ease;
+    }
+
+    a.link-card:hover span {
+        color: var(--accent-color);
+    }
+
+    .dark a.link-card:hover span {
+        color: var(--accent-color);
     }
 `;
 
 /**
  * Generate the HTML for the landing page
  */
-export function generateLandingHTML(cfg) {
+export function generateLandingHTML(cfg, allThemes = null) {
   const content = renderLandingContent(cfg);
 
   return renderBase({
@@ -122,6 +160,7 @@ export function generateLandingHTML(cfg) {
     accentColor: cfg.accentColor,
     content,
     scripts: '',
-    additionalStyles: landingStyles
+    additionalStyles: landingStyles,
+    allThemes
   });
 }

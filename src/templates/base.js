@@ -1,12 +1,53 @@
 import coreStyles from "../styles/core.css?raw";
 
+/**
+ * Convert hex color to RGB values
+ */
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : '59, 130, 246'; // Default blue RGB
+}
+
+/**
+ * Render theme switcher for dev mode
+ */
+function renderThemeSwitcher(allThemes) {
+  if (!allThemes || allThemes.length === 0) return '';
+
+  return `
+    <!-- Theme Switcher (Dev Mode Only) -->
+    <div class="fixed top-6 left-6 z-50">
+      <div class="relative">
+        <select id="theme-switcher"
+                class="px-4 py-2 pr-8 rounded-md dark:bg-gray-800 bg-white dark:text-gray-200 text-gray-800 border dark:border-gray-700 border-gray-300 text-sm font-medium appearance-none cursor-pointer hover:dark:bg-gray-700 hover:bg-gray-50 transition-all duration-200"
+                style="min-width: 200px;">
+          ${allThemes.map((theme, index) => `
+            <option value="${index}">${theme.name}</option>
+          `).join('')}
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 dark:text-gray-400 text-gray-600">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderBase({
   title,
   accentColor,
   content,
   scripts = "",
   additionalStyles = "",
+  allThemes = null,
 }) {
+  const accent = accentColor || "#3b82f6";
+  const accentRgb = hexToRgb(accent);
+
   return `<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -21,7 +62,8 @@ export function renderBase({
     </script>
     <style>
         :root {
-            --accent-color: ${accentColor || "#3b82f6"};
+            --accent-color: ${accent};
+            --accent-color-rgb: ${accentRgb};
         }
 
         ${coreStyles}
@@ -30,6 +72,9 @@ export function renderBase({
     </style>
 </head>
 <body class="min-h-screen dark:bg-[#191919] bg-white transition-colors duration-300">
+
+    <!-- Theme Switcher (Dev Mode) -->
+    ${renderThemeSwitcher(allThemes)}
 
     <!-- Theme Toggle - Minimalist -->
     <div class="fixed top-6 right-6 z-50">
@@ -48,6 +93,9 @@ export function renderBase({
     ${content}
 
     <script>
+        // Embed theme data for dev mode
+        ${allThemes ? `window.__ALL_THEMES__ = ${JSON.stringify(allThemes)};` : ''}
+
         // Dark mode toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
@@ -75,6 +123,29 @@ export function renderBase({
                 localStorage.setItem('theme', 'dark');
             }
         });
+
+        // Theme switcher for dev mode
+        const themeSwitcher = document.getElementById('theme-switcher');
+        if (themeSwitcher && window.__ALL_THEMES__) {
+            // Get current theme index from URL or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlThemeIndex = urlParams.get('themeIndex');
+            const savedThemeIndex = localStorage.getItem('devThemeIndex') || '0';
+            const currentThemeIndex = urlThemeIndex !== null ? urlThemeIndex : savedThemeIndex;
+
+            themeSwitcher.value = currentThemeIndex;
+
+            themeSwitcher.addEventListener('change', function() {
+                const themeIndex = this.value;
+                // Save to localStorage
+                localStorage.setItem('devThemeIndex', themeIndex);
+
+                // Reload with query parameter
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('themeIndex', themeIndex);
+                window.location.href = newUrl.toString();
+            });
+        }
 
         ${scripts}
     </script>

@@ -1,49 +1,62 @@
-{
-  "_note": "Copy the JSON value {} to `config.dev.local.json` for local development and testing",
-  "_usage": "Automatically loaded for localhost. Edit and restart dev server. Then make a kv with key of your domain name and paste the config json via CF DASH > KV",
-
-  "parking_mode_example": {
+[
+  {
+    "name": "Parking - Premium Domain",
     "mode": "parking",
-    "domainTitle": "Premium Domain",
+    "domainTitle": "cdn.farm",
     "title": "Premium Domain For Sale",
-    "description": "A memorable and brandable domain",
-    "registrationDate": "2010-01-15",
-    "salePrice": "50,000 USD",
+    "description": "A memorable and brandable domain name, perfect for your next project",
+    "domainAgeYears": "9+",
+    "domainRegistration": "Registered in 2015",
+    "salePrice": "30,000 USD",
     "contactEmail": "contact@example.com",
-    "accentColor": "#3b82f6",
-    "footerText": "This premium domain is available for purchase"
+    "accentColor": "#3cbfa3",
+    "footerText": "This premium domain is available for purchase",
+    "socialLinks": {
+      "twitter": "https://twitter.com/example",
+      "github": "https://github.com/example"
+    }
   },
-
-  "coming_soon_minimal_example": {
+  {
+    "name": "Parking - Minimal",
+    "mode": "parking",
+    "domainTitle": "upp.to",
+    "title": "Premium .to short domain",
+    "description": "A short, memorable .to domain perfect for tech startups and link forwarding services",
+    "salePrice": "15,000 USD",
+    "contactEmail": "contact@upp.to",
+    "accentColor": "#3b82f6",
+    "footerText": "Serious inquiries only"
+  },
+  {
+    "name": "Coming Soon - Minimal",
     "mode": "coming-soon",
     "domainTitle": "Simple Launch",
     "title": "Coming Soon",
     "description": "Something exciting is on the way",
-    "accentColor": "#10b981",
-    "footerText": "Something exciting is coming"
+    "accentColor": "#10b981"
   },
-
-  "coming_soon_mode_example": {
+  {
+    "name": "Coming Soon - Full Featured",
     "mode": "coming-soon",
-    "domainTitle": "Acme Project",
-    "title": "We're building something amazing",
-    "tagline": "Launching December 2025",
-    "description": "Stay tuned for updates",
-    "launchDate": "2025-12-31T00:00:00",
+    "domainTitle": "THE Pet Project",
+    "title": "I'm building something amazing",
+    "tagline": "Launching Jan 2048",
+    "description": "Stay tuned as I now try to build the next big thing in tech (*now with AI)",
+    "launchDate": "2048-01-01T01:01:01",
     "accentColor": "#a855f7",
     "footerText": "Stay tuned for our launch",
     "features": [
       {
         "title": "Lightning Fast",
-        "description": "Optimized for speed"
+        "description": "Optimized for speed and performance"
       },
       {
         "title": "Secure",
-        "description": "Bank-level security"
+        "description": "Bank-level security for your data"
       },
       {
         "title": "Easy to Use",
-        "description": "Beautiful interface"
+        "description": "Beautiful, intuitive interface"
       }
     ],
     "socialLinks": {
@@ -51,8 +64,8 @@
       "github": "https://github.com/acme"
     }
   },
-
-  "landing_page_example": {
+  {
+    "name": "Landing Page - Example.com",
     "mode": "landing",
     "domainTitle": "example.com",
     "title": "Email & API Services",
@@ -73,6 +86,39 @@
         "title": "Support",
         "url": "https://support.example.com"
       }
-    ]
+    ],
+    "socialLinks": {
+      "twitter": "https://twitter.com/example",
+      "github": "https://github.com/example",
+      "linkedin": "https://linkedin.com/company/example"
+    }
+  },
+  {
+    "name": "Landing Page - Personal",
+    "mode": "landing",
+    "domainTitle": "think.dj",
+    "title": "Code is indeed Poetry",
+    "subtitle": "Building tools that developers love",
+    "accentColor": "#f00",
+    "footerText": "© 2025 think dj",
+    "links": [
+      {
+        "title": "Portfolio",
+        "url": "https://john.dev/portfolio"
+      },
+      {
+        "title": "Blog",
+        "url": "https://blog.john.dev"
+      },
+      {
+        "title": "Contact",
+        "url": "mailto:hello@john.dev"
+      }
+    ],
+    "socialLinks": {
+      "github": "https://github.com/johndoe",
+      "twitter": "https://twitter.com/johndoe",
+      "linkedin": "https://linkedin.com/in/johndoe"
+    }
   }
-}
+]

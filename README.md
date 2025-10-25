@@ -155,22 +155,20 @@ LOCALHOST_TITLE="Coming Soon"
 npm run dev  # Starts on localhost:8787
 ```
 
-**Local config:** Create `config.dev.local.json` (copy from `config.dev.local.example.json`) to test different modes locally. This file is automatically loaded for localhost and ignored by git.
+**Local config:** The project uses `config.dev.local.example.json` which contains multiple theme examples. When running locally, a theme switcher dropdown appears in the top-left corner allowing you to preview all available themes instantly.
 
-```bash
-# Quick setup for local dev
-cp config.dev.local.example.json config.dev.local.json
-# Edit config.dev.local.json and restart dev server
-```
+**Theme Switcher Features:**
 
-Switch between modes by editing `config.dev.local.json`:
+- Switch between parking, coming-soon, and landing page examples
+- Multiple pre-configured examples for each mode
+- Instant preview without editing config files
+- Theme selection persists in localStorage
 
-- Set `"mode": "parking"` for domain sale page
-- Set `"mode": "coming-soon"` for launch page
+You can customize `config.dev.local.example.json` to add your own theme examples.
 
 ## Config Priority
 
-1. **Local Dev** - `config.dev.local.json` (localhost only)
+1. **Local Dev** - `config.dev.local.example.json` (localhost only, with theme switcher)
 2. **Cloudflare KV** - `DOMAIN_CONFIGS` namespace (exact hostname match)
 3. **KV Default** - `_default` key
 4. **Environment Variables** - Domain-specific or global

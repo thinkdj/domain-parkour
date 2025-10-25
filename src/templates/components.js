@@ -27,7 +27,7 @@ const SOCIAL_ICONS = {
  * @returns {string} HTML for social links
  */
 export function renderSocialLinks(socialLinks) {
-  if (!socialLinks || Object.keys(socialLinks).length === 0) return '';
+  if (!socialLinks || Object.keys(socialLinks).length === 0) return "";
 
   return `
     <div class="flex justify-center gap-2 mt-8">

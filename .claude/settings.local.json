@@ -12,7 +12,8 @@
       "Bash(tasklist:*)",
       "Bash(taskkill:*)",
       "Bash(if not exist \"src\\templates\" mkdir \"src\\templates\")",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

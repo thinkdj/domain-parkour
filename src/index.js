@@ -1,26 +1,40 @@
 /**
  * Get domain-specific configuration from Cloudflare KV or Environment Variables
  * Priority:
- * 1. Local dev config file (config.dev.local.json) - localhost only
+ * 1. Local dev config file (config.dev.local.example.json) - localhost only
  * 2. Cloudflare KV storage (DOMAIN_CONFIGS namespace)
  * 3. Environment variables (JSON string or individual properties)
  * 4. Hardcoded defaults (safe public data only)
  *
  * @param {string} hostname - The hostname from the request
  * @param {object} env - Environment variables and KV bindings
+ * @returns {Promise<{config: object, allThemes?: Array}>} - Returns config and optionally all themes for dev mode
  */
 async function getDomainConfig(hostname, env) {
-  // Local development: Try to load config.dev.local.json for localhost
+  // Local development: Try to load config.dev.local.example.json for localhost
   if (hostname === "localhost" || hostname === "127.0.0.1") {
     try {
-      const localConfig = await import("../config.dev.local.json");
-      if (localConfig && localConfig.default) {
-        console.log("[Dev] Using config.dev.local.json");
-        return { domain: hostname, ...localConfig.default };
+      const localConfigModule = await import("../config.dev.local.example.json");
+      if (localConfigModule && localConfigModule.default) {
+        const themes = localConfigModule.default;
+        console.log("[Dev] Using config.dev.local.example.json with", Array.isArray(themes) ? themes.length : 0, "themes");
+
+        // If it's an array, return the first theme as default, but pass all themes
+        if (Array.isArray(themes) && themes.length > 0) {
+          return {
+            config: { domain: hostname, ...themes[0] },
+            allThemes: themes
+          };
+        } else {
+          // Fallback for old format
+          return {
+            config: { domain: hostname, ...themes }
+          };
+        }
       }
     } catch (e) {
       console.log(
-        "[Dev] config.dev.local.json not found or invalid, falling back to KV/env"
+        "[Dev] config.dev.local.example.json not found or invalid, falling back to KV/env"
       );
     }
   }
@@ -30,7 +44,7 @@ async function getDomainConfig(hostname, env) {
     try {
       const kvConfig = await env.DOMAIN_CONFIGS.get(hostname, { type: "json" });
       if (kvConfig) {
-        return { domain: hostname, ...kvConfig };
+        return { config: { domain: hostname, ...kvConfig } };
       }
 
       // Try default config from KV
@@ -38,7 +52,7 @@ async function getDomainConfig(hostname, env) {
         type: "json",
       });
       if (defaultConfig) {
-        return { domain: hostname, ...defaultConfig };
+        return { config: { domain: hostname, ...defaultConfig } };
       }
     } catch (e) {
       console.error(`Error fetching from KV: ${e.message}`);
@@ -67,7 +81,7 @@ async function getDomainConfig(hostname, env) {
     try {
       const parsed = JSON.parse(domainEnvConfig);
       console.log(`[Debug] Parsed config:`, parsed);
-      return { domain: hostname, ...parsed };
+      return { config: { domain: hostname, ...parsed } };
     } catch (e) {
       console.error(`Error parsing ${envPrefix}_CONFIG: ${e.message}`);
       console.error(
@@ -80,22 +94,24 @@ async function getDomainConfig(hostname, env) {
 
   // Return minimal default (only non-sensitive data)
   return {
-    domain: hostname,
-    mode: "parking", // 'parking', 'coming-soon', or 'landing'
-    title: "Premium Domain For Sale",
-    description: "This premium domain is available for purchase.",
-    registrationDate: null,
-    salePrice: null,
-    contactEmail: null,
-    accentColor: "#3b82f6", // Default blue accent
-    // Coming Soon specific fields
-    launchDate: null,
-    tagline: null,
-    features: [],
-    socialLinks: {},
-    // Landing page specific fields
-    subtitle: null,
-    links: [],
+    config: {
+      domain: hostname,
+      mode: "parking", // 'parking', 'coming-soon', or 'landing'
+      title: "Premium Domain For Sale",
+      description: "This premium domain is available for purchase.",
+      registrationDate: null,
+      salePrice: null,
+      contactEmail: null,
+      accentColor: "#3b82f6", // Default blue accent
+      // Coming Soon specific fields
+      launchDate: null,
+      tagline: null,
+      features: [],
+      socialLinks: {},
+      // Landing page specific fields
+      subtitle: null,
+      links: [],
+    }
   };
 }
 
@@ -103,10 +119,25 @@ async function getDomainConfig(hostname, env) {
  * Load configuration with environment variable overrides
  * @param {string} hostname - The hostname from the request
  * @param {object} env - Environment variables and KV bindings
+ * @param {Request} request - The request object (to check for theme override cookie)
+ * @returns {Promise<{config: object, allThemes?: Array}>}
  */
-async function getConfig(hostname, env) {
+async function getConfig(hostname, env, request = null) {
   // Get base config for this domain
-  const domainConfig = await getDomainConfig(hostname, env);
+  let { config: domainConfig, allThemes } = await getDomainConfig(hostname, env);
+
+  // If in dev mode with multiple themes, check for theme index override
+  if (allThemes && allThemes.length > 0 && request) {
+    const url = new URL(request.url);
+    const themeIndexParam = url.searchParams.get('themeIndex');
+
+    if (themeIndexParam !== null) {
+      const themeIndex = parseInt(themeIndexParam);
+      if (themeIndex >= 0 && themeIndex < allThemes.length) {
+        domainConfig = { domain: hostname, ...allThemes[themeIndex] };
+      }
+    }
+  }
 
   // Environment variables can override per-domain settings
   // Use hostname-specific env vars first (e.g., CDN_FARM_TITLE)
@@ -151,7 +182,7 @@ async function getConfig(hostname, env) {
     domainRegistration = `Registered in ${regDate.getFullYear()}`;
   }
 
-  return {
+  const finalConfig = {
     domain: domain,
     domainTitle: domainTitle,
     mode:
@@ -189,6 +220,12 @@ async function getConfig(hostname, env) {
       env[`${envPrefix}_SUBTITLE`] || env.SUBTITLE || domainConfig.subtitle,
     links: domainConfig.links || [],
   };
+
+  // Return config along with allThemes if in dev mode
+  return {
+    config: finalConfig,
+    allThemes: allThemes
+  };
 }
 
 // Import modular templates
@@ -203,17 +240,17 @@ export default {
     const hostname = url.hostname;
 
     // Get configuration for this specific domain
-    const cfg = await getConfig(hostname, env);
+    const { config: cfg, allThemes } = await getConfig(hostname, env, request);
 
     // Generate HTML based on mode
     let html;
     if (cfg.mode === "coming-soon") {
-      html = generateComingSoonHTML(cfg);
+      html = generateComingSoonHTML(cfg, allThemes);
     } else if (cfg.mode === "landing") {
-      html = generateLandingHTML(cfg);
+      html = generateLandingHTML(cfg, allThemes);
     } else {
       // Default to parking mode
-      html = generateParkingHTML(cfg);
+      html = generateParkingHTML(cfg, allThemes);
     }
 
     return new Response(html, {

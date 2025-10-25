@@ -158,7 +158,7 @@ function renderComingSoonContent(cfg) {
             <!-- Footer -->
             <div class="text-center mt-20 fade-in-delay-3">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${cfg.footerText || (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming")}
+                    ${cfg.footerText !== undefined ? cfg.footerText : (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming")}
                 </p>
             </div>
         </div>
@@ -168,7 +168,7 @@ function renderComingSoonContent(cfg) {
 /**
  * Generate the HTML for the coming soon page
  */
-export function generateComingSoonHTML(cfg) {
+export function generateComingSoonHTML(cfg, allThemes = null) {
   const content = renderComingSoonContent(cfg);
   const scripts = renderCountdownScript(cfg);
 
@@ -176,6 +176,7 @@ export function generateComingSoonHTML(cfg) {
     title: `${cfg.domainTitle} - Coming Soon`,
     accentColor: cfg.accentColor,
     content,
-    scripts
+    scripts,
+    allThemes
   });
 }
