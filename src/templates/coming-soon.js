@@ -1,5 +1,5 @@
 import { renderBase } from "./base.js";
-import { renderSocialLinks } from "./components.js";
+import { renderSocialLinks, renderFooter } from "./components.js";
 
 /**
  * Generate the countdown HTML
@@ -156,23 +156,7 @@ function renderComingSoonContent(cfg) {
             </div>
 
             <!-- Footer -->
-            ${
-              cfg.footerText !== "" && cfg.footerText !== undefined
-                ? `
-            <div class="text-center mt-20 fade-in-delay-3">
-                <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${
-                      cfg.footerText !== undefined
-                        ? cfg.footerText
-                        : cfg.launchDate
-                        ? "Stay tuned for our launch"
-                        : "Something exciting is coming"
-                    }
-                </p>
-            </div>
-            `
-                : ""
-            }
+            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming"))}
         </div>
     </div>`;
 }

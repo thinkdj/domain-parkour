@@ -46,3 +46,20 @@ export function renderSocialLinks(socialLinks) {
         .join("")}
     </div>`;
 }
+
+/**
+ * Render footer component with text
+ * @param {string} footerText - Footer text to display
+ * @returns {string} HTML for footer
+ */
+export function renderFooter(footerText) {
+  // If footerText is empty string, hide footer completely
+  if (footerText === "") return "";
+
+  return `
+    <div class="text-center mt-20 fade-in-delay-3">
+      <p class="text-xs dark:text-gray-700 text-gray-400">
+        ${footerText}
+      </p>
+    </div>`;
+}
