@@ -53,25 +53,38 @@ npm run deploy
 ```bash
 wrangler kv:key put --namespace-id=YOUR_KV_ID "yourdomain.com" '{
   "mode": "parking",
+  "domainTitle": "yourdomain.com",
   "title": "Premium Domain For Sale",
   "description": "A memorable and brandable domain",
-  "registrationDate": "2010-01-15",
+  "domainAgeYears": "15+",
+  "domainRegistration": "Registered in 2010",
   "salePrice": "50,000 USD",
   "contactEmail": "contact@yourdomain.com",
-  "accentColor": "#3b82f6"
+  "accentColor": "#3b82f6",
+  "footerText": "This premium domain is available for purchase",
+  "socialLinks": {
+    "twitter": "https://twitter.com/handle",
+    "linkedin": "https://linkedin.com/in/handle",
+    "github": "https://github.com/handle"
+  },
+  "showCredit": false
 }'
 ```
 
 **Parameters:**
 
 - `mode` - "parking"
+- `domainTitle` - Override domain name display (optional)
 - `title` - Main headline
 - `description` - Subtitle
-- `registrationDate` - YYYY-MM-DD (shows domain age)
+- `domainAgeYears` - Display age (e.g., "15+", "10+") - optional
+- `domainRegistration` - Registration text (e.g., "Registered in 2010") - optional
 - `salePrice` - Price text
 - `contactEmail` - Contact button
 - `accentColor` - Brand color (hex)
-- `domainTitle` - Override domain name display (optional)
+- `footerText` - Footer text or disclaimer (optional)
+- `socialLinks` - Object: `{"twitter": "url", "linkedin": "url", "github": "url"}` (optional)
+- `showCredit` - Show "Powered by Domain Parkour" credit line (default: true, optional)
 
 ### Coming Soon Mode (Launch Page)
 
@@ -114,10 +127,11 @@ wrangler kv:key put --namespace-id=YOUR_KV_ID "newproject.com" '{
 - `title` - Main headline
 - `tagline` - Large hero text (optional)
 - `description` - Subtitle
-- `launchDate` - ISO 8601 date (enables countdown timer)
+- `launchDate` - ISO 8601 date (enables countdown timer, optional)
 - `accentColor` - Brand color (hex)
-- `features` - Array: `[{"title": "...", "description": "..."}]`
-- `socialLinks` - Object: `{"twitter": "url", "github": "url", ...}`
+- `footerText` - Footer text or disclaimer (optional)
+- `features` - Array: `[{"title": "...", "description": "..."}]` (optional)
+- `socialLinks` - Object: `{"twitter": "url", "github": "url", ...}` (optional)
 
 **Color suggestions:** `#3b82f6` (blue), `#a855f7` (purple), `#10b981` (green), `#ef4444` (red), `#f97316` (orange), `#ec4899` (pink)
 
@@ -133,11 +147,17 @@ wrangler kv:key put --namespace-id=YOUR_KV_ID "api.example.com" '{
   "subtitle": "This domain is used for backend services",
   "description": "For support, visit our main website",
   "accentColor": "#06b6d4",
+  "footerText": "© 2025 example.com",
   "links": [
     {"title": "Main Website", "url": "https://example.com"},
     {"title": "Documentation", "url": "https://docs.example.com"},
     {"title": "Support", "url": "https://support.example.com"}
-  ]
+  ],
+  "socialLinks": {
+    "twitter": "https://twitter.com/example",
+    "github": "https://github.com/example",
+    "linkedin": "https://linkedin.com/company/example"
+  }
 }'
 ```
 
@@ -149,7 +169,9 @@ wrangler kv:key put --namespace-id=YOUR_KV_ID "api.example.com" '{
 - `subtitle` - Secondary headline (optional)
 - `description` - Additional info (optional)
 - `accentColor` - Brand color (hex)
-- `links` - Array: `[{"title": "...", "url": "..."}]`
+- `footerText` - Footer text (optional)
+- `links` - Array: `[{"title": "...", "url": "..."}]` (optional)
+- `socialLinks` - Object: `{"twitter": "url", "github": "url", "linkedin": "url"}` (optional)
 
 ### Environment Variables (Optional)
 
