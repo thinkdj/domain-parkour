@@ -19,15 +19,28 @@ id = "domain-parkour-kv"
 #   { pattern = "anotherdomain.com", zone_name = "anotherdomain.com" }
 # ]
 
-# Environment variables - USE THESE FOR SENSITIVE DATA instead of JSON files
-# WARNING: Do NOT commit sensitive data in wrangler.toml to public repos!
-# Use Cloudflare Dashboard > Workers > Settings > Variables > Secrets instead
+# CONFIGURATION HIERARCHY (in priority order):
+# 1. Cloudflare KV (RECOMMENDED) - Store domain configs in DOMAIN_CONFIGS namespace
+#    - Supports multiple domains easily
+#    - Can be updated without redeployment
+#    - Example: wrangler kv:key put --namespace-id=xxx "example.com" '{"title":"..."}'
+#
+# 2. Environment Variables (OPTIONAL OVERRIDES)
+#    - Use for temporary overrides or when KV is not available
+#    - NOT recommended as primary storage for domain configs
+#
+# 3. Cloudflare Secrets (FOR TRULY SENSITIVE DATA ONLY)
+#    - Use Dashboard > Workers > Settings > Secrets
+#    - Only for API keys, tokens, credentials that need encryption at rest
+#    - Domain configs (emails, pricing) are fine in KV - it's already secure
 
-# Option 1: Full domain config as JSON string
+# Environment variable examples (uncomment to use):
+
+# Option 1: Full domain config as JSON string (fallback if not in KV)
 # [vars]
 # CDN_FARM_CONFIG = '{"title":"Premium CDN Domain","salePrice":"25,000 USD","contactEmail":"contact@example.com"}'
 
-# Option 2: Individual property overrides
+# Option 2: Individual property overrides (override specific properties from KV)
 # [vars]
 # CDN_FARM_TITLE = "CDN Farm - Premium Domain"
 # CDN_FARM_SALE_PRICE = "30,000 USD"
@@ -37,8 +50,5 @@ id = "domain-parkour-kv"
 # EXAMPLE_COM_SALE_PRICE = "60,000 USD"
 # EXAMPLE_COM_CONTACT_EMAIL = "sales@example.com"
 
-# SECURITY BEST PRACTICE:
-# Store sensitive data (emails, pricing) as SECRETS in Cloudflare Dashboard
-# Workers > Your Worker > Settings > Variables and Secrets
-# Click "Add variable" > Select "Encrypt" for sensitive values
+# WARNING: Do NOT commit sensitive API keys or credentials in wrangler.toml to public repos!
 
