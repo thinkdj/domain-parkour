@@ -107,19 +107,19 @@ async function getDomainConfig(hostname, env) {
     config: {
       domain: hostname,
       mode: "landing", // 'parking', 'coming-soon', or 'landing'
-      title: "Premium Domain For Sale",
-      description: "This premium domain is available for purchase.",
+      title: "Welcome",
+      description: "Your gateway to something amazing.",
       registrationDate: null,
       salePrice: null,
       contactEmail: null,
       accentColor: "#3b82f6", // Default blue accent
-      // Coming Soon specific fields
+      // ** Coming Soon specific fields
       launchDate: null,
       tagline: null,
       features: [],
       socialLinks: {},
-      // Landing page specific fields
-      subtitle: null,
+      // ** Landing page specific fields
+      subtitle: "",
       links: [],
     },
   };
