@@ -99,7 +99,7 @@ function renderParkingContent(cfg) {
             <!-- Footer -->
             <div class="text-center mt-20 fade-in-delay-3">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    This premium domain is available for purchase
+                    ${cfg.footerText || 'This premium domain is available for purchase'}
                 </p>
             </div>
         </div>

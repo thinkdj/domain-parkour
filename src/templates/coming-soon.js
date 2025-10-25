@@ -158,11 +158,7 @@ function renderComingSoonContent(cfg) {
             <!-- Footer -->
             <div class="text-center mt-20 fade-in-delay-3">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${
-                      cfg.launchDate
-                        ? "Stay tuned for our launch"
-                        : "Something exciting is coming"
-                    }
+                    ${cfg.footerText || (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming")}
                 </p>
             </div>
         </div>

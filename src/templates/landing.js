@@ -7,14 +7,14 @@ function renderLinks(links) {
   if (!links || links.length === 0) return '';
 
   return `
-    <div class="flex flex-col gap-3 mt-12 max-w-xl mx-auto">
+    <div class="flex flex-col gap-2 mt-12 max-w-xl mx-auto">
       ${links
         .map(
           (link) => `
       <a href="${link.url}" target="_blank" rel="noopener noreferrer"
-         class="link-card group relative flex items-center justify-between px-4 py-3.5 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white dark:hover:bg-gray-900/30 hover:bg-gray-50">
-        <span class="font-medium dark:text-gray-100 text-gray-900">${link.title}</span>
-        <svg class="arrow-icon w-4 h-4 dark:text-gray-500 text-gray-400 transition-all group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+         class="link-card group relative flex items-center justify-between px-4 py-3 rounded-md dark:bg-transparent bg-transparent">
+        <span class="text-sm font-medium dark:text-gray-300 text-gray-700">${link.title}</span>
+        <svg class="arrow-icon w-3.5 h-3.5 dark:text-gray-600 text-gray-400 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
         </svg>
       </a>
@@ -78,7 +78,7 @@ function renderLandingContent(cfg) {
             <!-- Footer -->
             <div class="text-center mt-20 fade-in-delay-2">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${cfg.domainTitle}
+                    ${cfg.footerText || cfg.domainTitle}
                 </p>
             </div>
         </div>
@@ -89,24 +89,25 @@ function renderLandingContent(cfg) {
  * Landing page specific styles
  */
 const landingStyles = `
-    /* Hover effect with accent */
+    /* Subtle minimal link cards */
     a.link-card {
-        border-left: 2px solid transparent;
         transition: all 0.2s ease;
+        border: 1px solid transparent;
     }
 
     a.link-card:hover {
-        border-left-color: var(--accent-color);
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        border-color: var(--accent-color);
+        background: transparent !important;
     }
 
     .dark a.link-card:hover {
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+        background: rgba(255, 255, 255, 0.02) !important;
     }
 
     /* Accent color for link arrow on hover */
     a.link-card:hover .arrow-icon {
         color: var(--accent-color);
+        transform: translateX(2px);
     }
 `;
 
