@@ -1,14 +1,32 @@
 # Domain Parkour
 
-Ultra-minimal domain parking and coming soon pages for Cloudflare Workers. One deployment handles multiple domains.
+Ultra-minimal domain parking and coming soon pages for Cloudflare Workers.
+
+**One deployment handles multiple domains.**
 
 ![Screenshot of domain parkour](assets/ss-parkour.png)
+
+## TL;DR
+
+**Dev:**
+
+- `npm install` → `npm run dev` → Open `http://localhost:8787`
+- Theme switcher appears top-left to preview all examples
+- Edit `config.dev.local.example.json` to customize themes for local dev (or add your own)
+
+**Prod:**
+
+- Create KV namespace: `wrangler kv:namespace create "YOUR_NAMESPACE_NAME"`
+- Update `wrangler.toml` with KV namespace ID of the created namespace
+- Add domain config: `wrangler kv:key put --namespace-id=YOUR_ID "domain.com" '{"mode":"parking","title":"For Sale"}'` (or use Cloudflare Dashboard → Workers KV)
+- Deploy via: `npm run deploy`
+- Add domain mapping from Cloudflare Dashboard → Compute & AI → Workers & Pages → _Your Worker_ → Settings → Domains & Routes → _Add a Custom Domain_
 
 ## Features
 
 - **Three modes**: `parking` (domain for sale), `coming-soon` (launch page), or `landing` (simple info page)
 - Multi-domain support from single deployment
-- Cloudflare KV storage + env var overrides
+- Cloudflare Worker KV + env var overrides
 - Countdown timer, social links, feature grid (coming-soon mode)
 - Quick links and info display (landing mode)
 - Responsive design with auto dark/light mode
@@ -33,13 +51,13 @@ npm run deploy
 ### Parking Mode (Domain for Sale)
 
 ```bash
-wrangler kv:key put --namespace-id=YOUR_KV_ID "forsale.com" '{
+wrangler kv:key put --namespace-id=YOUR_KV_ID "yourdomain.com" '{
   "mode": "parking",
   "title": "Premium Domain For Sale",
   "description": "A memorable and brandable domain",
   "registrationDate": "2010-01-15",
   "salePrice": "50,000 USD",
-  "contactEmail": "contact@example.com",
+  "contactEmail": "contact@yourdomain.com",
   "accentColor": "#3b82f6"
 }'
 ```
