@@ -12,23 +12,33 @@
  */
 async function getDomainConfig(hostname, env) {
   // Local development: Try to load config.dev.local.example.json for localhost
-  if (hostname === "localhost" || hostname === "127.0.0.1") {
+  if (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "domain-parkour.apiary.workers.dev"
+  ) {
     try {
-      const localConfigModule = await import("../config.dev.local.example.json");
+      const localConfigModule = await import(
+        "../config.dev.local.example.json"
+      );
       if (localConfigModule && localConfigModule.default) {
         const themes = localConfigModule.default;
-        console.log("[Dev] Using config.dev.local.example.json with", Array.isArray(themes) ? themes.length : 0, "themes");
+        console.log(
+          "[Dev] Using config.dev.local.example.json with",
+          Array.isArray(themes) ? themes.length : 0,
+          "themes"
+        );
 
         // If it's an array, return the first theme as default, but pass all themes
         if (Array.isArray(themes) && themes.length > 0) {
           return {
             config: { domain: hostname, ...themes[0] },
-            allThemes: themes
+            allThemes: themes,
           };
         } else {
           // Fallback for old format
           return {
-            config: { domain: hostname, ...themes }
+            config: { domain: hostname, ...themes },
           };
         }
       }
@@ -111,7 +121,7 @@ async function getDomainConfig(hostname, env) {
       // Landing page specific fields
       subtitle: null,
       links: [],
-    }
+    },
   };
 }
 
@@ -124,12 +134,15 @@ async function getDomainConfig(hostname, env) {
  */
 async function getConfig(hostname, env, request = null) {
   // Get base config for this domain
-  let { config: domainConfig, allThemes } = await getDomainConfig(hostname, env);
+  let { config: domainConfig, allThemes } = await getDomainConfig(
+    hostname,
+    env
+  );
 
   // If in dev mode with multiple themes, check for theme index override
   if (allThemes && allThemes.length > 0 && request) {
     const url = new URL(request.url);
-    const themeIndexParam = url.searchParams.get('themeIndex');
+    const themeIndexParam = url.searchParams.get("themeIndex");
 
     if (themeIndexParam !== null) {
       const themeIndex = parseInt(themeIndexParam);
@@ -221,20 +234,22 @@ async function getConfig(hostname, env, request = null) {
     links: domainConfig.links || [],
     // Footer text
     footerText:
-      env[`${envPrefix}_FOOTER_TEXT`] || env.FOOTER_TEXT || domainConfig.footerText,
+      env[`${envPrefix}_FOOTER_TEXT`] ||
+      env.FOOTER_TEXT ||
+      domainConfig.footerText,
   };
 
   // Return config along with allThemes if in dev mode
   return {
     config: finalConfig,
-    allThemes: allThemes
+    allThemes: allThemes,
   };
 }
 
 // Import modular templates
-import { generateParkingHTML } from './templates/parking.js';
-import { generateComingSoonHTML } from './templates/coming-soon.js';
-import { generateLandingHTML } from './templates/landing.js';
+import { generateParkingHTML } from "./templates/parking.js";
+import { generateComingSoonHTML } from "./templates/coming-soon.js";
+import { generateLandingHTML } from "./templates/landing.js";
 
 export default {
   async fetch(request, env, ctx) {
