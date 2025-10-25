@@ -1,0 +1,51 @@
+{
+  "_note": "Copy this to `config.dev.local.json` for local development and testing",
+  "_usage": "Automatically loaded for localhost. Edit and restart dev server. Then make a kv with key of your domain name and paste the config json via CF DASH > KV",
+
+  "parking_mode_example": {
+    "mode": "parking",
+    "domainTitle": "Premium Domain",
+    "title": "Premium Domain For Sale",
+    "description": "A memorable and brandable domain",
+    "registrationDate": "2010-01-15",
+    "salePrice": "50,000 USD",
+    "contactEmail": "contact@example.com",
+    "accentColor": "#3b82f6"
+  },
+
+  "coming_soon_mode_example": {
+    "mode": "coming-soon",
+    "domainTitle": "Acme Project",
+    "title": "We're building something amazing",
+    "tagline": "Launching December 2025",
+    "description": "Stay tuned for updates",
+    "launchDate": "2025-12-31T00:00:00",
+    "accentColor": "#a855f7",
+    "features": [
+      {
+        "title": "Lightning Fast",
+        "description": "Optimized for speed"
+      },
+      {
+        "title": "Secure",
+        "description": "Bank-level security"
+      },
+      {
+        "title": "Easy to Use",
+        "description": "Beautiful interface"
+      }
+    ],
+    "socialLinks": {
+      "twitter": "https://twitter.com/acme",
+      "github": "https://github.com/acme"
+    }
+  },
+
+  "coming_soon_minimal_example": {
+    "mode": "coming-soon",
+    "domainTitle": "Simple Launch",
+    "title": "Coming Soon",
+    "description": "Something exciting is on the way",
+    "accentColor": "#10b981"
+  }
+}

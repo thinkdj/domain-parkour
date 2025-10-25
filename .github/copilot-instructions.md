@@ -2,9 +2,10 @@
 
 ## Project Overview
 
-Ultra minimal domain parking page built for Cloudflare Workers with configuration support via config file and environment variable overrides.
+Ultra minimal domain parking and coming soon page built for Cloudflare Workers with multiple page modes.
 
 - built to run on Cloudflare Workers
-- supports custom configuration via `config.json` file
-- supports environment variable overrides for configuration
+- supports Cloudflare KV for production configuration
+- supports environment variables for local development and overrides
+- two page modes: "parking" (domain for sale) and "coming-soon" (launch pages)
 

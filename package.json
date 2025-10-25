@@ -1,17 +1,19 @@
 {
   "name": "domain-parkour",
   "version": "1.0.0",
-  "description": "Ultra minimal domain parking page for Cloudflare Workers",
+  "description": "Minimalistic domain parking and coming soon pages built for Cloudflare Workers", 
   "main": "src/index.js",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },
   "keywords": [
-    "cloudflare",
-    "workers",
     "domain",
-    "parking"
+    "parking",
+    "coming-soon",
+    "landing-page",
+    "cloudflare",
+    "workers"
   ],
   "author": "",
   "license": "MIT",

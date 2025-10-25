@@ -1,6 +1,6 @@
 node_modules/
 .wrangler/
-.dev.vars
+#.dev.vars
 dist/
 .env
 *.log
@@ -9,6 +9,7 @@ dist/
 # Sensitive configuration files
 domains-config.json
 config.json
+config.dev.local.json
 .env.local
 .env.production
 *.secret.json
