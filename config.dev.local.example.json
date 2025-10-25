@@ -4,16 +4,17 @@
     "mode": "parking",
     "domainTitle": "cdn.farm",
     "title": "Premium Domain For Sale",
-    "description": "A memorable and brandable domain name, perfect for your next project",
+    "description": "A memorable and brandable domain name, perfect for your next project if your next project is a CDN Farm.",
     "domainAgeYears": "9+",
     "domainRegistration": "Registered in 2015",
     "salePrice": "30,000 USD",
-    "contactEmail": "contact@example.com",
+    "contactEmail": "shout@think.dj",
     "accentColor": "#3cbfa3",
     "footerText": "This premium domain is available for purchase",
     "socialLinks": {
-      "twitter": "https://twitter.com/example",
-      "github": "https://github.com/example"
+      "twitter": "https://twitter.com/thinkdj",
+      "linkedin": "https://linkedin.com/in/thinkdj",
+      "github": "https://github.com/thinkdj"
     }
   },
   {
@@ -22,50 +23,50 @@
     "domainTitle": "upp.to",
     "title": "Premium .to short domain",
     "description": "A short, memorable .to domain perfect for tech startups and link forwarding services",
-    "salePrice": "15,000 USD",
-    "contactEmail": "contact@upp.to",
+    "salePrice": "30,000 USD",
+    "contactEmail": "shout@think.dj",
     "accentColor": "#3b82f6",
-    "footerText": "Serious inquiries only"
+    "footerText": "Some footer text or disclaimer could go here"
   },
   {
     "name": "Coming Soon - Minimal",
     "mode": "coming-soon",
-    "domainTitle": "Simple Launch",
+    "domainTitle": "A Simple Launch",
     "title": "Coming Soon",
-    "description": "Something exciting is on the way",
+    "description": "Something exciting is on the way, like a tagline",
     "accentColor": "#10b981"
   },
   {
     "name": "Coming Soon - Full Featured",
     "mode": "coming-soon",
-    "domainTitle": "THE Pet Project",
+    "domainTitle": "The Pet Project",
     "title": "I'm building something amazing",
     "tagline": "Launching Jan 2048",
     "description": "Stay tuned as I now try to build the next big thing in tech (*now with AI)",
     "launchDate": "2048-01-01T01:01:01",
     "accentColor": "#a855f7",
-    "footerText": "Stay tuned for our launch",
+    "footerText": "Stay tuned for THE launch",
     "features": [
       {
-        "title": "Lightning Fast",
-        "description": "Optimized for speed and performance"
+        "title": "AI-Powered Project",
+        "description": "Because slapping 'AI' on it makes it revolutionary"
       },
       {
-        "title": "Secure",
-        "description": "Bank-level security for your data"
+        "title": "Launch Date Precision",
+        "description": "Totally not going to be delayed... again"
       },
       {
-        "title": "Easy to Use",
-        "description": "Beautiful, intuitive interface"
+        "title": "Unparalleled Hype",
+        "description": "The tagline alone would blow your mind (or confuse you)"
       }
     ],
     "socialLinks": {
-      "twitter": "https://twitter.com/acme",
-      "github": "https://github.com/acme"
+      "twitter": "https://twitter.com/thinkdj",
+      "github": "https://github.com/thinkdj"
     }
   },
   {
-    "name": "Landing Page - Example.com",
+    "name": "Landing Page - example.com",
     "mode": "landing",
     "domainTitle": "example.com",
     "title": "Email & API Services",
@@ -100,25 +101,25 @@
     "title": "Some inspiring tagline like `Code is Poetry`",
     "subtitle": "Building tools that developers love etc. etc.",
     "accentColor": "#f00",
-    "footerText": "© 2025 think dj",
+    "footerText": "© 2025 think.dj",
     "links": [
       {
         "title": "Portfolio",
-        "url": "https://john.dev/portfolio"
+        "url": "https://thinkdj.com"
       },
       {
         "title": "Blog",
-        "url": "https://blog.john.dev"
+        "url": "https://thinkdj.com"
       },
       {
         "title": "Contact",
-        "url": "mailto:hello@john.dev"
+        "url": "mailto:shout@think.dj"
       }
     ],
     "socialLinks": {
-      "github": "https://github.com/johndoe",
-      "twitter": "https://twitter.com/johndoe",
-      "linkedin": "https://linkedin.com/in/johndoe"
+      "github": "https://github.com/thinkdj",
+      "twitter": "https://twitter.com/thinkdj",
+      "linkedin": "https://linkedin.com/in/thinkdj"
     }
   }
 ]
