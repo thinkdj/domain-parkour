@@ -81,7 +81,7 @@ async function getDomainConfig(hostname, env) {
   // Return minimal default (only non-sensitive data)
   return {
     domain: hostname,
-    mode: "parking", // 'parking' or 'coming-soon'
+    mode: "parking", // 'parking', 'coming-soon', or 'landing'
     title: "Premium Domain For Sale",
     description: "This premium domain is available for purchase.",
     registrationDate: null,
@@ -93,6 +93,9 @@ async function getDomainConfig(hostname, env) {
     tagline: null,
     features: [],
     socialLinks: {},
+    // Landing page specific fields
+    subtitle: null,
+    links: [],
   };
 }
 
@@ -181,6 +184,10 @@ async function getConfig(hostname, env) {
     tagline: env[`${envPrefix}_TAGLINE`] || env.TAGLINE || domainConfig.tagline,
     features: domainConfig.features || [],
     socialLinks: domainConfig.socialLinks || {},
+    // Landing page specific fields
+    subtitle:
+      env[`${envPrefix}_SUBTITLE`] || env.SUBTITLE || domainConfig.subtitle,
+    links: domainConfig.links || [],
   };
 }
 
@@ -482,6 +489,164 @@ function generateComingSoonHTML(cfg) {
 }
 
 /**
+ * Generate the HTML for the landing page
+ */
+function generateLandingHTML(cfg) {
+  // Links section
+  let linksHTML = "";
+  if (cfg.links && cfg.links.length > 0) {
+    linksHTML = `
+    <div class="flex flex-wrap justify-center gap-4 mt-12 max-w-2xl mx-auto">
+      ${cfg.links
+        .map(
+          (link) => `
+      <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
+         class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-gray-900 bg-gray-50 dark:hover:bg-gray-800 hover:bg-gray-100 transition-all duration-200 group">
+        <span class="font-medium dark:text-white text-black">${link.title}</span>
+        <svg class="w-4 h-4 dark:text-gray-400 text-gray-600 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+      </a>
+      `
+        )
+        .join("")}
+    </div>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${cfg.domainTitle}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        :root {
+            --accent-color: ${cfg.accentColor};
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .bg-gradient {
+            background: radial-gradient(ellipse 100% 60% at 50% 110%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 80%),
+                        radial-gradient(ellipse 100% 60% at 50% -10%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 80%);
+        }
+
+        .dark .bg-gradient {
+            background: radial-gradient(ellipse 100% 60% at 50% 110%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 80%),
+                        radial-gradient(ellipse 100% 60% at 50% -10%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 80%);
+        }
+
+        .accent-gradient {
+            background: linear-gradient(to right, var(--accent-color), color-mix(in srgb, var(--accent-color), #a855f7 50%));
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors dark:bg-black bg-white">
+    <div class="fixed inset-0 bg-gradient pointer-events-none"></div>
+    
+    <!-- Dark Mode Toggle -->
+    <div class="fixed top-6 right-6 z-50">
+        <button id="theme-toggle" class="p-2.5 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-gray-900 bg-gray-50 dark:hover:bg-gray-800 hover:bg-gray-100 transition-all duration-200">
+            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 dark:text-gray-400 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+            </svg>
+            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 dark:text-gray-400 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="flex items-center justify-center min-h-screen px-6 py-24">
+        <div class="max-w-4xl w-full text-center">
+            <!-- Domain Name -->
+            <div class="space-y-4">
+                <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight dark:text-white text-black">
+                    ${cfg.domainTitle}
+                </h1>
+                <div class="h-1 w-20 mx-auto accent-gradient rounded-full"></div>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold dark:text-gray-100 text-gray-900 max-w-3xl mx-auto mt-8">
+                ${cfg.title}
+            </h2>
+            
+            <!-- Subtitle/Description -->
+            ${
+              cfg.subtitle
+                ? `
+            <p class="text-lg sm:text-xl dark:text-gray-400 text-gray-600 max-w-2xl mx-auto mt-6">
+                ${cfg.subtitle}
+            </p>
+            `
+                : ""
+            }
+            
+            ${
+              cfg.description
+                ? `
+            <p class="text-base sm:text-lg dark:text-gray-500 text-gray-500 max-w-xl mx-auto mt-4">
+                ${cfg.description}
+            </p>
+            `
+                : ""
+            }
+            
+            ${linksHTML}
+            
+            <!-- Footer -->
+            <div class="mt-20 text-center">
+                <p class="text-sm dark:text-gray-600 text-gray-400">
+                    ${cfg.domainTitle}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode toggle functionality
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        
+        if (currentTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+        
+        themeToggleBtn.addEventListener('click', function() {
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+            
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>`;
+}
+
+/**
  * Generate the HTML for the parking page
  */
 function generateHTML(cfg) {
@@ -730,6 +895,8 @@ export default {
     let html;
     if (cfg.mode === "coming-soon") {
       html = generateComingSoonHTML(cfg);
+    } else if (cfg.mode === "landing") {
+      html = generateLandingHTML(cfg);
     } else {
       // Default to parking mode
       html = generateHTML(cfg);

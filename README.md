@@ -6,10 +6,11 @@ Ultra-minimal domain parking and coming soon pages for Cloudflare Workers. One d
 
 ## Features
 
-- **Two modes**: `parking` (domain for sale) or `coming-soon` (launch page)
+- **Three modes**: `parking` (domain for sale), `coming-soon` (launch page), or `landing` (simple info page)
 - Multi-domain support from single deployment
 - Cloudflare KV storage + env var overrides
 - Countdown timer, social links, feature grid (coming-soon mode)
+- Quick links and info display (landing mode)
 - Responsive design with auto dark/light mode
 
 ## Quick Setup
@@ -101,6 +102,36 @@ wrangler kv:key put --namespace-id=YOUR_KV_ID "newproject.com" '{
 - `socialLinks` - Object: `{"twitter": "url", "github": "url", ...}`
 
 **Color suggestions:** `#3b82f6` (blue), `#a855f7` (purple), `#10b981` (green), `#ef4444` (red), `#f97316` (orange), `#ec4899` (pink)
+
+### Landing Mode (Simple Info Page)
+
+**Use case:** Domains used for email, APIs, or backend services that need a simple front page.
+
+```bash
+wrangler kv:key put --namespace-id=YOUR_KV_ID "api.example.com" '{
+  "mode": "landing",
+  "domainTitle": "api.example.com",
+  "title": "API & Email Services",
+  "subtitle": "This domain is used for backend services",
+  "description": "For support, visit our main website",
+  "accentColor": "#06b6d4",
+  "links": [
+    {"title": "Main Website", "url": "https://example.com"},
+    {"title": "Documentation", "url": "https://docs.example.com"},
+    {"title": "Support", "url": "https://support.example.com"}
+  ]
+}'
+```
+
+**Parameters:**
+
+- `mode` - "landing"
+- `domainTitle` - Domain or brand name
+- `title` - Main headline
+- `subtitle` - Secondary headline (optional)
+- `description` - Additional info (optional)
+- `accentColor` - Brand color (hex)
+- `links` - Array: `[{"title": "...", "url": "..."}]`
 
 ### Environment Variables (Optional)
 

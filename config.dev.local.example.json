@@ -47,5 +47,28 @@
     "title": "Coming Soon",
     "description": "Something exciting is on the way",
     "accentColor": "#10b981"
+  },
+
+  "landing_page_example": {
+    "mode": "landing",
+    "domainTitle": "example.com",
+    "title": "Email & API Services",
+    "subtitle": "This domain is used for email and backend services",
+    "description": "For support or inquiries, please visit our main website",
+    "accentColor": "#06b6d4",
+    "links": [
+      {
+        "title": "Main Website",
+        "url": "https://www.example.com"
+      },
+      {
+        "title": "Documentation",
+        "url": "https://docs.example.com"
+      },
+      {
+        "title": "Support",
+        "url": "https://support.example.com"
+      }
+    ]
   }
 }
