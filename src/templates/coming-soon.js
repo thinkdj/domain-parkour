@@ -1,11 +1,11 @@
-import { renderBase } from './base.js';
-import { renderSocialLinks } from './components.js';
+import { renderBase } from "./base.js";
+import { renderSocialLinks } from "./components.js";
 
 /**
  * Generate the countdown HTML
  */
 function renderCountdown(cfg) {
-  if (!cfg.launchDate) return '';
+  if (!cfg.launchDate) return "";
 
   return `
     <!-- Countdown Timer -->
@@ -33,7 +33,7 @@ function renderCountdown(cfg) {
  * Generate the countdown JavaScript
  */
 function renderCountdownScript(cfg) {
-  if (!cfg.launchDate) return '';
+  if (!cfg.launchDate) return "";
 
   return `
     // Countdown Timer
@@ -68,7 +68,7 @@ function renderCountdownScript(cfg) {
  * Generate the features section
  */
 function renderFeatures(cfg) {
-  if (!cfg.features || cfg.features.length === 0) return '';
+  if (!cfg.features || cfg.features.length === 0) return "";
 
   return `
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-w-3xl mx-auto mt-12">
@@ -156,11 +156,23 @@ function renderComingSoonContent(cfg) {
             </div>
 
             <!-- Footer -->
+            ${
+              cfg.footerText !== "" && cfg.footerText !== undefined
+                ? `
             <div class="text-center mt-20 fade-in-delay-3">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${cfg.footerText !== undefined ? cfg.footerText : (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming")}
+                    ${
+                      cfg.footerText !== undefined
+                        ? cfg.footerText
+                        : cfg.launchDate
+                        ? "Stay tuned for our launch"
+                        : "Something exciting is coming"
+                    }
                 </p>
             </div>
+            `
+                : ""
+            }
         </div>
     </div>`;
 }
@@ -177,6 +189,6 @@ export function generateComingSoonHTML(cfg, allThemes = null) {
     accentColor: cfg.accentColor,
     content,
     scripts,
-    allThemes
+    allThemes,
   });
 }

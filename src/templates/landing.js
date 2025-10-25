@@ -82,11 +82,21 @@ function renderLandingContent(cfg) {
             </div>
 
             <!-- Footer -->
+            ${
+              cfg.footerText !== "" && cfg.footerText !== undefined
+                ? `
             <div class="text-center mt-20 fade-in-delay-2">
                 <p class="text-xs dark:text-gray-700 text-gray-400">
-                    ${cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle}
+                    ${
+                      cfg.footerText !== undefined
+                        ? cfg.footerText
+                        : cfg.domainTitle
+                    }
                 </p>
             </div>
+            `
+                : ""
+            }
         </div>
     </div>`;
 }

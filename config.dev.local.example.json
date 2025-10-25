@@ -97,8 +97,8 @@
     "name": "Landing Page - Personal",
     "mode": "landing",
     "domainTitle": "think.dj",
-    "title": "Code is indeed Poetry",
-    "subtitle": "Building tools that developers love",
+    "title": "Some inspiring tagline like `Code is Poetry`",
+    "subtitle": "Building tools that developers love etc. etc.",
     "accentColor": "#f00",
     "footerText": "© 2025 think dj",
     "links": [

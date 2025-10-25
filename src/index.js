@@ -192,9 +192,9 @@ async function getConfig(hostname, env, request = null) {
       env[`${envPrefix}_DESCRIPTION`] ||
       env.DESCRIPTION ||
       domainConfig.description,
-    domainAgeYears: domainAgeYears,
-    domainRegistration: domainRegistration,
-    domainExtension: domainExtension,
+    domainAgeYears: domainConfig.domainAgeYears || domainAgeYears,
+    domainRegistration: domainConfig.domainRegistration || domainRegistration,
+    domainExtension: domainConfig.domainExtension || domainExtension,
     salePrice:
       env[`${envPrefix}_SALE_PRICE`] ||
       env.SALE_PRICE ||
@@ -219,6 +219,9 @@ async function getConfig(hostname, env, request = null) {
     subtitle:
       env[`${envPrefix}_SUBTITLE`] || env.SUBTITLE || domainConfig.subtitle,
     links: domainConfig.links || [],
+    // Footer text
+    footerText:
+      env[`${envPrefix}_FOOTER_TEXT`] || env.FOOTER_TEXT || domainConfig.footerText,
   };
 
   // Return config along with allThemes if in dev mode
