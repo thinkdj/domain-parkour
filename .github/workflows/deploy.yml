@@ -1,6 +1,7 @@
-name: Deploy App to Cloudflare Workers
-# Run `npm run deploy` to deploy to CF from local machine
+# Run `npm run deploy` to deploy to CF from local machine (GH Actions not required)
 # OR trigger this workflow manually from the Actions tab after setting up secrets on GH
+
+name: Deploy App to Cloudflare Workers
 
 on:
   workflow_dispatch:

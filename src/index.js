@@ -106,7 +106,7 @@ async function getDomainConfig(hostname, env) {
   return {
     config: {
       domain: hostname,
-      mode: "parking", // 'parking', 'coming-soon', or 'landing'
+      mode: "landing", // 'parking', 'coming-soon', or 'landing'
       title: "Premium Domain For Sale",
       description: "This premium domain is available for purchase.",
       registrationDate: null,
