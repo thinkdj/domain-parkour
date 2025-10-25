@@ -1,5 +1,5 @@
 {
-  "_note": "Copy this to `config.dev.local.json` for local development and testing",
+  "_note": "Copy the JSON value {} to `config.dev.local.json` for local development and testing",
   "_usage": "Automatically loaded for localhost. Edit and restart dev server. Then make a kv with key of your domain name and paste the config json via CF DASH > KV",
 
   "parking_mode_example": {
@@ -11,6 +11,14 @@
     "salePrice": "50,000 USD",
     "contactEmail": "contact@example.com",
     "accentColor": "#3b82f6"
+  },
+
+  "coming_soon_minimal_example": {
+    "mode": "coming-soon",
+    "domainTitle": "Simple Launch",
+    "title": "Coming Soon",
+    "description": "Something exciting is on the way",
+    "accentColor": "#10b981"
   },
 
   "coming_soon_mode_example": {
@@ -39,14 +47,6 @@
       "twitter": "https://twitter.com/acme",
       "github": "https://github.com/acme"
     }
-  },
-
-  "coming_soon_minimal_example": {
-    "mode": "coming-soon",
-    "domainTitle": "Simple Launch",
-    "title": "Coming Soon",
-    "description": "Something exciting is on the way",
-    "accentColor": "#10b981"
   },
 
   "landing_page_example": {

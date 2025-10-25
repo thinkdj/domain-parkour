@@ -10,7 +10,9 @@
       "Bash(grep:*)",
       "Bash(cat:*)",
       "Bash(tasklist:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(if not exist \"src\\templates\" mkdir \"src\\templates\")",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
