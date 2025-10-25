@@ -2,18 +2,43 @@ name = "domain-parkour"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
 
-# Uncomment and configure for your domain
+# Cloudflare KV namespace for storing domain configurations securely
+# Setup: wrangler kv:namespace create "DOMAIN_CONFIGS"
+# Then replace domain-parkour-kv with the actual namespace ID from the output
+[[kv_namespaces]]
+binding = "DOMAIN_CONFIGS"
+id = "domain-parkour-kv"
+# For preview environment:
+# preview_id = "domain-parkour-kv-preview"
+
+# Configure routes for multiple domains
+# Each domain will automatically use its configuration from KV or environment variables
 # routes = [
-#   { pattern = "example.com", zone_name = "example.com" }
+#   { pattern = "cdn.farm", zone_name = "cdn.farm" },
+#   { pattern = "example.com", zone_name = "example.com" },
+#   { pattern = "anotherdomain.com", zone_name = "anotherdomain.com" }
 # ]
 
-# Environment variables can be set here or in the Cloudflare dashboard
+# Environment variables - USE THESE FOR SENSITIVE DATA instead of JSON files
+# WARNING: Do NOT commit sensitive data in wrangler.toml to public repos!
+# Use Cloudflare Dashboard > Workers > Settings > Variables > Secrets instead
+
+# Option 1: Full domain config as JSON string
 # [vars]
-# DOMAIN = "example.com"
-# TITLE = "Premium Domain For Sale"
-# DESCRIPTION = "This premium domain is available for purchase."
-# DOMAIN_AGE = "Registered since 2010"
-# CONTACT_EMAIL = "contact@example.com"
-# BG_COLOR = "#0f172a"
-# TEXT_COLOR = "#f1f5f9"
-# ACCENT_COLOR = "#3b82f6"
+# CDN_FARM_CONFIG = '{"title":"Premium CDN Domain","salePrice":"25,000 USD","contactEmail":"contact@example.com"}'
+
+# Option 2: Individual property overrides
+# [vars]
+# CDN_FARM_TITLE = "CDN Farm - Premium Domain"
+# CDN_FARM_SALE_PRICE = "30,000 USD"
+# CDN_FARM_CONTACT_EMAIL = "buy@cdn.farm"
+#
+# EXAMPLE_COM_TITLE = "Example.com - Available Now"
+# EXAMPLE_COM_SALE_PRICE = "60,000 USD"
+# EXAMPLE_COM_CONTACT_EMAIL = "sales@example.com"
+
+# SECURITY BEST PRACTICE:
+# Store sensitive data (emails, pricing) as SECRETS in Cloudflare Dashboard
+# Workers > Your Worker > Settings > Variables and Secrets
+# Click "Add variable" > Select "Encrypt" for sensitive values
+

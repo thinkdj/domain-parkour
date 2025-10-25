@@ -1,177 +1,140 @@
 # Domain Parkour
 
-A super-minimal domain parking page built for Cloudflare Workers for showcasing domains that are for sale with a clean, centered design.
+An ultra-minimal domain parking page for Cloudflare Workers. One deployment handles multiple domains with secure configuration via Cloudflare KV.
 
 ![Screenshot of domain parkour](assets/ss-parkour.png)
 
 ## Features
 
-**Ultra Minimal Design** - Clean, centered layout focused on the domain name and details
-**Fully Customizable** - Configure via `config.json` or environment variables  
-**Cloudflare Workers** - Deploy globally in seconds  
-**Easy Configuration** - Override any setting with environment variables  
-**Responsive** - Looks great on all devices
+- Multi-domain support from single deployment
+- Secure config storage in Cloudflare KV
+- Global edge deployment
+- Per-domain customization
+- Responsive design
+- Automatic light/dark mode with customizable accent color
 
-## Configuration
-
-### Default Configuration (`config.json`)
-
-```json
-{
-  "domain": "example.com",
-  "title": "Premium Domain For Sale",
-  "description": "This premium domain is available for purchase...",
-  "domainAge": "Registered since 2010",
-  "contactEmail": "contact@example.com",
-  "backgroundColor": "#0f172a",
-  "textColor": "#f1f5f9",
-  "accentColor": "#3b82f6"
-}
-```
-
-### Environment Variable Overrides
-
-All configuration can be overridden with environment variables:
-
-- `DOMAIN` - The domain name to display
-- `TITLE` - Title text
-- `DESCRIPTION` - Description text
-- `DOMAIN_AGE` - Domain registration age/info
-- `CONTACT_EMAIL` - Contact email address
-- `BG_COLOR` - Background color (hex)
-- `TEXT_COLOR` - Text color (hex)
-- `ACCENT_COLOR` - Accent/highlight color (hex)
-
-Set these in `wrangler.toml` under `[vars]` or in the Cloudflare dashboard.
-
-## Setup
-
-### Prerequisites
-
-- Node.js 16+ installed
-- A Cloudflare Account
-- Wrangler CLI
-
-### Installation
-
-1. **Install dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-2. **Login to Cloudflare:**
-
-   ```bash
-   npx wrangler login
-   ```
-
-3. **Configure your domain:**
-
-   Edit `config.json` with your domain details, or set environment variables in `wrangler.toml`.
-
-## Development
-
-Run locally with hot reload:
+## Quick Setup
 
 ```bash
-npm run dev
-```
+# Install
+npm install && npx wrangler login
 
-Visit `http://localhost:8787` to preview your parking page.
+# Create KV namespace
+wrangler kv:namespace create "domain-parkour-kv"
+# Or create via Cloudflare Dashboard
+# Copy the namespace ID from output
 
-## Deployment
+# Update wrangler.toml with your namespace ID
 
-### Deploy to Cloudflare Workers
+# Add domain config to KV
+wrangler kv:key put --namespace-id=domain-parkour-kv "yourdomain.com" '{"title":"Premium Domain For Sale","salePrice":"25,000 USD","contactEmail":"contact@example.com"}'
 
-```bash
+# Add default fallback
+wrangler kv:key put --namespace-id=domain-parkour-kv "_default" '{"title":"Domain For Sale","salePrice":"Make an Offer"}'
+
+# Configure routes in wrangler.toml and deploy
 npm run deploy
 ```
 
-### Configure Domain Routing
+## Configuration
 
-After deployment, configure your domain in `wrangler.toml`:
+### Cloudflare KV (Recommended)
 
-```toml
-routes = [
-  { pattern = "yourdomain.com", zone_name = "yourdomain.com" }
-]
+```bash
+# Add/update domain
+wrangler kv:key put --namespace-id=domain-parkour-kv "cdn.farm" '{"title":"CDN Farm","salePrice":"25k"}'
+
+# List domains
+wrangler kv:key list --namespace-id=domain-parkour-kv
+
+# View config
+wrangler kv:key get --namespace-id=domain-parkour-kv "cdn.farm"
 ```
 
-Or set up routes in the Cloudflare dashboard under Workers > Routes.
+### Config Properties
 
-### Set Environment Variables
+- `title` - Headline text
+- `description` - Description
+- `registrationDate` - YYYY-MM-DD format
+- `salePrice` - Price text
+- `contactEmail` - Contact email
+- `accentColor` - Hex color for branding (gradient line, button, background glow)
 
-**Option 1: Via wrangler.toml**
+Sample: Add to CF DASH/KV/domain-parkour-kv OR via CLI:
 
-Uncomment and edit the `[vars]` section in `wrangler.toml`.
-
-**Option 2: Via Cloudflare Dashboard**
-
-1. Go to Workers & Pages
-2. Select your worker
-3. Navigate to Settings > Variables
-4. Add environment variables
-
-### Optional: GitHub Actions (CI) Deployment
-
-You can deploy automatically from GitHub using Actions. Create the following repository secrets in GitHub (Settings > Secrets & variables > Actions):
-
-- `CLOUDFLARE_API_TOKEN` — a scoped API token that can publish workers
-- `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account ID
-
-There is an example workflow in `.github/workflows/deploy.yml` that will run on pushes to `main` and on manual dispatch. It checks out the repo, installs dependencies, and runs `npx wrangler deploy` using the secrets above.
-
-Important: when using GH Actions, configure your environment variables either via `wrangler.toml` in the repository or using repository-level secrets and environment variables in the Actions workflow.
-
-## Customization Examples
-
-### Dark Purple Theme
-
-```json
-{
-  "backgroundColor": "#1e1b4b",
-  "textColor": "#e0e7ff",
-  "accentColor": "#8b5cf6"
-}
+```bash
+wrangler kv:key put --namespace-id=domain-parkour-kv "example.com" '{
+  "title": "Premium Domain For Sale",
+  "description": "This premium domain is available for purchase",
+  "registrationDate": "2010-01-15",
+  "salePrice": "50,000 USD",
+  "contactEmail": "contact@example.com",
+  "accentColor": "#3b82f6"
+}'
 ```
 
-### Light Theme
+### Environment Variables (Optional)
 
-```json
-{
-  "backgroundColor": "#f8fafc",
-  "textColor": "#1e293b",
-  "accentColor": "#0ea5e9"
-}
+Override via Cloudflare Dashboard:
+
+```bash
+# Domain-specific (dots become underscores)
+CDN_FARM_TITLE="Custom Title"
+
+# Global fallback
+TITLE="Default Title"
 ```
 
-### Minimal Green
+## How It Works
 
-```json
-{
-  "backgroundColor": "#052e16",
-  "textColor": "#dcfce7",
-  "accentColor": "#22c55e"
-}
+The worker follows this configuration priority order:
+
+1. **Cloudflare KV** - Checks `DOMAIN_CONFIGS` namespace for exact hostname match (e.g., `example.com`)
+2. **KV Default Fallback** - Checks `DOMAIN_CONFIGS` for `_default` key
+3. **Environment Variables** - Checks domain-specific env var (e.g., `EXAMPLE_COM_CONFIG` for `example.com`)
+4. **Hardcoded Defaults** - Uses minimal safe defaults (no sensitive data)
+
+After loading base config, individual properties can be overridden by:
+
+- Domain-specific env vars: `EXAMPLE_COM_TITLE`, `EXAMPLE_COM_SALE_PRICE`, etc.
+- Global env vars: `TITLE`, `SALE_PRICE`, etc.
+
+**Hostname transformation for env vars:**
+
+- `127.0.0.1` → `127_0_0_1_CONFIG`
+- `example.com` → `EXAMPLE_COM_CONFIG`
+- `cdn-farm.io` → `CDN_FARM_IO_CONFIG`
+
+## Adding Domains
+
+1. Add to KV: `wrangler kv:key put --namespace-id=domain-parkour-kv "new.com" '{...}'`
+2. Add route in wrangler.toml
+3. Redeploy: `npm run deploy`
+
+## Security
+
+Use Cloudflare KV or encrypted Dashboard secrets.
+
+## Development
+
+```bash
+npm run dev
+
+# Local testing (create .dev.vars)
+echo 'TEST_CONFIG={"title":"Local Test"}' > .dev.vars
 ```
 
-## Project Structure
+## Troubleshooting
 
-```text
-domain-parkour/
-├── src/
-│   └── index.js          # Main worker script
-├── config.json           # Default configuration
-├── wrangler.toml         # Cloudflare Workers config
-├── package.json          # Dependencies
-└── README.md            # Documentation
+```bash
+# Check KV
+wrangler kv:namespace list
+wrangler kv:key list --namespace-id=domain-parkour-kv
+
+# Live logs
+wrangler tail
 ```
 
 ## License
 
-MIT License - feel free to use this for your domain parking needs!
-
-## Support
-
-For issues or questions, please open an issue on the repository.
+MIT

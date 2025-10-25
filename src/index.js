@@ -1,16 +1,111 @@
-import config from "../config.json";
+/**
+ * Get domain-specific configuration from Cloudflare KV or Environment Variables
+ * Priority:
+ * 1. Cloudflare KV storage (DOMAIN_CONFIGS namespace)
+ * 2. Environment variables (JSON string or individual properties)
+ * 3. Hardcoded defaults (safe public data only)
+ *
+ * @param {string} hostname - The hostname from the request
+ * @param {object} env - Environment variables and KV bindings
+ */
+async function getDomainConfig(hostname, env) {
+  // Try to get config from Cloudflare KV first (most secure)
+  if (env.DOMAIN_CONFIGS) {
+    try {
+      const kvConfig = await env.DOMAIN_CONFIGS.get(hostname, { type: "json" });
+      if (kvConfig) {
+        return { domain: hostname, ...kvConfig };
+      }
+
+      // Try default config from KV
+      const defaultConfig = await env.DOMAIN_CONFIGS.get("_default", {
+        type: "json",
+      });
+      if (defaultConfig) {
+        return { domain: hostname, ...defaultConfig };
+      }
+    } catch (e) {
+      console.error(`Error fetching from KV: ${e.message}`);
+    }
+  }
+
+  // Fall back to environment variables (JSON string for the specific domain)
+  const envPrefix = hostname
+    .replace(/\./g, "_")
+    .replace(/-/g, "_")
+    .toUpperCase();
+  const domainEnvConfig = env[`${envPrefix}_CONFIG`];
+
+  console.log(
+    `[Debug] Hostname: ${hostname}, EnvPrefix: ${envPrefix}, Config exists: ${!!domainEnvConfig}`
+  );
+
+  if (domainEnvConfig) {
+    console.log(`[Debug] Raw config string length: ${domainEnvConfig.length}`);
+    console.log(
+      `[Debug] Raw config (first 200 chars): ${domainEnvConfig.substring(
+        0,
+        200
+      )}`
+    );
+    try {
+      const parsed = JSON.parse(domainEnvConfig);
+      console.log(`[Debug] Parsed config:`, parsed);
+      return { domain: hostname, ...parsed };
+    } catch (e) {
+      console.error(`Error parsing ${envPrefix}_CONFIG: ${e.message}`);
+      console.error(
+        `[Debug] Char at position 185: ${domainEnvConfig.charCodeAt(185)} (${
+          domainEnvConfig[185]
+        })`
+      );
+    }
+  }
+
+  // Return minimal default (only non-sensitive data)
+  return {
+    domain: hostname,
+    title: "Premium Domain For Sale",
+    description: "This premium domain is available for purchase.",
+    registrationDate: null,
+    salePrice: null,
+    contactEmail: null,
+    accentColor: "#3b82f6", // Default blue accent
+  };
+}
 
 /**
  * Load configuration with environment variable overrides
+ * @param {string} hostname - The hostname from the request
+ * @param {object} env - Environment variables and KV bindings
  */
-function getConfig(env) {
-  const registrationDate = env.REGISTRATION_DATE || config.registrationDate;
+async function getConfig(hostname, env) {
+  // Get base config for this domain
+  const domainConfig = await getDomainConfig(hostname, env);
+
+  // Environment variables can override per-domain settings
+  // Use hostname-specific env vars first (e.g., CDN_FARM_TITLE)
+  // then fall back to generic env vars (e.g., TITLE)
+  const envPrefix = hostname
+    .replace(/\./g, "_")
+    .replace(/-/g, "_")
+    .toUpperCase();
+
+  const registrationDate =
+    env[`${envPrefix}_REGISTRATION_DATE`] ||
+    env.REGISTRATION_DATE ||
+    domainConfig.registrationDate;
+
   let domainAgeYears = "";
   let domainRegistration = "";
   let domainExtension = "";
 
-  const domain = env.DOMAIN || config.domain;
-  if (domain) {
+  const domain =
+    env[`${envPrefix}_DOMAIN`] || env.DOMAIN || domainConfig.domain || hostname;
+
+  // Extract domain extension (but not for IP addresses)
+  const isIpAddress = /^(\d{1,3}\.){3}\d{1,3}$/.test(domain);
+  if (domain && !isIpAddress) {
     const parts = domain.split(".");
     if (parts.length > 1) {
       domainExtension = `.${parts.pop()}`;
@@ -27,16 +122,26 @@ function getConfig(env) {
 
   return {
     domain: domain,
-    title: env.TITLE || config.title,
-    description: env.DESCRIPTION || config.description,
+    title: env[`${envPrefix}_TITLE`] || env.TITLE || domainConfig.title,
+    description:
+      env[`${envPrefix}_DESCRIPTION`] ||
+      env.DESCRIPTION ||
+      domainConfig.description,
     domainAgeYears: domainAgeYears,
     domainRegistration: domainRegistration,
     domainExtension: domainExtension,
-    salePrice: env.SALE_PRICE || config.salePrice,
-    contactEmail: env.CONTACT_EMAIL || config.contactEmail,
-    backgroundColor: env.BG_COLOR || config.backgroundColor,
-    textColor: env.TEXT_COLOR || config.textColor,
-    accentColor: env.ACCENT_COLOR || config.accentColor,
+    salePrice:
+      env[`${envPrefix}_SALE_PRICE`] ||
+      env.SALE_PRICE ||
+      domainConfig.salePrice,
+    contactEmail:
+      env[`${envPrefix}_CONTACT_EMAIL`] ||
+      env.CONTACT_EMAIL ||
+      domainConfig.contactEmail,
+    accentColor:
+      env[`${envPrefix}_ACCENT_COLOR`] ||
+      env.ACCENT_COLOR ||
+      domainConfig.accentColor,
   };
 }
 
@@ -44,6 +149,7 @@ function getConfig(env) {
  * Generate the HTML for the parking page
  */
 function generateHTML(cfg) {
+  console.log("[Debug] Final config passed to generateHTML:", cfg);
   return `<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -57,35 +163,39 @@ function generateHTML(cfg) {
         }
     </script>
     <style>
+        :root {
+            --accent-color: ${cfg.accentColor};
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
+
         .bg-gradient {
-            background: radial-gradient(ellipse 100% 60% at 80% 110%, rgba(59, 130, 246, 0.1), transparent 80%),
-                        radial-gradient(ellipse 100% 60% at 80% -10%, rgba(168, 85, 247, 0.1), transparent 80%);
+            background: radial-gradient(ellipse 100% 60% at 80% 110%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 80%),
+                        radial-gradient(ellipse 100% 60% at 80% -10%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 80%);
         }
-        
+
         .dark .bg-gradient {
-            background: radial-gradient(ellipse 100% 60% at 80% 110%, rgba(59, 130, 246, 0.2), transparent 80%),
-                        radial-gradient(ellipse 100% 60% at 80% -10%, rgba(168, 85, 247, 0.2), transparent 80%);
+            background: radial-gradient(ellipse 100% 60% at 80% 110%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 80%),
+                        radial-gradient(ellipse 100% 60% at 80% -10%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 80%);
         }
-        
-        .vercel-border {
-            position: relative;
+
+        .accent-gradient {
+            background: linear-gradient(to right, var(--accent-color), color-mix(in srgb, var(--accent-color), #a855f7 50%));
         }
-        
-        .vercel-border::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 0.5rem;
-            padding: 1px;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
+
+        .accent-bg {
+            background-color: var(--accent-color);
+        }
+
+        .accent-bg:hover {
+            background-color: color-mix(in srgb, var(--accent-color), black 10%);
+        }
+
+        .dark .accent-bg:hover {
+            background-color: color-mix(in srgb, var(--accent-color), white 10%);
         }
     </style>
 </head>
@@ -127,30 +237,54 @@ function generateHTML(cfg) {
                     <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight dark:text-white text-black">
                         ${cfg.domain}
                     </h1>
-                    <div class="h-1 w-20 mx-auto bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                    <div class="h-1 w-20 mx-auto accent-gradient rounded-full"></div>
                 </div>
                 
                 <!-- Domain Stats -->
+                ${
+                  cfg.domainAgeYears || cfg.domainExtension
+                    ? `
                 <div class="flex flex-wrap justify-center gap-6 sm:gap-8 py-4">
+                    ${
+                      cfg.domainAgeYears
+                        ? `
                     <div class="text-center">
                         <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${
                           cfg.domainAgeYears
                         }</div>
                         <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Years Old</div>
                     </div>
-                    <div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>
+                    ${
+                      cfg.domainExtension
+                        ? `<div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>`
+                        : ""
+                    }
+                    `
+                        : ""
+                    }
+                    ${
+                      cfg.domainExtension
+                        ? `
                     <div class="text-center">
-                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${
-                          cfg.domainExtension
-                        }</div>
+                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${cfg.domainExtension}</div>
                         <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Extension</div>
                     </div>
-                    <div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>
+                    `
+                        : ""
+                    }
+                    ${
+                      cfg.domainAgeYears || cfg.domainExtension
+                        ? `<div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>`
+                        : ""
+                    }
                     <div class="text-center">
                         <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">SEO</div>
                         <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Friendly</div>
                     </div>
                 </div>
+                `
+                    : ""
+                }
                 
                 <!-- Title -->
                 <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold dark:text-gray-100 text-gray-900 max-w-3xl mx-auto">
@@ -172,9 +306,9 @@ function generateHTML(cfg) {
                   cfg.contactEmail
                     ? `
                 <div class="pt-6">
-                    <a id="contact-link" href="#" 
-                       class="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg dark:bg-white bg-black dark:text-black text-white font-medium transition-all hover:scale-105 hover:shadow-lg dark:hover:shadow-white/20 hover:shadow-black/20">
-                        <span>Contact Us</span>
+                    <a id="contact-link" href="#"
+                       class="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg accent-bg text-white font-medium transition-all hover:scale-105 hover:shadow-lg">
+                        <span>Reach Out</span>
                         <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                         </svg>
@@ -249,7 +383,12 @@ function generateHTML(cfg) {
 
 export default {
   async fetch(request, env, ctx) {
-    const cfg = getConfig(env);
+    // Extract hostname from the request
+    const url = new URL(request.url);
+    const hostname = url.hostname;
+
+    // Get configuration for this specific domain
+    const cfg = await getConfig(hostname, env);
 
     const html = generateHTML(cfg);
 
@@ -257,6 +396,7 @@ export default {
       headers: {
         "content-type": "text/html;charset=UTF-8",
         "cache-control": "public, max-age=3600",
+        "x-served-domain": hostname, // Debug header to see which domain was detected
       },
     });
   },

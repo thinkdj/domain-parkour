@@ -5,3 +5,11 @@ dist/
 .env
 *.log
 .DS_Store
+
+# Sensitive configuration files
+domains-config.json
+config.json
+.env.local
+.env.production
+*.secret.json
+secrets/
