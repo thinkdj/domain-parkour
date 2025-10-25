@@ -1,104 +1,93 @@
 import { renderBase } from './base.js';
 
 /**
+ * Generate the domain stats badges
+ */
+function renderDomainStats(cfg) {
+  const stats = [];
+
+  if (cfg.domainAgeYears) {
+    stats.push({ label: 'Years Old', value: cfg.domainAgeYears });
+  }
+
+  if (cfg.domainExtension) {
+    stats.push({ label: 'Extension', value: cfg.domainExtension });
+  }
+
+  stats.push({ label: 'SEO Ready', value: '✓' });
+
+  if (stats.length === 0) return '';
+
+  return `
+    <div class="flex flex-wrap justify-center gap-3 mt-8">
+      ${stats.map(stat => `
+        <div class="px-4 py-2 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white">
+          <div class="text-sm font-semibold dark:text-white text-gray-900">${stat.value}</div>
+          <div class="text-xs dark:text-gray-500 text-gray-500 mt-0.5">${stat.label}</div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+/**
  * Generate the content for the parking page
  */
 function renderParkingContent(cfg) {
   return `
     <!-- Main Container -->
-    <div class="flex items-center justify-center min-h-screen px-6 py-24">
-        <div class="max-w-4xl w-full">
-            <!-- Domain Badge -->
-            ${
-              cfg.domainRegistration
-                ? `
-            <div class="flex justify-center mb-8">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border dark:border-gray-800 border-gray-200 dark:bg-gray-900 bg-gray-50">
-                    <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-xs font-medium dark:text-gray-400 text-gray-600">${cfg.domainRegistration}</span>
-                </div>
-            </div>
-            `
-                : ""
-            }
+    <div class="flex items-center justify-center min-h-screen px-6 py-20">
+        <div class="w-full max-w-2xl mx-auto">
 
             <!-- Main Content -->
-            <div class="text-center space-y-8">
+            <div class="text-center fade-in">
                 <!-- Domain Name -->
-                <div class="space-y-4">
-                    <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight dark:text-white text-black">
-                        ${cfg.domainTitle}
-                    </h1>
-                    <div class="h-1 w-20 mx-auto accent-gradient rounded-full"></div>
-                </div>
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight dark:text-white text-gray-900 mb-4 accent-underline">
+                    ${cfg.domainTitle}
+                </h1>
 
-                <!-- Domain Stats -->
                 ${
-                  cfg.domainAgeYears || cfg.domainExtension
+                  cfg.domainRegistration
                     ? `
-                <div class="flex flex-wrap justify-center gap-6 sm:gap-8 py-4">
-                    ${
-                      cfg.domainAgeYears
-                        ? `
-                    <div class="text-center">
-                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${
-                          cfg.domainAgeYears
-                        }</div>
-                        <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Years Old</div>
-                    </div>
-                    ${
-                      cfg.domainExtension
-                        ? `<div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>`
-                        : ""
-                    }
-                    `
-                        : ""
-                    }
-                    ${
-                      cfg.domainExtension
-                        ? `
-                    <div class="text-center">
-                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">${cfg.domainExtension}</div>
-                        <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Extension</div>
-                    </div>
-                    `
-                        : ""
-                    }
-                    ${
-                      cfg.domainAgeYears || cfg.domainExtension
-                        ? `<div class="hidden sm:block w-px bg-gray-800 dark:bg-gray-800"></div>`
-                        : ""
-                    }
-                    <div class="text-center">
-                        <div class="text-2xl sm:text-3xl font-bold dark:text-white text-black">SEO</div>
-                        <div class="text-sm dark:text-gray-500 text-gray-500 mt-1">Friendly</div>
-                    </div>
-                </div>
+                <!-- Registration Note -->
+                <p class="text-xs dark:text-gray-600 text-gray-400 mt-2">
+                    ${cfg.domainRegistration}
+                </p>
                 `
                     : ""
                 }
 
+                <!-- Domain Stats -->
+                <div class="fade-in-delay-1">
+                    ${renderDomainStats(cfg)}
+                </div>
+
                 <!-- Title -->
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold dark:text-gray-100 text-gray-900 max-w-3xl mx-auto">
+                <h2 class="text-xl sm:text-2xl font-semibold dark:text-gray-200 text-gray-800 mt-12 mb-4">
                     ${cfg.title}
                 </h2>
 
-                <!-- Description -->
-                <p class="text-lg sm:text-xl md:text-2xl dark:text-gray-400 text-gray-600 max-w-2xl mx-auto">
-                    <span class="font-normal block mt-2 mb-4">${cfg.description}</span>
-                    This domain is for sale for <strong>${cfg.salePrice}</strong>
-                </p>
+                <!-- Description & Price -->
+                <div class="space-y-3 mb-8">
+                    <p class="text-base dark:text-gray-400 text-gray-600 max-w-xl mx-auto">
+                        ${cfg.description}
+                    </p>
+                    ${cfg.salePrice ? `
+                    <p class="text-lg dark:text-gray-300 text-gray-700">
+                        Available for <strong class="dark:text-white text-gray-900">${cfg.salePrice}</strong>
+                    </p>
+                    ` : ''}
+                </div>
 
                 <!-- Contact CTA -->
                 ${
                   cfg.contactEmail
                     ? `
-                <div class="pt-6">
+                <div class="pt-4 fade-in-delay-2">
                     <a id="contact-link" href="#"
-                       class="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg accent-bg text-white font-medium transition-all hover:scale-105 hover:shadow-lg">
-                        <span>Reach Out</span>
-                        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                       class="accent-button inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-medium">
+                        <span>Get in Touch</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
                     </a>
                 </div>
@@ -108,9 +97,9 @@ function renderParkingContent(cfg) {
             </div>
 
             <!-- Footer -->
-            <div class="mt-20 text-center">
-                <p class="text-sm dark:text-gray-600 text-gray-400">
-                    This domain is available for purchase
+            <div class="text-center mt-20 fade-in-delay-3">
+                <p class="text-xs dark:text-gray-700 text-gray-400">
+                    This premium domain is available for purchase
                 </p>
             </div>
         </div>

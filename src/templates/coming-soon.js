@@ -9,25 +9,22 @@ function renderCountdown(cfg) {
 
   return `
     <!-- Countdown Timer -->
-    <div id="countdown" class="flex justify-center gap-4 sm:gap-8 py-8">
-      <div class="text-center">
-        <div class="text-4xl sm:text-5xl font-bold dark:text-white text-black" id="days">00</div>
-        <div class="text-sm dark:text-gray-500 text-gray-500 mt-2">Days</div>
+    <div id="countdown" class="flex justify-center gap-3 sm:gap-6 mt-12">
+      <div class="px-4 py-3 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white">
+        <div class="text-3xl sm:text-4xl font-bold dark:text-white text-gray-900" id="days">00</div>
+        <div class="text-xs dark:text-gray-500 text-gray-500 mt-1 text-center">Days</div>
       </div>
-      <div class="text-4xl sm:text-5xl font-bold dark:text-gray-700 text-gray-300">:</div>
-      <div class="text-center">
-        <div class="text-4xl sm:text-5xl font-bold dark:text-white text-black" id="hours">00</div>
-        <div class="text-sm dark:text-gray-500 text-gray-500 mt-2">Hours</div>
+      <div class="px-4 py-3 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white">
+        <div class="text-3xl sm:text-4xl font-bold dark:text-white text-gray-900" id="hours">00</div>
+        <div class="text-xs dark:text-gray-500 text-gray-500 mt-1 text-center">Hours</div>
       </div>
-      <div class="text-4xl sm:text-5xl font-bold dark:text-gray-700 text-gray-300">:</div>
-      <div class="text-center">
-        <div class="text-4xl sm:text-5xl font-bold dark:text-white text-black" id="minutes">00</div>
-        <div class="text-sm dark:text-gray-500 text-gray-500 mt-2">Minutes</div>
+      <div class="px-4 py-3 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white">
+        <div class="text-3xl sm:text-4xl font-bold dark:text-white text-gray-900" id="minutes">00</div>
+        <div class="text-xs dark:text-gray-500 text-gray-500 mt-1 text-center">Min</div>
       </div>
-      <div class="text-4xl sm:text-5xl font-bold dark:text-gray-700 text-gray-300">:</div>
-      <div class="text-center">
-        <div class="text-4xl sm:text-5xl font-bold dark:text-white text-black" id="seconds">00</div>
-        <div class="text-sm dark:text-gray-500 text-gray-500 mt-2">Seconds</div>
+      <div class="px-4 py-3 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white">
+        <div class="text-3xl sm:text-4xl font-bold dark:text-white text-gray-900" id="seconds">00</div>
+        <div class="text-xs dark:text-gray-500 text-gray-500 mt-1 text-center">Sec</div>
       </div>
     </div>`;
 }
@@ -74,17 +71,17 @@ function renderFeatures(cfg) {
   if (!cfg.features || cfg.features.length === 0) return '';
 
   return `
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-w-3xl mx-auto mt-12">
       ${cfg.features
         .map(
           (feature) => `
-      <div class="p-6 rounded-xl border dark:border-gray-800 border-gray-200 dark:bg-gray-900/50 bg-gray-50/50 backdrop-blur-sm">
-        <div class="text-lg font-semibold dark:text-white text-black mb-2">${
+      <div class="p-4 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-transparent bg-white text-left">
+        <div class="text-sm font-semibold dark:text-white text-gray-900 mb-1">${
           feature.title || feature
         }</div>
         ${
           feature.description
-            ? `<div class="text-sm dark:text-gray-400 text-gray-600">${feature.description}</div>`
+            ? `<div class="text-xs dark:text-gray-500 text-gray-600">${feature.description}</div>`
             : ""
         }
       </div>
@@ -100,31 +97,29 @@ function renderFeatures(cfg) {
 function renderComingSoonContent(cfg) {
   return `
     <!-- Main Container -->
-    <div class="flex items-center justify-center min-h-screen px-6 py-24">
-        <div class="max-w-5xl w-full">
-            <!-- Status Badge -->
-            <div class="flex justify-center mb-8">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border dark:border-gray-800 border-gray-200 dark:bg-gray-900 bg-gray-50">
+    <div class="flex items-center justify-center min-h-screen px-6 py-20">
+        <div class="w-full max-w-3xl mx-auto">
+
+            <!-- Main Content -->
+            <div class="text-center">
+                <!-- Status Badge -->
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border dark:border-gray-800 border-gray-200 dark:bg-gray-900/50 bg-gray-50 mb-8 fade-in">
                     <div class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></div>
                     <span class="text-xs font-medium dark:text-gray-400 text-gray-600">Coming Soon</span>
                 </div>
-            </div>
 
-            <!-- Main Content -->
-            <div class="text-center space-y-8">
                 <!-- Domain/Brand Name -->
-                <div class="space-y-4 float-animation">
-                    <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight dark:text-white text-black">
+                <div class="fade-in">
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight dark:text-white text-gray-900 mb-4 accent-underline">
                         ${cfg.domainTitle}
                     </h1>
-                    <div class="h-1 w-20 mx-auto accent-gradient rounded-full"></div>
                 </div>
 
                 <!-- Tagline -->
                 ${
                   cfg.tagline
                     ? `
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold dark:text-gray-100 text-gray-900 max-w-3xl mx-auto">
+                <h2 class="text-xl sm:text-2xl font-semibold dark:text-gray-200 text-gray-800 mt-8 mb-4 fade-in-delay-1">
                     ${cfg.tagline}
                 </h2>
                 `
@@ -132,7 +127,7 @@ function renderComingSoonContent(cfg) {
                 }
 
                 <!-- Title/Subtitle -->
-                <p class="text-lg sm:text-xl md:text-2xl dark:text-gray-400 text-gray-600 max-w-2xl mx-auto">
+                <p class="text-base sm:text-lg dark:text-gray-400 text-gray-600 max-w-2xl mx-auto fade-in-delay-1">
                     ${cfg.title}
                 </p>
 
@@ -140,23 +135,29 @@ function renderComingSoonContent(cfg) {
                 ${
                   cfg.description
                     ? `
-                <p class="text-base sm:text-lg dark:text-gray-500 text-gray-500 max-w-xl mx-auto">
+                <p class="text-sm dark:text-gray-500 text-gray-500 max-w-xl mx-auto mt-3 fade-in-delay-1">
                     ${cfg.description}
                 </p>
                 `
                     : ""
                 }
 
-                ${renderCountdown(cfg)}
+                <div class="fade-in-delay-2">
+                    ${renderCountdown(cfg)}
+                </div>
 
-                ${renderSocialLinks(cfg.socialLinks)}
+                <div class="fade-in-delay-2">
+                    ${renderSocialLinks(cfg.socialLinks)}
+                </div>
 
-                ${renderFeatures(cfg)}
+                <div class="fade-in-delay-3">
+                    ${renderFeatures(cfg)}
+                </div>
             </div>
 
             <!-- Footer -->
-            <div class="mt-20 text-center">
-                <p class="text-sm dark:text-gray-600 text-gray-400">
+            <div class="text-center mt-20 fade-in-delay-3">
+                <p class="text-xs dark:text-gray-700 text-gray-400">
                     ${
                       cfg.launchDate
                         ? "Stay tuned for our launch"

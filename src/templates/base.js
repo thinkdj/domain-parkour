@@ -1,7 +1,7 @@
 /**
- * Base HTML layout with common head, styles, and structure
+ * Minimal base HTML template renderer.
  */
-export function renderBase({ title, accentColor, content, scripts = '' }) {
+export function renderBase({ title, accentColor, content, scripts = '', additionalStyles = '' }) {
   return `<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -16,60 +16,93 @@ export function renderBase({ title, accentColor, content, scripts = '' }) {
     </script>
     <style>
         :root {
-            --accent-color: ${accentColor};
+            --accent-color: ${accentColor || '#3b82f6'};
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .bg-gradient {
-            background: radial-gradient(ellipse 100% 60% at 80% 110%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 80%),
-                        radial-gradient(ellipse 100% 60% at 80% -10%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 80%);
+        /* Smooth fade-in animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .dark .bg-gradient {
-            background: radial-gradient(ellipse 100% 60% at 80% 110%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 80%),
-                        radial-gradient(ellipse 100% 60% at 80% -10%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 80%);
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
         }
 
-        .accent-gradient {
-            background: linear-gradient(to right, var(--accent-color), color-mix(in srgb, var(--accent-color), #a855f7 50%));
+        .fade-in-delay-1 {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out 0.1s forwards;
         }
 
-        .accent-bg {
-            background-color: var(--accent-color);
+        .fade-in-delay-2 {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out 0.2s forwards;
         }
 
-        .accent-bg:hover {
-            background-color: color-mix(in srgb, var(--accent-color), black 10%);
+        .fade-in-delay-3 {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out 0.3s forwards;
         }
 
-        .dark .accent-bg:hover {
-            background-color: color-mix(in srgb, var(--accent-color), white 10%);
+        /* Accent underline for titles */
+        .accent-underline {
+            position: relative;
+            display: inline-block;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        .accent-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 2px;
+            opacity: 0.8;
         }
 
-        .float-animation {
-            animation: float 6s ease-in-out infinite;
+        /* Accent button styles */
+        .accent-button {
+            background: var(--accent-color);
+            transition: all 0.2s ease;
         }
+
+        .accent-button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        ${additionalStyles}
     </style>
 </head>
-<body class="min-h-screen transition-colors dark:bg-black bg-white">
-    <div class="fixed inset-0 bg-gradient pointer-events-none"></div>
+<body class="min-h-screen dark:bg-[#191919] bg-white transition-colors duration-300">
 
-    <!-- Dark Mode Toggle -->
+    <!-- Theme Toggle - Minimalist -->
     <div class="fixed top-6 right-6 z-50">
-        <button id="theme-toggle" class="p-2.5 rounded-lg border dark:border-gray-800 border-gray-200 dark:bg-gray-900 bg-gray-50 dark:hover:bg-gray-800 hover:bg-gray-100 transition-all duration-200">
-            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 dark:text-gray-400 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+        <button id="theme-toggle"
+                class="p-2 rounded-md dark:text-gray-400 text-gray-600 dark:hover:text-gray-200 hover:text-gray-900 dark:hover:bg-gray-800 hover:bg-gray-100 transition-all duration-200"
+                aria-label="Toggle theme">
+            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
             </svg>
-            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 dark:text-gray-400 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
             </svg>
         </button>
@@ -78,7 +111,7 @@ export function renderBase({ title, accentColor, content, scripts = '' }) {
     ${content}
 
     <script>
-        // Dark mode toggle functionality
+        // Dark mode toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
