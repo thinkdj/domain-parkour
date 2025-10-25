@@ -26,7 +26,8 @@
     "salePrice": "30,000 USD",
     "contactEmail": "shout@think.dj",
     "accentColor": "#3b82f6",
-    "footerText": "Some footer text or disclaimer could go here"
+    "footerText": "Some footer text or disclaimer could go here",
+    "showCredit": false
   },
   {
     "name": "Coming Soon - Minimal",

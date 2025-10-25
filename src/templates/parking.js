@@ -111,7 +111,7 @@ function renderParkingContent(cfg) {
             </div>
 
             <!-- Footer -->
-            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : 'This premium domain is available for purchase')}
+            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : 'This premium domain is available for purchase', cfg.showCredit !== false)}
         </div>
     </div>`;
 }

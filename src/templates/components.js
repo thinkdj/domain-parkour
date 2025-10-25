@@ -48,18 +48,24 @@ export function renderSocialLinks(socialLinks) {
 }
 
 /**
- * Render footer component with text
+ * Render footer component with text and optional credit
  * @param {string} footerText - Footer text to display
+ * @param {boolean} showCredit - Whether to show "Powered by" credit line (default: true)
  * @returns {string} HTML for footer
  */
-export function renderFooter(footerText) {
+export function renderFooter(footerText, showCredit = true) {
   // If footerText is empty string, hide footer completely
   if (footerText === "") return "";
+
+  const creditLine = showCredit ? `
+      <p class="text-xs dark:text-gray-800 text-gray-300 mt-2" style="font-size: 10px;">
+        Powered by <a href="https://github.com/thinkdj/domain-parkour" target="_blank" rel="noopener noreferrer" class="hover:underline">Domain Parkour</a> on <a href="https://cloudflare.com" target="_blank" rel="noopener noreferrer" class="hover:underline">Cloudflare</a>
+      </p>` : "";
 
   return `
     <div class="text-center mt-20 fade-in-delay-3">
       <p class="text-xs dark:text-gray-700 text-gray-400">
         ${footerText}
-      </p>
+      </p>${creditLine}
     </div>`;
 }

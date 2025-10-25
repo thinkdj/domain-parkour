@@ -237,6 +237,8 @@ async function getConfig(hostname, env, request = null) {
       env[`${envPrefix}_FOOTER_TEXT`] ||
       env.FOOTER_TEXT ||
       domainConfig.footerText,
+    // Show credit (defaults to true if not specified)
+    showCredit: domainConfig.showCredit !== undefined ? domainConfig.showCredit : true,
   };
 
   // Return config along with allThemes if in dev mode

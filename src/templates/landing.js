@@ -82,7 +82,7 @@ function renderLandingContent(cfg) {
             </div>
 
             <!-- Footer -->
-            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle)}
+            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle, cfg.showCredit !== false)}
         </div>
     </div>`;
 }

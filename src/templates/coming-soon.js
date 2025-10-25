@@ -156,7 +156,7 @@ function renderComingSoonContent(cfg) {
             </div>
 
             <!-- Footer -->
-            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming"))}
+            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : (cfg.launchDate ? "Stay tuned for our launch" : "Something exciting is coming"), cfg.showCredit !== false)}
         </div>
     </div>`;
 }
