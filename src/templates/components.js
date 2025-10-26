@@ -57,15 +57,18 @@ export function renderFooter(footerText, showCredit = true) {
   // If footerText is empty string, hide footer completely
   if (footerText === "") return "";
 
-  const creditLine = showCredit ? `
-      <p class="text-xs dark:text-gray-800 text-gray-300 mt-2" style="font-size: 10px;">
-        Powered by <a href="https://github.com/thinkdj/domain-parkour" target="_blank" rel="noopener noreferrer" class="hover:underline">Domain Parkour</a> on <a href="https://cloudflare.com" target="_blank" rel="noopener noreferrer" class="hover:underline">Cloudflare</a>
-      </p>` : "";
+  const creditLine = showCredit
+    ? `
+      <p class="text-xs mt-2">
+        Built with <a href="https://github.com/thinkdj/domain-parkour" target="_blank" rel="noopener noreferrer" class="hover:underline">Domain Parkour</a> and hosted on <a href="https://cloudflare.com" target="_blank" rel="noopener noreferrer" class="hover:underline">Cloudflare</a>.
+      </p>`
+    : "";
 
   return `
-    <div class="text-center mt-20 fade-in-delay-3">
-      <p class="text-xs dark:text-gray-700 text-gray-400">
+    <div class="text-center mt-20 fade-in-delay-3 dark:text-gray-700 text-gray-400">
+      <p class="text-xs">
         ${footerText}
-      </p>${creditLine}
+      </p>
+      ${creditLine}
     </div>`;
 }
