@@ -122,5 +122,13 @@
       "twitter": "https://twitter.com/thinkdj",
       "linkedin": "https://linkedin.com/in/thinkdj"
     }
+  },
+  {
+    "name": "Defaults",
+    "mode": "",
+    "domainTitle": "",
+    "title": "",
+    "description": "",
+    "accentColor": ""
   }
 ]

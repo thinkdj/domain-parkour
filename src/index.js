@@ -199,7 +199,7 @@ async function getConfig(hostname, env, request = null) {
     domain: domain,
     domainTitle: domainTitle,
     mode:
-      env[`${envPrefix}_MODE`] || env.MODE || domainConfig.mode || "parking",
+      env[`${envPrefix}_MODE`] || env.MODE || domainConfig.mode || "landing",
     title: env[`${envPrefix}_TITLE`] || env.TITLE || domainConfig.title,
     description:
       env[`${envPrefix}_DESCRIPTION`] ||
@@ -238,7 +238,8 @@ async function getConfig(hostname, env, request = null) {
       env.FOOTER_TEXT ||
       domainConfig.footerText,
     // Show credit (defaults to true if not specified)
-    showCredit: domainConfig.showCredit !== undefined ? domainConfig.showCredit : true,
+    showCredit:
+      domainConfig.showCredit !== undefined ? domainConfig.showCredit : true,
   };
 
   // Return config along with allThemes if in dev mode
