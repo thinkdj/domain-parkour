@@ -124,6 +124,25 @@
     }
   },
   {
+    "name": "Profile - Personal",
+    "mode": "profile",
+    "domainTitle": "ada.dev",
+    "role": "Designer & Engineer",
+    "bio": "Building delightful tools and writing about the craft. Currently exploring the edges of computation.",
+    "avatarUrl": "",
+    "accentColor": "#6366f1",
+    "links": [
+      { "title": "Portfolio", "url": "https://example.com" },
+      { "title": "Writing", "url": "https://example.com/blog" },
+      { "title": "Get in touch", "url": "mailto:hi@example.com" }
+    ],
+    "socialLinks": {
+      "github": "https://github.com/thinkdj",
+      "twitter": "https://twitter.com/thinkdj",
+      "linkedin": "https://linkedin.com/in/thinkdj"
+    }
+  },
+  {
     "name": "Defaults",
     "mode": "",
     "domainTitle": "",

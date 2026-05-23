@@ -1,162 +1,68 @@
-import { renderBase } from './base.js';
-import { renderSocialLinks, renderFooter } from './components.js';
+import { renderBase } from "./base.js";
+import { renderSocialLinks, renderFooter } from "./components.js";
 
-/**
- * Generate the links section with minimalist cards
- */
+const ARROW = `<i data-lucide="chevron-right" class="arrow" width="14" height="14" stroke-width="2"></i>`;
+
 function renderLinks(links) {
-  if (!links || links.length === 0) return '';
-
+  if (!links || !links.length) return "";
   return `
-    <div class="flex flex-col gap-2 mt-12 max-w-xl mx-auto">
+    <div class="flex flex-col gap-2 mt-8 sm:mt-10 max-w-md mx-auto fade-in-delay-1">
       ${links
         .map(
-          (link) => `
-      <a href="${link.url}" target="_blank" rel="noopener noreferrer"
-         class="link-card group relative flex items-center justify-between px-4 py-3 rounded-md dark:bg-transparent bg-transparent">
-        <span class="text-sm font-medium dark:text-gray-300 text-gray-700">${link.title}</span>
-        <svg class="arrow-icon w-3.5 h-3.5 dark:text-gray-600 text-gray-400 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-        </svg>
-      </a>
-      `
+          (l) => `
+        <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="dp-link">
+          <span class="label">${l.title}</span>
+          ${ARROW}
+        </a>`,
         )
         .join("")}
     </div>`;
 }
 
-/**
- * Generate the content for the landing page
- */
-function renderLandingContent(cfg) {
+function renderContent(cfg) {
   return `
-    <!-- Main Container -->
-    <div class="flex items-center justify-center min-h-screen px-6 py-20">
-        <div class="w-full max-w-2xl mx-auto">
+    <main class="flex items-center justify-center min-h-screen px-4 sm:px-6 py-16 sm:py-20">
+      <div class="w-full max-w-xl mx-auto text-center">
 
-            <!-- Header Section -->
-            <div class="text-center mb-16 fade-in">
-                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight dark:text-white text-gray-900 mb-4 accent-underline">
-                    ${cfg.domainTitle}
-                </h1>
+        <h1 class="fade-in" style="font-size: clamp(2rem, 5.5vw, 3rem); font-weight: 700; line-height: 1.1;">
+          <span class="accent-underline">${cfg.domainTitle}</span>
+        </h1>
 
-                ${
-                  cfg.title
-                    ? `
-                <p class="text-lg sm:text-xl dark:text-gray-400 text-gray-600 mt-6">
-                    ${cfg.title}
-                </p>
-                `
-                    : ""
-                }
+        ${
+          cfg.title
+            ? `<p class="mt-8 fade-in" style="font-size: 16px; color: var(--text);">${cfg.title}</p>`
+            : ""
+        }
 
-                ${
-                  cfg.subtitle
-                    ? `
-                <p class="text-base dark:text-gray-500 text-gray-500 mt-3 max-w-xl mx-auto">
-                    ${cfg.subtitle}
-                </p>
-                `
-                    : ""
-                }
+        ${
+          cfg.subtitle
+            ? `<p class="mt-3 max-w-md mx-auto fade-in-delay-1" style="font-size: 14px; line-height: 1.6;">${cfg.subtitle}</p>`
+            : ""
+        }
 
-                ${
-                  cfg.description
-                    ? `
-                <p class="text-sm dark:text-gray-600 text-gray-400 mt-3 max-w-lg mx-auto leading-relaxed">
-                    ${cfg.description}
-                </p>
-                `
-                    : ""
-                }
-            </div>
+        ${
+          cfg.description
+            ? `<p class="mt-3 max-w-md mx-auto fade-in-delay-1" style="font-size: 13px; color: var(--text-faint); line-height: 1.6;">${cfg.description}</p>`
+            : ""
+        }
 
-            <!-- Links Section -->
-            <div class="fade-in-delay-1">
-                ${renderLinks(cfg.links)}
-            </div>
+        ${renderLinks(cfg.links)}
 
-            <!-- Social Links -->
-            <div class="fade-in-delay-2">
-                ${renderSocialLinks(cfg.socialLinks)}
-            </div>
+        <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
 
-            <!-- Footer -->
-            ${renderFooter(cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle, cfg.showCredit !== false)}
-        </div>
-    </div>`;
+        ${renderFooter(
+          cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle,
+          cfg.showCredit !== false,
+        )}
+      </div>
+    </main>`;
 }
 
-/**
- * Landing page specific styles
- */
-const landingStyles = `
-    /* Subtle minimal link cards */
-    a.link-card {
-        transition: all 0.2s ease;
-        border: 1px solid transparent;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Subtle accent border on hover */
-    a.link-card::before {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: var(--accent-color);
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-
-    a.link-card:hover::before {
-        opacity: 0.5;
-    }
-
-    a.link-card:hover {
-        border-color: rgba(var(--accent-color-rgb), 0.3);
-        background: transparent !important;
-    }
-
-    .dark a.link-card:hover {
-        background: rgba(255, 255, 255, 0.02) !important;
-    }
-
-    /* Accent color for link arrow on hover */
-    a.link-card:hover .arrow-icon {
-        color: var(--accent-color);
-        transform: translateX(3px);
-    }
-
-    /* Smooth text color transition */
-    a.link-card span {
-        transition: color 0.2s ease;
-    }
-
-    a.link-card:hover span {
-        color: var(--accent-color);
-    }
-
-    .dark a.link-card:hover span {
-        color: var(--accent-color);
-    }
-`;
-
-/**
- * Generate the HTML for the landing page
- */
 export function generateLandingHTML(cfg, allThemes = null) {
-  const content = renderLandingContent(cfg);
-
   return renderBase({
     title: cfg.domainTitle,
     accentColor: cfg.accentColor,
-    content,
-    scripts: '',
-    additionalStyles: landingStyles,
-    allThemes
+    content: renderContent(cfg),
+    allThemes,
   });
 }

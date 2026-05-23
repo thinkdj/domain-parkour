@@ -1,239 +1,162 @@
 # Domain Parkour
 
-Ultra-minimal domain parking and coming soon pages for Cloudflare Workers.
+Ultra-minimal domain parking, coming-soon, and landing pages for Cloudflare Workers — with a built-in admin panel and live preview.
 
-**One deployment handles multiple domains.**
+**One worker serves every domain you own, with per-hostname configs stored in D1 and managed from a live-preview admin UI.**
 
 ![Screenshot of domain parkour](assets/ss-parkour.png)
 
 ## TL;DR
 
-**Dev:**
+```bash
+pnpm install
+npx wrangler login                  # if you haven't already
+pnpm setup                       # creates D1, patches wrangler.toml, writes .dev.vars
+pnpm dev                         # http://localhost:8787  +  /_admin_/  (admin / admin)
+```
 
-- `npm install` → `npm run dev` → Open `http://localhost:8787`
-- Theme switcher appears top-left to preview all examples
-- Edit `config.dev.local.example.json` to customize themes for local dev (or add your own)
+That's the dev loop. Deploy later with `pnpm setup --remote && pnpm deploy`.
 
-**Prod:**
+The admin panel:
 
-- Create KV namespace: `wrangler kv:namespace create "YOUR_NAMESPACE_NAME"`
-- Update `wrangler.toml` with KV namespace ID of the created namespace
-- Add domain config: `wrangler kv:key put --namespace-id=YOUR_ID "domain.com" '{"mode":"parking","title":"For Sale"}'` (or use Cloudflare Dashboard → Workers KV)
-- Deploy via: `npm run deploy`
-- Add domain mapping from Cloudflare Dashboard → Compute & AI → Workers & Pages → _Your Worker_ → Settings → Domains & Routes → _Add a Custom Domain_
+- lists every domain you've configured,
+- gives you a mode-aware editor (parking / coming-soon / landing),
+- renders a live iframe preview as you type,
+- saves with ⌘S, deletes with one click.
 
 ## Features
 
-- **Three modes**: `parking` (domain for sale), `coming-soon` (launch page), or `landing` (simple info page)
-- Multi-domain support from single deployment
-- Cloudflare Worker KV + env var overrides
-- Countdown timer, social links, feature grid (coming-soon mode)
-- Quick links and info display (landing mode)
+- **Four modes**: `parking` (domain for sale), `coming-soon` (launch page), `landing` (simple info page), `profile` (personal bio page)
+- **One deployment, many domains** — config resolved per request hostname
+- **D1-backed** — queryable, exportable, no per-key gymnastics
+- **Built-in admin** at `/_admin_/` with Basic Auth (worker secrets)
+- **Live preview** — debounced iframe re-render as you edit
+- **Preset gallery** — clone from any example in `config.dev.local.example.json`
+- **Catch-all** via a `_default` hostname row
 - Responsive design with auto dark/light mode
 
 ## Quick Setup
 
-```bash
-npm install && npx wrangler login
-
-# Create KV namespace and update wrangler.toml with the ID
-wrangler kv:namespace create "domain-parkour-kv"
-
-# Add domain config
-wrangler kv:key put --namespace-id=YOUR_KV_ID "yourdomain.com" '{"mode":"parking","title":"Premium Domain For Sale","salePrice":"25,000 USD"}'
-
-# Deploy
-npm run deploy
-```
-
-## Configuration
-
-### Parking Mode (Domain for Sale)
+### 1. One-time
 
 ```bash
-wrangler kv:key put --namespace-id=YOUR_KV_ID "yourdomain.com" '{
-  "mode": "parking",
-  "domainTitle": "yourdomain.com",
-  "title": "Premium Domain For Sale",
-  "description": "A memorable and brandable domain",
-  "domainAgeYears": "15+",
-  "domainRegistration": "Registered in 2010",
-  "salePrice": "50,000 USD",
-  "contactEmail": "contact@yourdomain.com",
-  "accentColor": "#3b82f6",
-  "footerText": "This premium domain is available for purchase",
-  "socialLinks": {
-    "twitter": "https://twitter.com/handle",
-    "linkedin": "https://linkedin.com/in/handle",
-    "github": "https://github.com/handle"
-  },
-  "showCredit": false
-}'
+pnpm install
+npx wrangler login
+pnpm setup
 ```
 
-**Parameters:**
+`npm run setup` will:
 
-- `mode` - "parking"
-- `domainTitle` - Override domain name display (optional)
-- `title` - Main headline
-- `description` - Subtitle
-- `domainAgeYears` - Display age (e.g., "15+", "10+") - optional
-- `domainRegistration` - Registration text (e.g., "Registered in 2010") - optional
-- `salePrice` - Price text
-- `contactEmail` - Contact button
-- `accentColor` - Brand color (hex)
-- `footerText` - Footer text or disclaimer (optional)
-- `socialLinks` - Object: `{"twitter": "url", "linkedin": "url", "github": "url"}` (optional)
-- `showCredit` - Show "Powered by Domain Parkour" credit line (default: true, optional)
+1. Verify you're logged in to Cloudflare.
+2. Create a D1 database called `domain-parkour-db` (or reuse an existing one).
+3. Write the resulting `database_id` into `wrangler.toml`.
+4. Apply migrations locally.
+5. Write `.dev.vars` with default `admin` / `admin` credentials for local dev.
 
-### Coming Soon Mode (Launch Page)
-
-**Minimal:**
+### 2. Local dev
 
 ```bash
-wrangler kv:key put --namespace-id=YOUR_KV_ID "launching.com" '{
-  "mode": "coming-soon",
-  "title": "Coming Soon",
-  "accentColor": "#10b981"
-}'
+pnpm dev
 ```
 
-**Full featured:**
+- Public preview: <http://localhost:8787/> — shows the local theme gallery (with switcher) by default.
+- Admin panel: <http://localhost:8787/_admin_/> — log in with `admin` / `admin`.
+
+### 3. Production
+
+Before deploying for the first time:
 
 ```bash
-wrangler kv:key put --namespace-id=YOUR_KV_ID "newproject.com" '{
-  "mode": "coming-soon",
-  "domainTitle": "My Project",
-  "title": "We'\''re building something amazing",
-  "tagline": "The Future of Innovation",
-  "description": "Stay tuned for updates",
-  "launchDate": "2025-12-31T00:00:00",
-  "accentColor": "#a855f7",
-  "features": [
-    {"title": "Fast", "description": "Lightning speed"},
-    {"title": "Secure", "description": "Bank-level security"}
-  ],
-  "socialLinks": {
-    "twitter": "https://twitter.com/handle",
-    "github": "https://github.com/repo"
-  }
-}'
+wrangler secret put ADMIN_USER          # whatever username
+wrangler secret put ADMIN_PASSWORD      # something strong
+pnpm setup --remote               # apply migrations on the remote D1
+pnpm deploy
 ```
 
-**Parameters:**
+Then map domains to the worker from the Cloudflare dashboard:
+**Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain**.
 
-- `mode` - "coming-soon"
-- `domainTitle` - Override domain name display (optional)
-- `title` - Main headline
-- `tagline` - Large hero text (optional)
-- `description` - Subtitle
-- `launchDate` - ISO 8601 date (enables countdown timer, optional)
-- `accentColor` - Brand color (hex)
-- `footerText` - Footer text or disclaimer (optional)
-- `features` - Array: `[{"title": "...", "description": "..."}]` (optional)
-- `socialLinks` - Object: `{"twitter": "url", "github": "url", ...}` (optional)
+Open `https://<your-mapped-domain>/_admin_/` and start adding sites.
 
-**Color suggestions:** `#3b82f6` (blue), `#a855f7` (purple), `#10b981` (green), `#ef4444` (red), `#f97316` (orange), `#ec4899` (pink)
+## Admin panel
 
-### Landing Mode (Simple Info Page)
+Once running, the admin lets you:
 
-**Use case:** Domains used for email, APIs, or backend services that need a simple front page.
+- Pick an existing domain from the dropdown, or start a new one with `+ New` (or `Ctrl/⌘+N`).
+- Switch modes with the tab pills — the form re-shapes itself to show only relevant fields.
+- See your changes rendered live in the right pane (debounced ~220ms).
+- Save with the Save button or `Ctrl/⌘+S`.
+- Open the live, deployed page in a new tab with `↗ Open`.
+- Browse preset configurations from `config.dev.local.example.json` under the "Presets" section.
 
-```bash
-wrangler kv:key put --namespace-id=YOUR_KV_ID "api.example.com" '{
-  "mode": "landing",
-  "domainTitle": "api.example.com",
-  "title": "API & Email Services",
-  "subtitle": "This domain is used for backend services",
-  "description": "For support, visit our main website",
-  "accentColor": "#06b6d4",
-  "footerText": "© 2025 example.com",
-  "links": [
-    {"title": "Main Website", "url": "https://example.com"},
-    {"title": "Documentation", "url": "https://docs.example.com"},
-    {"title": "Support", "url": "https://support.example.com"}
-  ],
-  "socialLinks": {
-    "twitter": "https://twitter.com/example",
-    "github": "https://github.com/example",
-    "linkedin": "https://linkedin.com/company/example"
-  }
-}'
+### Auth
+
+Admin uses HTTP Basic Auth backed by worker secrets:
+
+| Setting           | Local dev (`.dev.vars`) | Production (`wrangler secret`) |
+| ----------------- | ----------------------- | ------------------------------ |
+| `ADMIN_USER`      | `admin` (default)       | required                       |
+| `ADMIN_PASSWORD`  | `admin` (default)       | required                       |
+
+In production with **either secret missing**, the admin panel responds `503 Disabled` instead of falling back to defaults. In local dev, the defaults remain so you can iterate fast — the UI shows a yellow banner reminding you to set real secrets before deploying.
+
+## Catch-all (`_default`)
+
+Configs are looked up by exact hostname. If a request comes in for a hostname that has no row, the worker checks for a row named `_default` and uses that. Create one in the admin to provide a sane fallback for un-configured domains.
+
+## Schema
+
+```sql
+CREATE TABLE domains (
+  hostname    TEXT PRIMARY KEY,
+  mode        TEXT NOT NULL DEFAULT 'landing',
+  config      TEXT NOT NULL DEFAULT '{}',   -- JSON blob
+  created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at  INTEGER NOT NULL DEFAULT (unixepoch())
+);
 ```
 
-**Parameters:**
+The `config` JSON blob holds all mode-specific fields. The denormalised `mode` column exists so the admin can list sites without parsing every blob.
 
-- `mode` - "landing"
-- `domainTitle` - Domain or brand name
-- `title` - Main headline
-- `subtitle` - Secondary headline (optional)
-- `description` - Additional info (optional)
-- `accentColor` - Brand color (hex)
-- `footerText` - Footer text (optional)
-- `links` - Array: `[{"title": "...", "url": "..."}]` (optional)
-- `socialLinks` - Object: `{"twitter": "url", "github": "url", "linkedin": "url"}` (optional)
+## Config fields by mode
 
-### Environment Variables (Optional)
+### parking
 
-For local dev, create `.dev.vars`:
+`domainTitle`, `title`, `description`, `salePrice`, `contactEmail`, `domainAgeYears`, `domainRegistration`, `accentColor`, `footerText`, `showCredit`, `socialLinks`
 
-```bash
-# Option 1: JSON config
-127_0_0_1_CONFIG='{"mode":"coming-soon","domainTitle":"Local Dev","title":"Testing"}'
+### coming-soon
 
-# Option 2: Individual vars
-LOCALHOST_MODE="coming-soon"
-LOCALHOST_DOMAIN_TITLE="My Project"
-LOCALHOST_TITLE="Coming Soon"
-```
+`domainTitle`, `title`, `description`, `tagline`, `launchDate` (ISO 8601), `accentColor`, `features: [{title, description}]`, `footerText`, `showCredit`, `socialLinks`
 
-**Hostname transformation:** `example.com` → `EXAMPLE_COM_`, `cdn-farm.io` → `CDN_FARM_IO_`
+### landing
 
-## Development
+`domainTitle`, `title`, `subtitle`, `description`, `accentColor`, `links: [{title, url}]`, `footerText`, `showCredit`, `socialLinks`
 
-```bash
-npm run dev  # Starts on localhost:8787
-```
+### profile
 
-**Local config:** The project uses `config.dev.local.example.json` which contains multiple theme examples. When running locally, a theme switcher dropdown appears in the top-left corner allowing you to preview all available themes instantly.
+`domainTitle`, `name`, `role`, `bio`, `avatarUrl`, `accentColor`, `links: [{title, url}]`, `footerText`, `showCredit`, `socialLinks` — falls back to `domainTitle` when `name` is omitted; avatar shows initials when `avatarUrl` is empty.
 
-**Theme Switcher Features:**
+Color suggestions: `#3b82f6` (blue), `#a855f7` (purple), `#10b981` (green), `#ef4444` (red), `#f97316` (orange), `#ec4899` (pink).
 
-- Switch between parking, coming-soon, and landing page examples
-- Multiple pre-configured examples for each mode
-- Instant preview without editing config files
-- Theme selection persists in localStorage
+## Config priority
 
-You can customize `config.dev.local.example.json` to add your own theme examples.
+1. **Local dev theme gallery** — `config.dev.local.example.json` is used for `localhost`/`workers.dev` requests so you can preview every example by appending `?themeIndex=N`.
+2. **D1** — exact hostname row, then `_default`.
+3. **Hardcoded fallback** — bare "Welcome" page with the default accent.
 
-## Config Priority
+## Scripts
 
-1. **Local Dev** - `config.dev.local.example.json` (localhost only, with theme switcher)
-2. **Cloudflare KV** - `DOMAIN_CONFIGS` namespace (exact hostname match)
-3. **KV Default** - `_default` key
-4. **Environment Variables** - Domain-specific or global
-5. **Hardcoded Defaults** - Safe fallback
-
-## Commands
-
-```bash
-# List domains
-wrangler kv:key list --namespace-id=YOUR_KV_ID
-
-# View config
-wrangler kv:key get --namespace-id=YOUR_KV_ID "example.com"
-
-# Update config
-wrangler kv:key put --namespace-id=YOUR_KV_ID "example.com" '{...}'
-
-# Delete config
-wrangler kv:key delete --namespace-id=YOUR_KV_ID "example.com"
-
-# Live logs
-wrangler tail
-```
+| Command                       | What                                                                |
+| ----------------------------- | ------------------------------------------------------------------- |
+| `pnpm setup`               | Local setup — creates D1, patches `wrangler.toml`, writes `.dev.vars`. |
+| `pnpm setup --remote`   | Same + applies migrations to the remote D1.                         |
+| `pnpm dev`                 | `wrangler dev` on `http://localhost:8787`.                          |
+| `pnpm deploy`              | `wrangler deploy`.                                                  |
+| `pnpm db:migrate:local`    | Apply migrations to local D1 only.                                  |
+| `pnpm db:migrate:remote`   | Apply migrations to remote D1 only.                                 |
+| `pnpm db:console`          | List all configured domains in the local DB.                        |
+| `pnpm tail`                | `wrangler tail` for live logs in production.                        |
 
 ## License
 
 MIT
-

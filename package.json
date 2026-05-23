@@ -1,11 +1,16 @@
 {
   "name": "domain-parkour",
   "version": "1.0.0",
-  "description": "Minimalistic domain parking and coming soon pages built for Cloudflare Workers",
+  "description": "Minimalistic domain parking, coming soon and landing pages for Cloudflare Workers, with a built-in admin panel backed by D1.",
   "main": "src/index.js",
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply domain-parkour-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply domain-parkour-db --remote",
+    "db:console": "wrangler d1 execute domain-parkour-db --local --command \"SELECT hostname, mode, datetime(updated_at, 'unixepoch') AS updated FROM domains ORDER BY updated_at DESC\"",
+    "tail": "wrangler tail"
   },
   "keywords": [
     "domain",
@@ -13,10 +18,13 @@
     "coming-soon",
     "landing-page",
     "cloudflare",
-    "workers"
+    "workers",
+    "d1",
+    "admin"
   ],
   "author": "",
   "license": "MIT",
+  "packageManager": "pnpm@10.15.1",
   "devDependencies": {
     "wrangler": "^4.45.0"
   }
