@@ -8,16 +8,18 @@
  *   PUT    /_admin_/api/domains/:hostname  → upsert
  *   DELETE /_admin_/api/domains/:hostname  → remove
  *   POST   /_admin_/preview                → render arbitrary unsaved config
+ *   POST   /_admin_/api/uploads/profile-image → validate and store in R2
  */
 
 import { requireAdmin, adminCredentials } from "./auth.js";
 import { renderAdminUI } from "./ui.js";
 import { listDomains, getDomain, upsertDomain, deleteDomain } from "../db.js";
-import { previewConfig } from "../config.js";
+import { DEMO_PRESETS, previewConfig } from "../config.js";
 import { generateParkingHTML } from "../templates/parking.js";
 import { generateComingSoonHTML } from "../templates/coming-soon.js";
 import { generateLandingHTML } from "../templates/landing.js";
 import { generateProfileHTML } from "../templates/profile.js";
+import { deleteManagedAvatar, storeProfileImage } from "../assets.js";
 
 const PREFIX = "/_admin_";
 
@@ -43,25 +45,22 @@ function renderConfigToHTML(cfg) {
   return generateLandingHTML(cfg);
 }
 
-async function loadPresets() {
-  try {
-    const mod = await import("../../config.dev.local.example.json");
-    const themes = mod?.default;
-    if (Array.isArray(themes)) return themes;
-  } catch {
-    // no-op
-  }
-  return [];
-}
-
 function ensureDB(env) {
   if (!env.DB) {
     return new Response(
-      "D1 binding `DB` is not configured. Run `npm run setup` and update wrangler.toml.",
+      "D1 binding `DB` is not configured. Run `pnpm setup` and update wrangler.toml.",
       { status: 503, headers: { "content-type": "text/plain;charset=UTF-8" } },
     );
   }
   return null;
+}
+
+async function cleanupManagedAvatar(env, config) {
+  try {
+    await deleteManagedAvatar(env.ASSETS, config);
+  } catch (error) {
+    console.error(`R2 avatar cleanup failed: ${error.message}`);
+  }
 }
 
 /**
@@ -79,10 +78,9 @@ export async function handleAdmin(request, env) {
   // GET /_admin_/  → SPA
   if ((path === "/" || path === "") && request.method === "GET") {
     const creds = adminCredentials(env, url.hostname);
-    const presets = await loadPresets();
     const html = renderAdminUI({
       isDefaultCreds: creds?.isDefault === true,
-      presets,
+      presets: DEMO_PRESETS,
     });
     return new Response(html, {
       headers: {
@@ -110,6 +108,24 @@ export async function handleAdmin(request, env) {
         "cache-control": "no-store",
       },
     });
+  }
+
+  // POST /_admin_/api/uploads/profile-image -> store a profile image in R2
+  if (path === "/api/uploads/profile-image" && request.method === "POST") {
+    if (!env.ASSETS) {
+      return json({ error: "R2 binding `ASSETS` is not configured." }, { status: 503 });
+    }
+    try {
+      const form = await request.formData();
+      const result = await storeProfileImage(
+        env.ASSETS,
+        form.get("image"),
+        form.get("hostname"),
+      );
+      return json(result, { status: 201 });
+    } catch (error) {
+      return json({ error: error.message || "Image upload failed." }, { status: 400 });
+    }
   }
 
   // Beyond this point we need D1
@@ -150,11 +166,17 @@ export async function handleAdmin(request, env) {
       if (!["parking", "coming-soon", "landing", "profile"].includes(mode)) {
         return new Response("Invalid mode", { status: 400 });
       }
+      const previous = await getDomain(env.DB, hostname);
       const record = await upsertDomain(env.DB, hostname, mode, config);
+      if (previous?.config?.avatarObjectKey !== config.avatarObjectKey) {
+        await cleanupManagedAvatar(env, previous?.config);
+      }
       return json(record);
     }
     if (request.method === "DELETE") {
+      const previous = await getDomain(env.DB, hostname);
       await deleteDomain(env.DB, hostname);
+      await cleanupManagedAvatar(env, previous?.config);
       return new Response(null, { status: 204 });
     }
     return methodNotAllowed();

@@ -1,87 +1,98 @@
 import { renderBase } from "./base.js";
-import { renderSocialLinks, renderFooter } from "./components.js";
+import {
+  EXTERNAL_LINK_ICON,
+  renderFooter,
+  renderMasthead,
+  renderSocialLinks,
+} from "./components.js";
 
 function renderStats(cfg) {
   const stats = [];
-  if (cfg.domainAgeYears) stats.push({ v: cfg.domainAgeYears, l: "Years Old" });
-  if (cfg.domainExtension)
-    stats.push({ v: cfg.domainExtension, l: "Extension" });
-  stats.push({ v: "✓", l: "SEO Ready" });
-  if (!stats.length) return "";
+  if (cfg.domainAgeYears) stats.push({ value: cfg.domainAgeYears, label: cfg.domainAgeLabel });
+  if (cfg.domainExtension) stats.push({ value: cfg.domainExtension, label: cfg.extensionLabel });
+  if (cfg.trustValue || cfg.trustLabel) {
+    stats.push({ value: cfg.trustValue, label: cfg.trustLabel });
+  }
+
   return `
-    <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mt-10 fade-in-delay-1">
+    <div class="dp-stats" aria-label="Domain details">
       ${stats
         .map(
-          (s) => `
-        <div class="dp-stat" style="min-width: 96px;">
-          <div class="v">${s.v}</div>
-          <div class="l">${s.l}</div>
+          ({ value, label }) => `
+        <div class="dp-stat">
+          <div class="v">${value}</div>
+          <div class="l">${label}</div>
         </div>`,
         )
         .join("")}
     </div>`;
 }
 
-function renderParkingContent(cfg) {
-  const mailIcon = `<i data-lucide="mail" width="15" height="15" stroke-width="2"></i>`;
+function renderOfferPanel(cfg) {
+  const hasPrice = Boolean(cfg.salePrice);
+  const hasEmail = Boolean(cfg.contactEmail);
+  const panelLabel = hasPrice ? cfg.priceLabel : cfg.inquiryLabel;
+  const panelCopy = hasEmail ? cfg.contactCopy : cfg.availabilityCopy;
 
   return `
-    <main class="flex items-center justify-center min-h-screen px-4 sm:px-6 py-16 sm:py-20">
-      <div class="w-full max-w-2xl mx-auto text-center">
+    <aside class="dp-panel fade-in-delay-2" aria-label="Purchase inquiry">
+      ${panelLabel ? `<div class="dp-panel-label">${panelLabel}</div>` : ""}
+      ${
+        hasPrice
+          ? `<div class="dp-price">${cfg.salePrice}</div>`
+          : cfg.noPriceTitle
+            ? `<h2 class="dp-heading" style="margin-top: 10px;">${cfg.noPriceTitle}</h2>`
+            : ""
+      }
+      ${panelCopy ? `<p class="dp-copy">${panelCopy}</p>` : ""}
+      ${
+        hasEmail && cfg.contactButtonText
+          ? `<a id="contact-link" href="#" class="dp-button dp-button-block" style="margin-top: 24px;">
+               <span>${cfg.contactButtonText}</span>
+               ${EXTERNAL_LINK_ICON}
+             </a>`
+          : ""
+      }
+      ${renderStats(cfg)}
+      ${renderSocialLinks(cfg.socialLinks)}
+    </aside>`;
+}
 
-        <div class="fade-in">
-          <span class="dp-eyebrow"><span class="dot"></span>For sale</span>
+function renderParkingContent(cfg) {
+  return `
+    <main class="dp-page">
+      <div class="dp-wrap">
+        ${renderMasthead(cfg.domainTitle, cfg.statusLabel)}
+
+        <div class="dp-grid">
+          <section>
+            ${
+              cfg.eyebrowText
+                ? `<div class="dp-eyebrow fade-in"><span class="dot" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
+                : ""
+            }
+            <h1 class="dp-title fade-in-delay-1">${cfg.domainTitle}</h1>
+            ${
+              cfg.title
+                ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 30px;">${cfg.title}</h2>`
+                : ""
+            }
+            ${
+              cfg.description
+                ? `<p class="dp-lede fade-in-delay-1">${cfg.description}</p>`
+                : ""
+            }
+            ${
+              cfg.domainRegistration
+                ? `<p class="dp-note fade-in-delay-2">${cfg.domainRegistration}</p>`
+                : ""
+            }
+          </section>
+
+          ${renderOfferPanel(cfg)}
         </div>
 
-        <h1 class="mt-8 fade-in" style="font-size: clamp(2.25rem, 6vw, 3.5rem); font-weight: 700; line-height: 1.1;">
-          <span class="accent-underline">${cfg.domainTitle}</span>
-        </h1>
-
-        ${
-          cfg.domainRegistration
-            ? `<p class="mt-6 fade-in" style="font-size: 12px; color: var(--text-faint);">${cfg.domainRegistration}</p>`
-            : ""
-        }
-
-        ${renderStats(cfg)}
-
-        <hr class="dp-rule" />
-
-        <h2 class="fade-in-delay-1" style="font-size: 18px; font-weight: 600;">${cfg.title || ""}</h2>
-
-        ${
-          cfg.description
-            ? `<p class="mt-3 fade-in-delay-1 max-w-xl mx-auto" style="font-size: 14px; line-height: 1.6;">${cfg.description}</p>`
-            : ""
-        }
-
-        ${
-          cfg.salePrice
-            ? `<p class="mt-6 fade-in-delay-2" style="font-size: 15px;">
-                 Available for <span class="dp-accent">${cfg.salePrice}</span>
-               </p>`
-            : ""
-        }
-
-        ${
-          cfg.contactEmail
-            ? `<div class="mt-8 fade-in-delay-2">
-                 <a id="contact-link" href="#" class="dp-button">
-                   <span>Get in touch</span>
-                   ${mailIcon}
-                 </a>
-               </div>`
-            : ""
-        }
-
-        <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
-
-        ${renderFooter(
-          cfg.footerText !== undefined
-            ? cfg.footerText
-            : "This premium domain is available for purchase",
-          cfg.showCredit !== false,
-        )}
+        ${renderFooter(cfg.footerText, cfg.showCredit)}
       </div>
     </main>`;
 }
@@ -90,17 +101,17 @@ function renderParkingScripts(cfg) {
   if (!cfg.contactEmail) return "";
   return `
     (function () {
-      const u = '${cfg.contactEmail.split("@")[0]}';
-      const d = '${cfg.contactEmail.split("@")[1]}';
       const link = document.getElementById('contact-link');
-      if (link) link.href = 'mailto:' + u + '@' + d;
+      if (link) link.href = 'mailto:' + ${JSON.stringify(cfg.contactEmail)};
     })();
   `;
 }
 
 export function generateParkingHTML(cfg, allThemes = null) {
   return renderBase({
-    title: `${cfg.domainTitle} — ${cfg.title || "For sale"}`,
+    title: cfg.pageTitleSuffix
+      ? `${cfg.domainTitle} - ${cfg.pageTitleSuffix}`
+      : cfg.domainTitle,
     accentColor: cfg.accentColor,
     content: renderParkingContent(cfg),
     scripts: renderParkingScripts(cfg),

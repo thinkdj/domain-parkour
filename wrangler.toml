@@ -5,7 +5,7 @@ compatibility_date = "2024-01-01"
 # ──────────────────────────────────────────────────────────────────────────────
 # D1 database — stores per-hostname configs, edited via /_admin_/.
 # Setup:
-#   npm run setup          # creates DB, writes the id below, applies migrations
+#   pnpm setup             # creates DB, writes the id below, applies migrations
 # Or manually:
 #   wrangler d1 create domain-parkour-db
 #   wrangler d1 migrations apply domain-parkour-db --local
@@ -16,6 +16,11 @@ binding = "DB"
 database_name = "domain-parkour-db"
 database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 migrations_dir = "migrations"
+
+# R2 object storage - profile images now, reusable for future page assets.
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "domain-parkour-assets"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Routes — uncomment to map domains to this worker. Add a row per hostname.
@@ -29,5 +34,5 @@ migrations_dir = "migrations"
 # Admin credentials — set as SECRETS, not vars:
 #   wrangler secret put ADMIN_USER
 #   wrangler secret put ADMIN_PASSWORD
-# For local dev, put them in .dev.vars (already created by `npm run setup`).
+# For local dev, put them in .dev.vars (created by `pnpm setup` or `pnpm dev:local`).
 # ──────────────────────────────────────────────────────────────────────────────

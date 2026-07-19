@@ -2,12 +2,17 @@
  * Resolve the rendered config for a hostname.
  *
  * Priority:
- *   1. Local dev themes (config.dev.local.example.json) — only on localhost
+ *   1. Local demo presets from defaults.json - only on localhost
  *   2. D1 — exact hostname row, then `_default` row
- *   3. Hardcoded fallback (safe public defaults)
+ *   3. Bundled fallback from defaults.json
  */
 
-import { getDomain, getDomainOrDefault } from "./db.js";
+import { getDomainOrDefault } from "./db.js";
+import defaults from "../defaults.json" with { type: "json" };
+
+export const FALLBACK_DEFAULT = defaults.fallback;
+export const MODE_DEFAULTS = defaults.modes;
+export const DEMO_PRESETS = defaults.presets;
 
 const LOCAL_HOSTS = new Set([
   "localhost",
@@ -19,27 +24,12 @@ function isLocalHost(hostname) {
   return LOCAL_HOSTS.has(hostname) || hostname.endsWith(".workers.dev");
 }
 
-async function loadLocalThemes() {
-  try {
-    const mod = await import("../config.dev.local.example.json");
-    const themes = mod?.default;
-    if (Array.isArray(themes) && themes.length) return themes;
-    if (themes && typeof themes === "object") return [themes];
-  } catch {
-    // optional
+function applyModeDefaults(cfg) {
+  const defaults = MODE_DEFAULTS[cfg.mode] || MODE_DEFAULTS.landing;
+  for (const [key, value] of Object.entries(defaults)) {
+    if (cfg[key] === undefined) cfg[key] = value;
   }
-  return null;
 }
-
-const HARDCODED_DEFAULT = {
-  mode: "landing",
-  title: "Welcome",
-  description: "Your gateway to something amazing.",
-  accentColor: "#3b82f6",
-  features: [],
-  socialLinks: {},
-  links: [],
-};
 
 function withDerived(hostname, raw) {
   const cfg = { domain: hostname, ...raw };
@@ -47,7 +37,7 @@ function withDerived(hostname, raw) {
   cfg.domainTitle = domainTitle;
 
   const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(domainTitle);
-  if (!cfg.domainExtension && !isIp && domainTitle.includes(".")) {
+  if (cfg.domainExtension === undefined && !isIp && domainTitle.includes(".")) {
     cfg.domainExtension = `.${domainTitle.split(".").pop()}`;
   }
 
@@ -61,11 +51,12 @@ function withDerived(hostname, raw) {
   }
 
   cfg.mode = cfg.mode || "landing";
-  cfg.accentColor = cfg.accentColor || HARDCODED_DEFAULT.accentColor;
+  cfg.accentColor = cfg.accentColor || FALLBACK_DEFAULT.accentColor;
   cfg.features = cfg.features || [];
   cfg.socialLinks = cfg.socialLinks || {};
   cfg.links = cfg.links || [];
   cfg.showCredit = cfg.showCredit !== false;
+  applyModeDefaults(cfg);
   return cfg;
 }
 
@@ -77,7 +68,7 @@ function withDerived(hostname, raw) {
 export async function resolveConfig(hostname, env, request) {
   // 1. Local dev theme gallery (only when no admin/preview override is set)
   if (isLocalHost(hostname)) {
-    const themes = await loadLocalThemes();
+    const themes = DEMO_PRESETS;
     if (themes) {
       let idx = 0;
       if (request) {
@@ -107,8 +98,8 @@ export async function resolveConfig(hostname, env, request) {
     }
   }
 
-  // 3. Hardcoded fallback
-  return { config: withDerived(hostname, HARDCODED_DEFAULT) };
+  // 3. Bundled fallback from defaults.json
+  return { config: withDerived(hostname, FALLBACK_DEFAULT) };
 }
 
 /**
@@ -117,16 +108,4 @@ export async function resolveConfig(hostname, env, request) {
  */
 export function previewConfig(hostname, raw) {
   return withDerived(hostname, raw || {});
-}
-
-/**
- * Load a stored config without applying the dev-theme override. Used by the
- * admin panel's "open in preview iframe" flow.
- */
-export async function loadStoredConfig(hostname, env) {
-  if (env.DB) {
-    const record = await getDomain(env.DB, hostname);
-    if (record) return withDerived(hostname, { ...record.config, mode: record.mode });
-  }
-  return withDerived(hostname, HARDCODED_DEFAULT);
 }

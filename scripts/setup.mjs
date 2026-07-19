@@ -5,23 +5,26 @@
  * What it does:
  *   1. Ensures you're logged in to Cloudflare (`wrangler whoami`).
  *   2. Creates a D1 database named `domain-parkour-db` (skipped if it exists).
- *   3. Writes the database_id into wrangler.toml.
- *   4. Applies migrations locally (always) and remotely (with --remote flag).
- *   5. Writes a starter .dev.vars with admin/admin credentials.
+ *   3. Creates an R2 bucket named `domain-parkour-assets` (skipped if it exists).
+ *   4. Writes the database_id into wrangler.toml.
+ *   5. Applies migrations locally (always) and remotely (with --remote flag).
+ *   6. Writes a starter .dev.vars with admin/admin credentials.
  *
  * Usage:
- *   pnpm setup           # local only
- *   pnpm setup --remote  # also apply migrations to the remote DB
+ *   pnpm setup           # provision D1/R2; apply D1 migrations locally
+ *   pnpm setup --remote  # also apply D1 migrations remotely
  */
 
 import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(new URL("..", import.meta.url).pathname);
+const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const WRANGLER_TOML = resolve(ROOT, "wrangler.toml");
 const DEV_VARS = resolve(ROOT, ".dev.vars");
 const DB_NAME = "domain-parkour-db";
+const ASSET_BUCKET_NAME = "domain-parkour-assets";
 
 const args = process.argv.slice(2);
 const APPLY_REMOTE = args.includes("--remote");
@@ -131,13 +134,29 @@ if (!databaseId) {
   ok(`Created database (${databaseId})`);
 }
 
-// ── 3. wrangler.toml ────────────────────────────────────────────────────────
+// ── 3. R2 bucket ────────────────────────────────────────────────────────────
+log(`Looking for R2 bucket "${ASSET_BUCKET_NAME}"`);
+const bucketInfo = run(["r2", "bucket", "info", ASSET_BUCKET_NAME, "--json"]);
+if (bucketInfo.status === 0) {
+  ok(`Found existing bucket (${ASSET_BUCKET_NAME})`);
+} else {
+  log(`Creating R2 bucket "${ASSET_BUCKET_NAME}"`);
+  const createBucket = run(["r2", "bucket", "create", ASSET_BUCKET_NAME]);
+  if (createBucket.status !== 0) {
+    process.stderr.write(createBucket.stderr || "");
+    die("Failed to create R2 bucket. Check the output above.");
+  }
+  process.stdout.write(createBucket.stdout);
+  ok(`Created bucket (${ASSET_BUCKET_NAME})`);
+}
+
+// ── 4. wrangler.toml ────────────────────────────────────────────────────────
 log("Updating wrangler.toml");
 const patched = patchWranglerToml(databaseId);
 if (patched) ok("Patched wrangler.toml with database_id");
 else ok("wrangler.toml already references this database_id");
 
-// ── 4. Migrations ───────────────────────────────────────────────────────────
+// ── 5. Migrations ───────────────────────────────────────────────────────────
 log("Applying local migrations");
 const localMig = run(["d1", "migrations", "apply", DB_NAME, "--local"], {
   inherit: true,
@@ -158,7 +177,7 @@ if (APPLY_REMOTE) {
   );
 }
 
-// ── 5. .dev.vars ────────────────────────────────────────────────────────────
+// ── 6. .dev.vars ────────────────────────────────────────────────────────────
 log("Ensuring .dev.vars");
 ensureDevVars();
 

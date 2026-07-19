@@ -1,162 +1,155 @@
 # Domain Parkour
 
-Ultra-minimal domain parking, coming-soon, and landing pages for Cloudflare Workers — with a built-in admin panel and live preview.
+One Cloudflare Worker, many domains, four useful ways to land.
 
-**One worker serves every domain you own, with per-hostname configs stored in D1 and managed from a live-preview admin UI.**
+Domain Parkour is an MIT-licensed, self-hosted domain page system for Cloudflare. Attach the hostnames you own, choose a template for each one, and manage their content from a built-in live-preview editor. The Worker renders every page directly from D1 configuration, while R2 stores uploaded profile images.
 
-![Screenshot of domain parkour](assets/ss-parkour.png)
+It is intentionally small: no external origin, no framework runtime, no account service, and no dependency on a Domain Parkour server after deployment. Your Worker, data, assets, traffic, and Cloudflare bill stay in your account.
 
-## TL;DR
+![Domain Parkour screenshot](assets/ss-parkour.png)
 
-```bash
-pnpm install
-npx wrangler login                  # if you haven't already
-pnpm setup                       # creates D1, patches wrangler.toml, writes .dev.vars
-pnpm dev                         # http://localhost:8787  +  /_admin_/  (admin / admin)
+## What it provides
+
+| Template | Purpose |
+| --- | --- |
+| `parking` | Present a domain for sale with pricing, history, contact, and trust details |
+| `coming-soon` | Announce a launch with optional countdown and feature cards |
+| `landing` | Publish a concise information page with destination and social links |
+| `profile` | Publish a personal profile with an uploaded image, bio, and featured links |
+
+Every template includes:
+
+- Responsive light and dark appearances.
+- A configurable accent color and visitor-facing wording.
+- Optional social links and custom footer text.
+- A toggleable `Built with Domain Parkour · powered by Cloudflare` credit.
+- A live preview in the self-hosted admin.
+
+The admin at `/_admin_/` supports exact-hostname records, an intentional `_default` fallback, mode-aware fields, demo presets, image uploads, and immediate preview updates.
+
+## How it works
+
+```text
+visitor request
+      |
+      +-- /_assets/*  -> private R2 object served by the Worker
+      |
+      +-- /_admin_/*  -> Basic Auth admin and JSON API
+      |
+      `-- page request
+             |
+             +-- exact D1 hostname
+             +-- _default D1 row
+             `-- defaults.json fallback
+                    |
+                    `-- selected template -> HTML response
 ```
 
-That's the dev loop. Deploy later with `pnpm setup --remote && pnpm deploy`.
+One deployment can serve multiple explicitly attached hostnames. Apex and `www` are separate records, and Domain Parkour does not alter DNS or attach domains automatically.
 
-The admin panel:
+## Try it locally
 
-- lists every domain you've configured,
-- gives you a mode-aware editor (parking / coming-soon / landing),
-- renders a live iframe preview as you type,
-- saves with ⌘S, deletes with one click.
-
-## Features
-
-- **Four modes**: `parking` (domain for sale), `coming-soon` (launch page), `landing` (simple info page), `profile` (personal bio page)
-- **One deployment, many domains** — config resolved per request hostname
-- **D1-backed** — queryable, exportable, no per-key gymnastics
-- **Built-in admin** at `/_admin_/` with Basic Auth (worker secrets)
-- **Live preview** — debounced iframe re-render as you edit
-- **Preset gallery** — clone from any example in `config.dev.local.example.json`
-- **Catch-all** via a `_default` hostname row
-- Responsive design with auto dark/light mode
-
-## Quick Setup
-
-### 1. One-time
+Requirements: Node.js 20 or newer and pnpm 10.
 
 ```bash
-pnpm install
-npx wrangler login
-pnpm setup
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev:local
 ```
 
-`npm run setup` will:
+Open:
 
-1. Verify you're logged in to Cloudflare.
-2. Create a D1 database called `domain-parkour-db` (or reuse an existing one).
-3. Write the resulting `database_id` into `wrangler.toml`.
-4. Apply migrations locally.
-5. Write `.dev.vars` with default `admin` / `admin` credentials for local dev.
+- Gallery: <http://localhost:8787/>
+- Admin: <http://localhost:8787/_admin_/>
+- Local credentials: `admin` / `admin`
 
-### 2. Local dev
+Local development uses Wrangler's local D1 and R2 simulators. It does not require a Cloudflare account and does not write uploaded images to the production bucket.
 
-```bash
-pnpm dev
-```
-
-- Public preview: <http://localhost:8787/> — shows the local theme gallery (with switcher) by default.
-- Admin panel: <http://localhost:8787/_admin_/> — log in with `admin` / `admin`.
-
-### 3. Production
-
-Before deploying for the first time:
+## Deploy to Cloudflare
 
 ```bash
-wrangler secret put ADMIN_USER          # whatever username
-wrangler secret put ADMIN_PASSWORD      # something strong
-pnpm setup --remote               # apply migrations on the remote D1
+pnpm exec wrangler login
+pnpm setup --remote
 pnpm deploy
+pnpm exec wrangler secret put ADMIN_USER
+pnpm exec wrangler secret put ADMIN_PASSWORD
 ```
 
-Then map domains to the worker from the Cloudflare dashboard:
-**Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain**.
+`pnpm setup --remote` finds or creates:
 
-Open `https://<your-mapped-domain>/_admin_/` and start adding sites.
+- D1 database `domain-parkour-db` bound as `DB`.
+- Private R2 bucket `domain-parkour-assets` bound as `ASSETS`.
+- Local and remote D1 schema from `migrations/`.
 
-## Admin panel
+After deployment, attach each hostname as a Workers Custom Domain in Cloudflare. Read [GUIDE.md](GUIDE.md) before changing a live hostname; it covers prerequisites, manual provisioning, domain attachment, backups, upgrades, rollback, and removal.
 
-Once running, the admin lets you:
+## Defaults and demos
 
-- Pick an existing domain from the dropdown, or start a new one with `+ New` (or `Ctrl/⌘+N`).
-- Switch modes with the tab pills — the form re-shapes itself to show only relevant fields.
-- See your changes rendered live in the right pane (debounced ~220ms).
-- Save with the Save button or `Ctrl/⌘+S`.
-- Open the live, deployed page in a new tab with `↗ Open`.
-- Browse preset configurations from `config.dev.local.example.json` under the "Presets" section.
+All bundled content defaults live in [defaults.json](defaults.json):
 
-### Auth
+| Section | Used for |
+| --- | --- |
+| `fallback` | Public page when neither an exact D1 row nor `_default` exists |
+| `modes` | Default visitor-facing wording for all four templates |
+| `presets` | Local gallery and admin template examples |
 
-Admin uses HTTP Basic Auth backed by worker secrets:
+This is the first file to edit when changing demo content or baseline wording. Changes are bundled with the Worker, so restart local development or redeploy after editing it.
 
-| Setting           | Local dev (`.dev.vars`) | Production (`wrangler secret`) |
-| ----------------- | ----------------------- | ------------------------------ |
-| `ADMIN_USER`      | `admin` (default)       | required                       |
-| `ADMIN_PASSWORD`  | `admin` (default)       | required                       |
+Saved page records remain in D1 as a `mode` plus a JSON configuration object. Uploaded profile images remain private in R2 and are exposed only through the Worker's `/_assets/` route. Replacing or deleting a saved profile removes its previous managed image.
 
-In production with **either secret missing**, the admin panel responds `503 Disabled` instead of falling back to defaults. In local dev, the defaults remain so you can iterate fast — the UI shows a yellow banner reminding you to set real secrets before deploying.
+The complete field reference is in [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
-## Catch-all (`_default`)
+## Security and ownership
 
-Configs are looked up by exact hostname. If a request comes in for a hostname that has no row, the worker checks for a row named `_default` and uses that. Create one in the admin to provide a sane fallback for un-configured domains.
+- Production admin access is disabled until both `ADMIN_USER` and `ADMIN_PASSWORD` Worker secrets are configured.
+- Local `admin` / `admin` credentials are development-only.
+- R2 is private; no public bucket URL is required.
+- Visitor requests are served by infrastructure in your Cloudflare account.
+- Domain Parkour does not process domain sales, payments, email, or DNS changes.
+- Back up D1 and R2 before upgrades or removal.
 
-## Schema
+For the threat model and reporting process, read [SECURITY.md](SECURITY.md).
 
-```sql
-CREATE TABLE domains (
-  hostname    TEXT PRIMARY KEY,
-  mode        TEXT NOT NULL DEFAULT 'landing',
-  config      TEXT NOT NULL DEFAULT '{}',   -- JSON blob
-  created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at  INTEGER NOT NULL DEFAULT (unixepoch())
-);
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm test` | Run defaults, template, footer, and R2 tests |
+| `pnpm dev:local` | Prepare local D1 and start the Worker with local R2 |
+| `pnpm dev` | Start Wrangler directly |
+| `pnpm setup` | Provision/find D1 and R2, then apply local migrations |
+| `pnpm setup --remote` | Also apply D1 migrations remotely |
+| `pnpm deploy` | Deploy the Worker |
+| `pnpm db:migrate:local` | Apply D1 migrations locally |
+| `pnpm db:migrate:remote` | Apply D1 migrations remotely |
+| `pnpm db:console` | List locally configured hostname records |
+| `pnpm tail` | Stream deployed Worker logs |
+
+## Project layout
+
+```text
+defaults.json            fallback, wording defaults, and demo presets
+migrations/              D1 schema migrations
+scripts/                 local development and Cloudflare setup
+src/index.js             Worker entrypoint
+src/config.js            hostname resolution and default application
+src/templates/           four public renderers and shared components
+src/admin/               self-hosted editor, API, and authentication
+src/assets.js            R2 upload validation and public asset delivery
+test/                    Node test suite
 ```
 
-The `config` JSON blob holds all mode-specific fields. The denormalised `mode` column exists so the admin can list sites without parsing every blob.
+## Documentation
 
-## Config fields by mode
+- [GUIDE.md](GUIDE.md) - installation and operations.
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) - modes, fields, defaults, and storage behavior.
+- [SECURITY.md](SECURITY.md) - security model and vulnerability reporting.
+- [CONTRIBUTING.md](CONTRIBUTING.md) - contribution workflow.
 
-### parking
+## Contributing
 
-`domainTitle`, `title`, `description`, `salePrice`, `contactEmail`, `domainAgeYears`, `domainRegistration`, `accentColor`, `footerText`, `showCredit`, `socialLinks`
-
-### coming-soon
-
-`domainTitle`, `title`, `description`, `tagline`, `launchDate` (ISO 8601), `accentColor`, `features: [{title, description}]`, `footerText`, `showCredit`, `socialLinks`
-
-### landing
-
-`domainTitle`, `title`, `subtitle`, `description`, `accentColor`, `links: [{title, url}]`, `footerText`, `showCredit`, `socialLinks`
-
-### profile
-
-`domainTitle`, `name`, `role`, `bio`, `avatarUrl`, `accentColor`, `links: [{title, url}]`, `footerText`, `showCredit`, `socialLinks` — falls back to `domainTitle` when `name` is omitted; avatar shows initials when `avatarUrl` is empty.
-
-Color suggestions: `#3b82f6` (blue), `#a855f7` (purple), `#10b981` (green), `#ef4444` (red), `#f97316` (orange), `#ec4899` (pink).
-
-## Config priority
-
-1. **Local dev theme gallery** — `config.dev.local.example.json` is used for `localhost`/`workers.dev` requests so you can preview every example by appending `?themeIndex=N`.
-2. **D1** — exact hostname row, then `_default`.
-3. **Hardcoded fallback** — bare "Welcome" page with the default accent.
-
-## Scripts
-
-| Command                       | What                                                                |
-| ----------------------------- | ------------------------------------------------------------------- |
-| `pnpm setup`               | Local setup — creates D1, patches `wrangler.toml`, writes `.dev.vars`. |
-| `pnpm setup --remote`   | Same + applies migrations to the remote D1.                         |
-| `pnpm dev`                 | `wrangler dev` on `http://localhost:8787`.                          |
-| `pnpm deploy`              | `wrangler deploy`.                                                  |
-| `pnpm db:migrate:local`    | Apply migrations to local D1 only.                                  |
-| `pnpm db:migrate:remote`   | Apply migrations to remote D1 only.                                 |
-| `pnpm db:console`          | List all configured domains in the local DB.                        |
-| `pnpm tail`                | `wrangler tail` for live logs in production.                        |
+Issues and focused pull requests are welcome. Preserve the project's core properties: small pages, user-owned infrastructure, accessible output, safe configuration, and no external runtime dependency.
 
 ## License
 
-MIT
+MIT © 2026 Deepak Thomas. See [LICENSE](LICENSE).

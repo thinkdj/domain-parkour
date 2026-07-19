@@ -1,11 +1,55 @@
-# Domain Parkour - Cloudflare Workers Domain Parking Page
+# Domain Parkour repository instructions
 
-## Project Overview
+## Project shape
 
-Ultra minimal domain parking and coming soon page built for Cloudflare Workers with multiple page modes.
+This public MIT repository contains the self-hosted Domain Parkour runtime:
 
-- built to run on Cloudflare Workers
-- uses Cloudflare D1 for per-hostname configuration (managed via the built-in admin panel at `/_admin_/`)
-- supports environment variables / `.dev.vars` for local development and overrides
-- four page modes: "parking" (domain for sale), "coming-soon" (launch pages), "landing" (simple info page), and "profile" (personal bio page)
+- Cloudflare Worker entrypoint in `src/index.js`.
+- Per-hostname configuration in Cloudflare D1 and managed image assets in R2.
+- Self-hosted Basic Auth admin under `/_admin_/`.
+- Four implemented modes: `parking`, `coming-soon`, `landing`, and `profile`.
+- Bundled fallback content, mode wording, and demo presets in `defaults.json`.
+- Shared templates/styles used by admin preview and public rendering.
+- pnpm-based setup and deployment tooling.
 
+Domain Parkour Cloud is an approved but not yet implemented private hosted control plane. Do not add OAuth client secrets, Polar integration secrets, encrypted-token storage, multi-tenant provider state, or private hosted operations to this public repository.
+
+## Canonical documentation
+
+- `GUIDE.md`: current self-hosting commands and operations.
+- `docs/CONFIGURATION.md`: implemented modes and fields.
+
+Product launch requirements, the hosted implementation contract, the public/private
+boundary, and the roadmap live in the private `domain-parkour-cloud` repository
+(`PRD.md`, `HOSTED_PLATFORM_PRD.md`, `OSS_VS_HOSTED.md`, `PRD_FEATURES_EXTENDED.md`)
+and are not part of this public repository.
+
+Do not describe roadmap features as shipped.
+
+## Current runtime invariants
+
+- Resolve exact request hostname, then `_default`, then the `defaults.json` fallback.
+- D1 is the authoritative configuration store; R2 is the managed blob store.
+- Public requests must not depend on a hosted service, Cloudflare management API, or billing provider.
+- Preview and deployed output should share normalization and renderer logic.
+- The current Basic Auth admin is a trusted-author workflow. Any untrusted ingestion path must add context-aware escaping and URL/scheme validation before publication.
+- Preserve responsive mobile gutters, dark/light behavior, reduced motion, keyboard focus, and accessible semantics.
+
+## Hosted safety invariants
+
+Any future hosted work must follow the hosted PRD:
+
+- Cloudflare OAuth tokens are server-side and encrypted, never in browser localStorage.
+- No domain or hostname is preselected.
+- DNS/Custom Domain mutations use server-generated plans, confirmation, last-second state comparison, durable before-state, audit, and conditional Undo.
+- Undo refuses to overwrite out-of-band drift.
+- Cancellation never deletes customer resources or stops existing pages.
+- KV is not required at launch; D1 is authoritative.
+
+## Development conventions
+
+- Use pnpm; do not introduce npm/yarn lockfiles.
+- Keep changes focused and preserve unrelated worktree edits.
+- Update `docs/CONFIGURATION.md` whenever a shipped field/mode changes.
+- Add tests for config round-trip, preview/render parity, escaping, mobile layout, and cache isolation where applicable.
+- Never commit `.dev.vars`, production IDs, backups, tokens, credentials, or hosted secrets.

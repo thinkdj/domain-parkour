@@ -1,28 +1,35 @@
 import { coreStyles } from "../styles/core.js";
 
-/**
- * Convert hex color to "r, g, b" string (used for translucent shadows etc.)
- */
+const SUN_ICON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
+const MOON_ICON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>`;
+
+/** Convert a six-digit hex color to the RGB tuple used by translucent accents. */
 function hexToRgb(hex) {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
-  return m
-    ? `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}`
+  const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+  return match
+    ? `${parseInt(match[1], 16)}, ${parseInt(match[2], 16)}, ${parseInt(match[3], 16)}`
     : "59, 130, 246";
 }
 
-const SUN_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`;
-
-const MOON_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+function minifyStyles(styles) {
+  return styles
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s*([{}:;,])\s*/g, "$1")
+    .replace(/;}/g, "}")
+    .trim();
+}
 
 function renderThemeSwitcher(allThemes) {
-  if (!allThemes || allThemes.length === 0) return "";
+  if (!allThemes?.length) return "";
+
   return `
-    <div class="fixed top-4 left-4 z-50 hidden sm:block">
-      <select id="theme-switcher" class="dp-theme-switcher" aria-label="Switch theme">
+    <div class="dp-chrome dp-chrome-left">
+      <select id="theme-switcher" class="dp-theme-switcher" aria-label="Preview another template">
         ${allThemes
           .map(
-            (t, i) =>
-              `<option value="${i}">${t.name || `Theme ${i + 1}`}</option>`,
+            (theme, index) =>
+              `<option value="${index}">${theme.name || `Template ${index + 1}`}</option>`,
           )
           .join("")}
       </select>
@@ -31,10 +38,10 @@ function renderThemeSwitcher(allThemes) {
 
 function renderThemeToggle() {
   return `
-    <div class="fixed top-4 right-4 z-50">
-      <button id="theme-toggle" class="dp-chrome-btn" aria-label="Toggle theme">
-        <span id="theme-toggle-light-icon" class="hidden"><i data-lucide="sun" width="18" height="18" stroke-width="1.6" aria-hidden="true"></i></span>
-        <span id="theme-toggle-dark-icon"  class="hidden"><i data-lucide="moon" width="18" height="18" stroke-width="1.6" aria-hidden="true"></i></span>
+    <div class="dp-chrome dp-chrome-right">
+      <button id="theme-toggle" class="dp-chrome-btn" type="button" aria-label="Switch color theme">
+        <span id="theme-toggle-light-icon" hidden>${SUN_ICON}</span>
+        <span id="theme-toggle-dark-icon" hidden>${MOON_ICON}</span>
       </button>
     </div>`;
 }
@@ -49,65 +56,74 @@ export function renderBase({
 }) {
   const accent = accentColor || "#3b82f6";
   const accentRgb = hexToRgb(accent);
+  const styles = minifyStyles(`${coreStyles}\n${additionalStyles}`);
 
-  return `<!DOCTYPE html>
-<html lang="en" class="dark">
+  const html = `<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="${accent}">
     <title>${title}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' };</script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+      (function () {
+        const saved = localStorage.getItem('theme');
+        const preferred = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.classList.toggle('dark', (saved || preferred) === 'dark');
+      })();
+    </script>
     <style>
         :root { --accent-color: ${accent}; --accent-color-rgb: ${accentRgb}; }
-        ${coreStyles}
-        ${additionalStyles}
+        ${styles}
     </style>
 </head>
-<body class="min-h-screen transition-colors duration-200">
-
+<body>
     ${renderThemeSwitcher(allThemes)}
     ${renderThemeToggle()}
-
     ${content}
 
     <script>
-        lucide.createIcons();
-
         ${allThemes ? `window.__ALL_THEMES__ = ${JSON.stringify(allThemes)};` : ""}
 
-        // Theme toggle
         (function () {
-            const btn = document.getElementById('theme-toggle');
+            const button = document.getElementById('theme-toggle');
             const sun = document.getElementById('theme-toggle-light-icon');
             const moon = document.getElementById('theme-toggle-dark-icon');
-            const stored = localStorage.getItem('theme') || 'dark';
-            const apply = (t) => {
-                document.documentElement.classList.toggle('dark', t === 'dark');
-                sun.classList.toggle('hidden', t !== 'dark');
-                moon.classList.toggle('hidden', t === 'dark');
+            if (!button || !sun || !moon) return;
+
+            const apply = (theme) => {
+                const isDark = theme === 'dark';
+                document.documentElement.classList.toggle('dark', isDark);
+                sun.hidden = !isDark;
+                moon.hidden = isDark;
+                button.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+                button.setAttribute('aria-pressed', String(isDark));
             };
-            apply(stored);
-            btn.addEventListener('click', () => {
+
+            const saved = localStorage.getItem('theme');
+            const preferred = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            apply(saved || preferred);
+
+            button.addEventListener('click', () => {
                 const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
                 localStorage.setItem('theme', next);
                 apply(next);
             });
         })();
 
-        // Theme switcher (dev mode)
         (function () {
-            const sw = document.getElementById('theme-switcher');
-            if (!sw || !window.__ALL_THEMES__) return;
+            const switcher = document.getElementById('theme-switcher');
+            if (!switcher || !window.__ALL_THEMES__) return;
+
             const params = new URLSearchParams(location.search);
-            const urlIdx = params.get('themeIndex');
-            const savedIdx = localStorage.getItem('devThemeIndex') || '0';
-            sw.value = urlIdx !== null ? urlIdx : savedIdx;
-            sw.addEventListener('change', () => {
-                localStorage.setItem('devThemeIndex', sw.value);
+            const requested = params.get('themeIndex');
+            const saved = localStorage.getItem('devThemeIndex') || '0';
+            switcher.value = requested !== null ? requested : saved;
+            switcher.addEventListener('change', () => {
+                localStorage.setItem('devThemeIndex', switcher.value);
                 const url = new URL(location.href);
-                url.searchParams.set('themeIndex', sw.value);
+                url.searchParams.set('themeIndex', switcher.value);
                 location.href = url.toString();
             });
         })();
@@ -116,4 +132,6 @@ export function renderBase({
     </script>
 </body>
 </html>`;
+
+  return html.replace(/>\s+</g, "><").trim();
 }

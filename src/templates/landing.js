@@ -1,59 +1,73 @@
 import { renderBase } from "./base.js";
-import { renderSocialLinks, renderFooter } from "./components.js";
+import {
+  EXTERNAL_LINK_ICON,
+  renderFooter,
+  renderMasthead,
+  renderSocialLinks,
+} from "./components.js";
 
-const ARROW = `<i data-lucide="chevron-right" class="arrow" width="14" height="14" stroke-width="2"></i>`;
+function renderLinks(cfg) {
+  const links = cfg.links;
+  if (!links?.length) return "";
 
-function renderLinks(links) {
-  if (!links || !links.length) return "";
   return `
-    <div class="flex flex-col gap-2 mt-8 sm:mt-10 max-w-md mx-auto fade-in-delay-1">
-      ${links
-        .map(
-          (l) => `
-        <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="dp-link">
-          <span class="label">${l.title}</span>
-          ${ARROW}
-        </a>`,
-        )
-        .join("")}
-    </div>`;
+    <nav class="dp-panel fade-in-delay-2" aria-label="Primary links">
+      ${cfg.linksLabel ? `<div class="dp-panel-label" style="margin-bottom: 16px;">${cfg.linksLabel}</div>` : ""}
+      <div class="dp-link-list">
+        ${links
+          .map(
+            (link, index) => `
+          <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="dp-link">
+            <span class="dp-link-main">
+              <span class="dp-link-index">${String(index + 1).padStart(2, "0")}</span>
+              <span class="label">${link.title}</span>
+            </span>
+            ${EXTERNAL_LINK_ICON}
+          </a>`,
+          )
+          .join("")}
+      </div>
+    </nav>`;
 }
 
 function renderContent(cfg) {
+  const hasLinks = Boolean(cfg.links?.length);
+
   return `
-    <main class="flex items-center justify-center min-h-screen px-4 sm:px-6 py-16 sm:py-20">
-      <div class="w-full max-w-xl mx-auto text-center">
+    <main class="dp-page">
+      <div class="dp-wrap">
+        ${renderMasthead(cfg.domainTitle, cfg.statusLabel, true)}
 
-        <h1 class="fade-in" style="font-size: clamp(2rem, 5.5vw, 3rem); font-weight: 700; line-height: 1.1;">
-          <span class="accent-underline">${cfg.domainTitle}</span>
-        </h1>
+        <div class="${hasLinks ? "dp-grid" : "dp-wrap-narrow"}">
+          <section>
+            ${
+              cfg.eyebrowText
+                ? `<div class="dp-eyebrow fade-in"><span class="dot" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
+                : ""
+            }
+            <h1 class="dp-title dp-title-compact fade-in-delay-1">${cfg.domainTitle}</h1>
+            ${
+              cfg.title
+                ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 30px;">${cfg.title}</h2>`
+                : ""
+            }
+            ${
+              cfg.subtitle
+                ? `<p class="dp-lede fade-in-delay-1">${cfg.subtitle}</p>`
+                : ""
+            }
+            ${
+              cfg.description
+                ? `<p class="dp-copy fade-in-delay-2">${cfg.description}</p>`
+                : ""
+            }
+            <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
+          </section>
 
-        ${
-          cfg.title
-            ? `<p class="mt-8 fade-in" style="font-size: 16px; color: var(--text);">${cfg.title}</p>`
-            : ""
-        }
+          ${renderLinks(cfg)}
+        </div>
 
-        ${
-          cfg.subtitle
-            ? `<p class="mt-3 max-w-md mx-auto fade-in-delay-1" style="font-size: 14px; line-height: 1.6;">${cfg.subtitle}</p>`
-            : ""
-        }
-
-        ${
-          cfg.description
-            ? `<p class="mt-3 max-w-md mx-auto fade-in-delay-1" style="font-size: 13px; color: var(--text-faint); line-height: 1.6;">${cfg.description}</p>`
-            : ""
-        }
-
-        ${renderLinks(cfg.links)}
-
-        <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
-
-        ${renderFooter(
-          cfg.footerText !== undefined ? cfg.footerText : cfg.domainTitle,
-          cfg.showCredit !== false,
-        )}
+        ${renderFooter(cfg.footerText, cfg.showCredit)}
       </div>
     </main>`;
 }

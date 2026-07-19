@@ -1,9 +1,10 @@
 /**
  * Domain Parkour worker entrypoint.
  *
- * Two surfaces:
- *   1. /_admin_/*   — admin panel (Basic Auth)
- *   2. everything else — public-facing parking/coming-soon/landing/profile page,
+ * Three request surfaces:
+ *   1. /_assets/* - public reads for managed R2 objects
+ *   2. /_admin_/* - self-hosted admin panel (Basic Auth)
+ *   3. everything else - public parking/coming-soon/landing/profile page,
  *      chosen by the request hostname.
  */
 
@@ -13,9 +14,13 @@ import { generateParkingHTML } from './templates/parking.js';
 import { generateComingSoonHTML } from './templates/coming-soon.js';
 import { generateLandingHTML } from './templates/landing.js';
 import { generateProfileHTML } from './templates/profile.js';
+import { handleAssetRequest } from './assets.js';
 
 export default {
   async fetch(request, env, ctx) {
+    const assetResponse = await handleAssetRequest(request, env);
+    if (assetResponse) return assetResponse;
+
     const adminResponse = await handleAdmin(request, env);
     if (adminResponse) return adminResponse;
 

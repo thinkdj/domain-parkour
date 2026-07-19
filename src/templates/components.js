@@ -1,48 +1,68 @@
-/**
- * Shared component templates used by every page mode.
- */
+/** Shared, deliberately small components used by every public page mode. */
 
-const LUCIDE_SOCIAL = {
-  twitter: "twitter",
-  facebook: "facebook",
-  instagram: "instagram",
-  linkedin: "linkedin",
-  github: "github",
-  email: "mail",
-  x: "x",
+const SOCIAL_GLYPHS = {
+  twitter: "X",
+  x: "X",
+  facebook: "f",
+  instagram: "IG",
+  linkedin: "in",
+  github: "GH",
+  email: "@",
 };
+
+export const EXTERNAL_LINK_ICON = `<svg class="arrow" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>`;
+
+function platformLabel(platform) {
+  if (platform.toLowerCase() === "x") return "X";
+  return platform.charAt(0).toUpperCase() + platform.slice(1);
+}
+
+export function renderMasthead(domainTitle, status, isLive = false) {
+  return `
+    <header class="dp-masthead fade-in">
+      <div class="dp-brand">
+        <span class="dp-brand-mark" aria-hidden="true"></span>
+        <span>${domainTitle}</span>
+      </div>
+      <div class="dp-status">
+        <span class="dp-status-dot${isLive ? " pulse" : ""}" aria-hidden="true"></span>
+        <span>${status}</span>
+      </div>
+    </header>`;
+}
 
 export function renderSocialLinks(socialLinks) {
   if (!socialLinks || Object.keys(socialLinks).length === 0) return "";
+
   return `
-    <div class="flex justify-center gap-2 mt-8">
+    <nav class="dp-socials" aria-label="Social links">
       ${Object.entries(socialLinks)
-        .map(
-          ([platform, url]) => `
-        <a href="${url}" target="_blank" rel="noopener noreferrer"
-           class="dp-social" aria-label="${platform}">
-          <i data-lucide="${LUCIDE_SOCIAL[platform.toLowerCase()] || "mail"}" width="16" height="16" stroke-width="1.8"></i>
-        </a>`,
-        )
+        .map(([platform, url]) => {
+          const label = platformLabel(platform);
+          const external = !String(url).startsWith("mailto:");
+          return `
+        <a href="${url}"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}
+           class="dp-social" aria-label="${label}" title="${label}">
+          <span class="dp-social-glyph" aria-hidden="true">${SOCIAL_GLYPHS[platform.toLowerCase()] || "\u2197"}</span>
+        </a>`;
+        })
         .join("")}
-    </div>`;
+    </nav>`;
 }
 
 export function renderFooter(footerText, showCredit = true) {
-  if (footerText === "") return "";
+  if (!footerText && !showCredit) return "";
+
   const credit = showCredit
-    ? `<p class="mt-2" style="color: var(--text-faint); font-size: 11px;">
-         Built with
-         <a href="https://github.com/thinkdj/domain-parkour" target="_blank" rel="noopener noreferrer"
-            class="hover:underline" style="color: var(--text-dim);">Domain Parkour</a>
-         · hosted on
-         <a href="https://cloudflare.com" target="_blank" rel="noopener noreferrer"
-            class="hover:underline" style="color: var(--text-dim);">Cloudflare</a>
-       </p>`
+    ? `<div class="dp-footer-credit">
+         Built with <a href="https://github.com/thinkdj/domain-parkour" target="_blank" rel="noopener noreferrer">Domain Parkour</a>
+         &middot; powered by <a href="https://cloudflare.com" target="_blank" rel="noopener noreferrer">Cloudflare</a>
+       </div>`
     : "";
+
   return `
-    <div class="text-center mt-20 fade-in-delay-3" style="color: var(--text-faint);">
-      <p style="font-size: 11px;">${footerText}</p>
+    <footer class="dp-footer fade-in-delay-3">
+      ${footerText ? `<div>${footerText}</div>` : "<div></div>"}
       ${credit}
-    </div>`;
+    </footer>`;
 }

@@ -1,11 +1,14 @@
 {
   "name": "domain-parkour",
   "version": "1.0.0",
+  "type": "module",
   "description": "Minimalistic domain parking, coming soon and landing pages for Cloudflare Workers, with a built-in admin panel backed by D1.",
   "main": "src/index.js",
   "scripts": {
     "setup": "node scripts/setup.mjs",
+    "test": "node --test",
     "dev": "wrangler dev",
+    "dev:local": "node scripts/dev-local.mjs",
     "deploy": "wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply domain-parkour-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply domain-parkour-db --remote",
@@ -22,7 +25,7 @@
     "d1",
     "admin"
   ],
-  "author": "",
+  "author": "Deepak Thomas",
   "license": "MIT",
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {

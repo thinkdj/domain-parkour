@@ -1,4 +1,59 @@
-[
+{
+  "fallback": {
+    "mode": "landing",
+    "title": "Welcome",
+    "description": "Your gateway to something amazing.",
+    "accentColor": "#3b82f6",
+    "features": [],
+    "socialLinks": {},
+    "links": []
+  },
+  "modes": {
+    "parking": {
+      "statusLabel": "Available",
+      "eyebrowText": "Premium domain",
+      "priceLabel": "Asking price",
+      "inquiryLabel": "Purchase inquiries",
+      "noPriceTitle": "Make this domain yours",
+      "contactCopy": "Interested in acquiring this domain? Send a direct inquiry to start the conversation.",
+      "availabilityCopy": "This domain is currently available for acquisition.",
+      "contactButtonText": "Start an inquiry",
+      "domainAgeLabel": "Domain age",
+      "extensionLabel": "Extension",
+      "trustValue": "Verified",
+      "trustLabel": "Secure inquiry",
+      "footerText": "This premium domain is available for purchase",
+      "pageTitleSuffix": "For sale"
+    },
+    "coming-soon": {
+      "statusLabel": "In progress",
+      "eyebrowText": "Coming soon",
+      "launchLabel": "Launching",
+      "daysLabel": "Days",
+      "hoursLabel": "Hours",
+      "minutesLabel": "Minutes",
+      "secondsLabel": "Seconds",
+      "countdownNote": "A new experience is taking shape. Check back when the clock reaches zero.",
+      "launchedText": "We are live.",
+      "statusPanelLabel": "Status",
+      "statusPanelTitle": "Thoughtfully in the works.",
+      "statusPanelText": "We are taking the time to make the first version worth the wait.",
+      "footerText": "Stay tuned for the launch",
+      "pageTitleSuffix": "Coming soon"
+    },
+    "landing": {
+      "statusLabel": "Online",
+      "eyebrowText": "Welcome",
+      "linksLabel": "Explore",
+      "footerText": ""
+    },
+    "profile": {
+      "statusLabel": "Profile",
+      "role": "Independent",
+      "footerText": ""
+    }
+  },
+  "presets": [
   {
     "name": "Parking - Premium Domain",
     "mode": "parking",
@@ -74,7 +129,7 @@
     "subtitle": "This domain is used for email and backend services",
     "description": "For support or inquiries, please visit our main website",
     "accentColor": "#06b6d4",
-    "footerText": "© 2025 example.com",
+    "footerText": "© 2026 example.com",
     "links": [
       {
         "title": "Main Website",
@@ -102,7 +157,7 @@
     "title": "Some inspiring tagline like `Code is Poetry`",
     "subtitle": "Building tools that developers love etc. etc.",
     "accentColor": "#f00",
-    "footerText": "© 2025 think.dj",
+    "footerText": "© 2026 think.dj",
     "links": [
       {
         "title": "Portfolio",
@@ -150,4 +205,5 @@
     "description": "",
     "accentColor": ""
   }
-]
+  ]
+}

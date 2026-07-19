@@ -1,123 +1,143 @@
 import { renderBase } from "./base.js";
-import { renderSocialLinks, renderFooter } from "./components.js";
+import {
+  renderFooter,
+  renderMasthead,
+  renderSocialLinks,
+} from "./components.js";
+
+function formatLaunchDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
 
 function renderCountdown(cfg) {
   if (!cfg.launchDate) return "";
   const cell = (id, label) => `
-    <div class="dp-stat" style="min-width: 74px;">
-      <div class="v" id="${id}" style="font-variant-numeric: tabular-nums; font-size: 24px;">00</div>
+    <div class="dp-stat">
+      <div class="v" id="${id}">00</div>
       <div class="l">${label}</div>
     </div>`;
+
   return `
-    <div id="countdown" class="flex flex-wrap justify-center gap-2 sm:gap-3 mt-10 fade-in-delay-2">
-      ${cell("days", "Days")}
-      ${cell("hours", "Hours")}
-      ${cell("minutes", "Min")}
-      ${cell("seconds", "Sec")}
-    </div>`;
+    <aside id="countdown-panel" class="dp-panel fade-in-delay-2" aria-label="Launch countdown">
+      <div class="dp-panel-label">${cfg.launchLabel} ${formatLaunchDate(cfg.launchDate)}</div>
+      <div id="countdown" class="dp-stats" role="timer" aria-live="off">
+        ${cell("days", cfg.daysLabel)}
+        ${cell("hours", cfg.hoursLabel)}
+        ${cell("minutes", cfg.minutesLabel)}
+        ${cell("seconds", cfg.secondsLabel)}
+      </div>
+      ${cfg.countdownNote ? `<p class="dp-note">${cfg.countdownNote}</p>` : ""}
+    </aside>`;
 }
 
 function renderCountdownScript(cfg) {
   if (!cfg.launchDate) return "";
   return `
     (function () {
-      const target = new Date('${cfg.launchDate}').getTime();
-      const $ = (id) => document.getElementById(id);
+      const target = new Date(${JSON.stringify(cfg.launchDate)}).getTime();
+      const countdown = document.getElementById('countdown');
+      const get = (id) => document.getElementById(id);
+      let timer;
+
       function tick() {
         const diff = target - Date.now();
-        if (diff < 0) {
-          $('countdown').innerHTML = '<div style="font-size: 22px; font-weight: 600; color: var(--text);">We\\'re live</div>';
+        if (!Number.isFinite(target) || diff <= 0) {
+          if (countdown) countdown.innerHTML = '<div style="padding: 20px; color: var(--text); font-weight: 650;"></div>';
+          if (countdown && countdown.firstElementChild) countdown.firstElementChild.textContent = ${JSON.stringify(cfg.launchedText)};
+          if (timer) clearInterval(timer);
           return;
         }
-        const d = Math.floor(diff / 86400000);
-        const h = Math.floor((diff % 86400000) / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        $('days').textContent    = String(d).padStart(2, '0');
-        $('hours').textContent   = String(h).padStart(2, '0');
-        $('minutes').textContent = String(m).padStart(2, '0');
-        $('seconds').textContent = String(s).padStart(2, '0');
+        get('days').textContent = String(Math.floor(diff / 86400000)).padStart(2, '0');
+        get('hours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+        get('minutes').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        get('seconds').textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
       }
+
       tick();
-      setInterval(tick, 1000);
+      timer = setInterval(tick, 1000);
     })();
   `;
 }
 
 function renderFeatures(cfg) {
-  if (!cfg.features || !cfg.features.length) return "";
+  if (!cfg.features?.length) return "";
+
   return `
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl mx-auto mt-12 fade-in-delay-3">
+    <section class="dp-feature-grid fade-in-delay-3" aria-label="What to expect">
       ${cfg.features
-        .map(
-          (f) => `
-        <div class="dp-card p-4 text-left">
-          <div style="font-size: 14px; font-weight: 600; color: var(--text);">${
-            f.title || f
-          }</div>
-          ${
-            f.description
-              ? `<div class="mt-1" style="font-size: 12px; color: var(--text-dim); line-height: 1.5;">${f.description}</div>`
-              : ""
-          }
-        </div>`,
-        )
+        .map((feature, index) => {
+          const title = feature.title || feature;
+          return `
+        <article class="dp-card">
+          <div class="dp-feature-index">${String(index + 1).padStart(2, "0")}</div>
+          <h3 class="dp-feature-title">${title}</h3>
+          ${feature.description ? `<p class="dp-feature-copy">${feature.description}</p>` : ""}
+        </article>`;
+        })
         .join("")}
-    </div>`;
+    </section>`;
 }
 
 function renderContent(cfg) {
   return `
-    <main class="flex items-center justify-center min-h-screen px-4 sm:px-6 py-16 sm:py-20">
-      <div class="w-full max-w-3xl mx-auto text-center">
+    <main class="dp-page">
+      <div class="dp-wrap">
+        ${renderMasthead(cfg.domainTitle, cfg.statusLabel, true)}
 
-        <div class="fade-in">
-          <span class="dp-eyebrow"><span class="dot pulse"></span>Coming soon</span>
+        <div class="dp-grid">
+          <section>
+            ${
+              cfg.eyebrowText
+                ? `<div class="dp-eyebrow fade-in"><span class="dot pulse" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
+                : ""
+            }
+            <h1 class="dp-title dp-title-compact fade-in-delay-1">${cfg.domainTitle}</h1>
+            ${
+              cfg.tagline
+                ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 28px;">${cfg.tagline}</h2>`
+                : ""
+            }
+            ${
+              cfg.title
+                ? `<p class="dp-lede fade-in-delay-1">${cfg.title}</p>`
+                : ""
+            }
+            ${
+              cfg.description
+                ? `<p class="dp-copy fade-in-delay-2">${cfg.description}</p>`
+                : ""
+            }
+            <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
+          </section>
+
+          ${
+            cfg.launchDate
+              ? renderCountdown(cfg)
+              : `<aside class="dp-panel fade-in-delay-2">
+                   ${cfg.statusPanelLabel ? `<div class="dp-panel-label">${cfg.statusPanelLabel}</div>` : ""}
+                   ${cfg.statusPanelTitle ? `<h2 class="dp-heading" style="margin-top: 12px;">${cfg.statusPanelTitle}</h2>` : ""}
+                   ${cfg.statusPanelText ? `<p class="dp-copy">${cfg.statusPanelText}</p>` : ""}
+                 </aside>`
+          }
         </div>
-
-        <h1 class="mt-8 fade-in" style="font-size: clamp(2.25rem, 6vw, 3.5rem); font-weight: 700; line-height: 1.1;">
-          <span class="accent-underline">${cfg.domainTitle}</span>
-        </h1>
-
-        ${
-          cfg.tagline
-            ? `<h2 class="mt-8 fade-in-delay-1" style="font-size: 18px; font-weight: 600;">${cfg.tagline}</h2>`
-            : ""
-        }
-
-        ${
-          cfg.title
-            ? `<p class="mt-4 max-w-2xl mx-auto fade-in-delay-1" style="font-size: 15px; line-height: 1.6;">${cfg.title}</p>`
-            : ""
-        }
-
-        ${
-          cfg.description
-            ? `<p class="mt-3 max-w-xl mx-auto fade-in-delay-1" style="font-size: 13px; color: var(--text-faint); line-height: 1.6;">${cfg.description}</p>`
-            : ""
-        }
-
-        ${renderCountdown(cfg)}
-
-        <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
 
         ${renderFeatures(cfg)}
 
-        ${renderFooter(
-          cfg.footerText !== undefined
-            ? cfg.footerText
-            : cfg.launchDate
-              ? "Stay tuned for our launch"
-              : "Something exciting is coming",
-          cfg.showCredit !== false,
-        )}
+        ${renderFooter(cfg.footerText, cfg.showCredit)}
       </div>
     </main>`;
 }
 
 export function generateComingSoonHTML(cfg, allThemes = null) {
   return renderBase({
-    title: `${cfg.domainTitle} — Coming soon`,
+    title: cfg.pageTitleSuffix ? `${cfg.domainTitle} - ${cfg.pageTitleSuffix}` : cfg.domainTitle,
     accentColor: cfg.accentColor,
     content: renderContent(cfg),
     scripts: renderCountdownScript(cfg),
