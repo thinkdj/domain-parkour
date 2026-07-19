@@ -71,7 +71,7 @@ function renderParkingContent(cfg) {
                 ? `<div class="dp-eyebrow fade-in"><span class="dot" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
                 : ""
             }
-            <h1 class="dp-title fade-in-delay-1">${cfg.domainTitle}</h1>
+            <h1 class="dp-title dp-mono fade-in-delay-1">${cfg.domainTitle}</h1>
             ${
               cfg.title
                 ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 30px;">${cfg.title}</h2>`

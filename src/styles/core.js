@@ -5,8 +5,8 @@
 
 export const coreStyles = `
 :root {
-    --accent-color: #3b82f6;
-    --accent-color-rgb: 59, 130, 246;
+    --accent-color: #e8590c;
+    --accent-color-rgb: 232, 89, 12;
     --bg: #f7f7f5;
     --surface: #ffffff;
     --surface-raised: #ffffff;
@@ -17,6 +17,10 @@ export const coreStyles = `
     --text-dim: #62656a;
     --text-faint: #92959a;
     --shadow: 0 20px 50px rgba(24, 25, 27, 0.06);
+    --font-sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas,
+                 "Liberation Mono", monospace;
 }
 
 html.dark {
@@ -52,8 +56,7 @@ html, body {
 body {
     min-height: 100vh;
     min-height: 100dvh;
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                 Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     letter-spacing: -0.01em;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -179,6 +182,11 @@ p { color: var(--text-dim); }
 
 .accent-underline { display: inline; }
 
+.dp-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "liga" 0;
+}
+
 .dp-title {
     max-width: 14ch;
     margin-top: 20px;
@@ -187,6 +195,14 @@ p { color: var(--text-dim); }
     line-height: 0.98;
     letter-spacing: -0.065em;
     overflow-wrap: anywhere;
+}
+
+/* The headline is the domain itself — render it in the mono role (see
+   design principle: "mono for machine truth") with lighter tracking than
+   the proportional-font value above, since fixed-width glyphs crowd at
+   aggressive negative letter-spacing. */
+.dp-title.dp-mono {
+    letter-spacing: -0.015em;
 }
 
 .dp-title-compact {
@@ -283,8 +299,9 @@ p { color: var(--text-dim); }
 
 .dp-stat .v {
     color: var(--text);
-    font-size: 16px;
-    font-weight: 650;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
     line-height: 1.2;
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
@@ -364,6 +381,7 @@ p { color: var(--text-dim); }
 
 .dp-link-index {
     color: var(--text-faint);
+    font-family: var(--font-mono);
     font-size: 10px;
     font-variant-numeric: tabular-nums;
 }
@@ -449,9 +467,10 @@ p { color: var(--text-dim); }
 
 .dp-feature-index {
     color: var(--accent-color);
+    font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.02em;
 }
 
 .dp-feature-title {

@@ -22,7 +22,7 @@ export function renderMasthead(domainTitle, status, isLive = false) {
     <header class="dp-masthead fade-in">
       <div class="dp-brand">
         <span class="dp-brand-mark" aria-hidden="true"></span>
-        <span>${domainTitle}</span>
+        <span class="dp-mono">${domainTitle}</span>
       </div>
       <div class="dp-status">
         <span class="dp-status-dot${isLive ? " pulse" : ""}" aria-hidden="true"></span>

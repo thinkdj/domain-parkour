@@ -98,7 +98,7 @@ function renderContent(cfg) {
                 ? `<div class="dp-eyebrow fade-in"><span class="dot pulse" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
                 : ""
             }
-            <h1 class="dp-title dp-title-compact fade-in-delay-1">${cfg.domainTitle}</h1>
+            <h1 class="dp-title dp-title-compact dp-mono fade-in-delay-1">${cfg.domainTitle}</h1>
             ${
               cfg.tagline
                 ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 28px;">${cfg.tagline}</h2>`

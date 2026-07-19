@@ -54,7 +54,7 @@ export function renderBase({
   additionalStyles = "",
   allThemes = null,
 }) {
-  const accent = accentColor || "#3b82f6";
+  const accent = accentColor || "#e8590c";
   const accentRgb = hexToRgb(accent);
   const styles = minifyStyles(`${coreStyles}\n${additionalStyles}`);
 

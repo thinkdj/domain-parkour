@@ -6,30 +6,38 @@
 
 import { MODE_DEFAULTS } from "../config.js";
 
+// Canonical source: /template-glyphs.js at the workspace root (see
+// parkour_design_system.html §05). Copied in verbatim — no shared package
+// exists between this app and the cloud control plane yet.
 const MODE_SVGS = {
-  parking: `<svg class="mode-glyph" viewBox="0 0 72 54" fill="none" aria-hidden="true">
-    <path d="M8 15h26M8 23h18" />
-    <rect class="glyph-strong" x="8" y="32" width="22" height="8" rx="4" />
-    <path d="M45 14h18M45 23h12M45 32h18M45 41h10" />
+  parking: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+    <rect x="6" y="4" width="44" height="6" rx="3" fill="var(--color-line-strong)"/>
+    <rect x="6" y="16" width="20" height="9" rx="4.5" fill="var(--color-muted)"/>
+    <rect x="70" y="16" width="20" height="9" rx="4.5" fill="var(--color-line-strong)"/>
+    <rect x="6" y="33" width="64" height="4" rx="2" fill="var(--color-line)"/>
+    <rect x="6" y="41" width="50" height="4" rx="2" fill="var(--color-line)"/>
   </svg>`,
-  comingSoon: `<svg class="mode-glyph" viewBox="0 0 72 54" fill="none" aria-hidden="true">
-    <path d="M21 12h30" />
-    <rect x="10" y="21" width="15" height="14" rx="3" />
-    <rect class="glyph-strong" x="29" y="21" width="14" height="14" rx="3" />
-    <rect x="47" y="21" width="15" height="14" rx="3" />
-    <rect class="glyph-fill" x="18" y="42" width="36" height="7" rx="3.5" />
+  comingSoon: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+    <rect x="26" y="4" width="44" height="6" rx="3" fill="var(--color-line-strong)"/>
+    <rect x="26" y="16" width="12" height="12" rx="2.5" fill="var(--color-line)"/>
+    <rect x="42" y="16" width="12" height="12" rx="2.5" fill="var(--color-line)"/>
+    <rect x="58" y="16" width="12" height="12" rx="2.5" fill="var(--color-line)"/>
+    <rect x="34" y="38" width="28" height="9" rx="4.5" fill="var(--color-muted)"/>
   </svg>`,
-  landing: `<svg class="mode-glyph" viewBox="0 0 72 54" fill="none" aria-hidden="true">
-    <path d="M7 15h26M7 23h20M7 31h15" />
-    <rect class="glyph-strong" x="7" y="39" width="17" height="7" rx="3.5" />
-    <rect class="glyph-fill" x="43" y="10" width="22" height="29" rx="4" />
+  landing: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+    <rect x="6" y="4" width="36" height="6" rx="3" fill="var(--color-line-strong)"/>
+    <rect x="6" y="16" width="64" height="4" rx="2" fill="var(--color-line)"/>
+    <rect x="6" y="24" width="56" height="4" rx="2" fill="var(--color-line)"/>
+    <rect x="6" y="34" width="24" height="9" rx="4.5" fill="var(--color-muted)"/>
+    <circle cx="38" cy="38.5" r="3" fill="var(--color-line)"/>
+    <circle cx="47" cy="38.5" r="3" fill="var(--color-line)"/>
+    <circle cx="56" cy="38.5" r="3" fill="var(--color-line)"/>
   </svg>`,
-  profile: `<svg class="mode-glyph" viewBox="0 0 72 54" fill="none" aria-hidden="true">
-    <circle class="glyph-fill" cx="36" cy="11" r="7" />
-    <circle cx="36" cy="11" r="4.5" />
-    <path d="M25 24h22M29 30h14" />
-    <rect x="13" y="38" width="46" height="7" rx="3.5" />
-    <rect class="glyph-fill" x="13" y="48" width="46" height="5" rx="2.5" />
+  profile: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+    <circle cx="48" cy="10" r="8" fill="var(--color-line)"/>
+    <rect x="32" y="23" width="32" height="5" rx="2.5" fill="var(--color-line-strong)"/>
+    <rect x="24" y="32" width="48" height="4" rx="2" fill="var(--color-line)"/>
+    <rect x="26" y="42" width="44" height="9" rx="4.5" fill="var(--color-muted)"/>
   </svg>`,
 };
 
@@ -321,7 +329,10 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
           </div>
           <div class="field">
             <label class="checkbox">
-              <input id="f-showCredit" type="checkbox" />
+              <span class="switch">
+                <input id="f-showCredit" type="checkbox" />
+                <span class="switch-track" aria-hidden="true"></span>
+              </span>
               <span>Show “Built with Domain Parkour · powered by Cloudflare”</span>
             </label>
           </div>
@@ -380,31 +391,44 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
 
 const ADMIN_CSS = `
   :root {
-    --bg: #fafaf9;
+    /* Signal — Domain Parkour's base theme (parkour_design_system.html).
+       Bridging aliases at the end let the canonical template-glyph SVGs
+       (template-glyphs.js) be copied in without modification. */
+    --bg: #f8f9fb;
     --panel: #ffffff;
-    --ink: #1f2937;
-    --ink-dim: #6b7280;
-    --line: #e5e7eb;
-    --line-strong: #d1d5db;
-    --accent: #3b82f6;
-    --accent-soft: #eff6ff;
-    --danger: #dc2626;
-    --good: #10b981;
-    --radius: 8px;
-    --shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --panel-soft: #f8f9fb;
+    --panel-hover: #f1f3f6;
+    --ink: #101828;
+    --ink-dim: #475467;
+    --ink-faint: #98a2b3;
+    --line: #e6e8ee;
+    --line-strong: #d3d7e0;
+    --accent: #e8590c;
+    --accent-soft: color-mix(in srgb, var(--accent) 9%, var(--panel));
+    --danger: #d92d20;
+    --danger-soft: color-mix(in srgb, var(--danger) 10%, var(--panel));
+    --good: #079455;
+    --warning: #dc6803;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 16px 40px rgba(16, 24, 40, 0.08);
+    --mono: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --color-line: var(--line);
+    --color-line-strong: var(--line-strong);
+    --color-muted: var(--ink-faint);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0c0c0d;
-      --panel: #161618;
-      --ink: #e5e7eb;
-      --ink-dim: #9ca3af;
-      --line: #1f2024;
-      --line-strong: #2a2b30;
-      --accent: #3b82f6;
-      --accent-soft: rgba(59, 130, 246, 0.12);
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --bg: #111726;
+      --panel: #0d1220;
+      --panel-soft: #111726;
+      --panel-hover: #161d2e;
+      --ink: #f4f6fa;
+      --ink-dim: #a9b1c2;
+      --ink-faint: #66708a;
+      --line: #232b3d;
+      --line-strong: #313b55;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
     }
   }
   * { box-sizing: border-box; }
@@ -489,7 +513,7 @@ const ADMIN_CSS = `
   .btn.primary:hover { filter: brightness(1.05); }
   .btn.ghost { background: transparent; }
   .btn.danger { color: var(--danger); border-color: transparent; }
-  .btn.danger:hover { background: rgba(220, 38, 38, 0.08); border-color: var(--danger); }
+  .btn.danger:hover { background: color-mix(in srgb, var(--danger) 8%, transparent); border-color: var(--danger); }
   .btn.small { padding: 4px 10px; font-size: 12px; }
   #cred-warning {
     background: #fffbeb;
@@ -499,18 +523,13 @@ const ADMIN_CSS = `
     font-size: 12px;
   }
   #cred-warning code {
-    background: rgba(146, 64, 14, 0.1);
+    background: color-mix(in srgb, var(--warning) 12%, transparent);
     padding: 1px 5px;
     border-radius: 3px;
     font-family: var(--mono);
   }
   @media (prefers-color-scheme: dark) {
-    #cred-warning {
-      background: rgba(251, 191, 36, 0.08);
-      color: #fde68a;
-      border-bottom-color: rgba(251, 191, 36, 0.2);
-    }
-    #cred-warning code { background: rgba(253, 230, 138, 0.12); }
+    #cred-warning code { background: color-mix(in srgb, var(--warning) 18%, transparent); }
   }
   .workspace {
     flex: 1 1 auto;
@@ -677,7 +696,7 @@ const ADMIN_CSS = `
   }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-dim); }
   .dot.live { background: var(--good); box-shadow: 0 0 6px var(--good); }
-  .dot.pending { background: #f59e0b; }
+  .dot.pending { background: var(--warning); }
   iframe {
     flex: 1 1 auto;
     border: none;
@@ -706,44 +725,6 @@ const ADMIN_CSS = `
     .editor { border-right: none; border-bottom: 1px solid var(--line); }
   }
 
-  /* Page Studio refresh */
-  :root {
-    --bg: #f5f5f2;
-    --panel: #ffffff;
-    --panel-soft: #fafaf8;
-    --panel-hover: #f2f2ef;
-    --ink: #1a1b1d;
-    --ink-dim: #676a70;
-    --ink-faint: #96999f;
-    --line: #e5e5e1;
-    --line-strong: #d1d1cb;
-    --accent: #3b82f6;
-    --accent-soft: rgba(59, 130, 246, 0.11);
-    --danger: #c63d3d;
-    --danger-soft: rgba(198, 61, 61, 0.09);
-    --good: #16a36a;
-    --warning: #d89016;
-    --radius: 11px;
-    --radius-lg: 16px;
-    --shadow: 0 16px 40px rgba(24, 25, 27, 0.07);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #111214;
-      --panel: #191a1e;
-      --panel-soft: #151619;
-      --panel-hover: #202126;
-      --ink: #f1f2f3;
-      --ink-dim: #a5a8ae;
-      --ink-faint: #6e7178;
-      --line: #292b30;
-      --line-strong: #3a3d44;
-      --accent-soft: rgba(59, 130, 246, 0.14);
-      --danger: #f06a6a;
-      --danger-soft: rgba(240, 106, 106, 0.1);
-      --shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
-    }
-  }
   html { color-scheme: light; }
   @media (prefers-color-scheme: dark) { html { color-scheme: dark; } }
   body {
@@ -778,7 +759,7 @@ const ADMIN_CSS = `
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: var(--ink);
+    background: var(--accent);
     font-size: 13px;
     box-shadow: inset 0 1px rgba(255,255,255,0.15);
   }
@@ -814,11 +795,11 @@ const ADMIN_CSS = `
   .mobile-view-switcher button:focus-visible,
   summary:focus-visible,
   .preset-row:focus-visible {
-    outline: 3px solid rgba(59,130,246,0.3);
+    outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
     outline-offset: 2px;
   }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-  .btn.primary { box-shadow: 0 7px 18px rgba(59,130,246,0.2), inset 0 1px rgba(255,255,255,0.16); }
+  .btn.primary { box-shadow: 0 7px 18px color-mix(in srgb, var(--accent) 20%, transparent), inset 0 1px rgba(255,255,255,0.16); }
   .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
   .btn.primary:disabled {
     background: var(--panel-hover);
@@ -850,9 +831,9 @@ const ADMIN_CSS = `
     align-items: center;
     gap: 10px;
     padding: 9px 18px;
-    background: color-mix(in srgb, #f7b329 10%, var(--panel));
-    border-bottom-color: color-mix(in srgb, #f7b329 28%, var(--line));
-    color: color-mix(in srgb, #9a6000 78%, var(--ink));
+    background: color-mix(in srgb, var(--warning) 10%, var(--panel));
+    border-bottom-color: color-mix(in srgb, var(--warning) 28%, var(--line));
+    color: color-mix(in srgb, var(--warning) 78%, var(--ink));
   }
   .warning-mark {
     width: 20px;
@@ -862,8 +843,8 @@ const ADMIN_CSS = `
     justify-content: center;
     flex: 0 0 auto;
     border-radius: 50%;
-    background: #f7b329;
-    color: #201300;
+    background: var(--warning);
+    color: #fff;
     font-weight: 800;
   }
   .mobile-view-switcher { display: none; }
@@ -967,23 +948,23 @@ const ADMIN_CSS = `
     font-weight: 650;
     line-height: 1.15;
   }
+  /* Neutral by design (see parkour_design_system.html §05): the glyph never
+     recolors on hover/active. The tab's own background/shadow and the label
+     text below carry the selected state instead. */
   .mode-tab .mode-glyph {
-    width: min(58px, 100%);
-    height: 40px;
-    color: var(--ink-faint);
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: color 0.16s ease, transform 0.16s ease;
+    width: min(72px, 100%);
+    height: auto;
+    transition: transform 0.16s ease;
   }
-  .mode-tab .mode-glyph .glyph-fill { fill: currentColor; stroke: none; opacity: 0.13; }
-  .mode-tab .mode-glyph .glyph-strong { fill: currentColor; stroke: none; opacity: 0.42; }
-  .mode-tab:hover .mode-glyph { color: var(--ink-dim); }
   .mode-tab.active { background: var(--panel); color: var(--ink); box-shadow: 0 2px 7px rgba(0,0,0,0.08); }
-  .mode-tab.active .mode-glyph { color: var(--accent); transform: translateY(-1px); }
+  .mode-tab.active .mode-glyph { transform: translateY(-1px); }
+  .mode-tab.active span { color: var(--accent); }
   input[type="color"] { height: 42px; border-color: var(--line-strong); border-radius: 10px; background: var(--panel-soft); }
   input[type="color"]::-webkit-color-swatch { border-radius: 7px; }
+  /* The domain is the hero: the hostname is the one machine-readable value
+     in this form, so it renders in the mono role (see design principle
+     "mono for machine truth"). */
+  #f-hostname { font-family: var(--mono); letter-spacing: -0.01em; }
   .common-content { display: flex; flex-direction: column; gap: 17px; }
   .common-content.is-hidden { display: none; }
   .mode-block { gap: 17px; }
@@ -1043,7 +1024,26 @@ const ADMIN_CSS = `
   .social-grid { gap: 10px; }
   .social-grid label { color: var(--ink-dim); font-size: 10px; }
   label.checkbox { min-height: 38px; gap: 10px; color: var(--ink); }
-  label.checkbox input { width: 17px; height: 17px; accent-color: var(--accent); }
+  .switch { position: relative; display: inline-flex; flex: 0 0 auto; width: 38px; height: 22px; }
+  .switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .switch-track {
+    position: absolute; inset: 0;
+    border-radius: 999px;
+    background: var(--line-strong);
+    transition: background-color 0.15s ease;
+  }
+  .switch-track::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease;
+  }
+  .switch input:checked + .switch-track { background: var(--accent); }
+  .switch input:checked + .switch-track::after { transform: translateX(16px); }
+  .switch input:focus-visible + .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
   .presets { gap: 7px; }
   .preset-row {
     width: 100%;
@@ -1072,7 +1072,7 @@ const ADMIN_CSS = `
   .preview-status-wrap { display: flex; align-items: center; gap: 8px; }
   .dot { flex: 0 0 auto; }
   .dot.live { box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 12%, transparent); }
-  .dot.pending { box-shadow: 0 0 0 4px color-mix(in srgb, #f59e0b 12%, transparent); }
+  .dot.pending { box-shadow: 0 0 0 4px color-mix(in srgb, var(--warning) 12%, transparent); }
   .preview-sizes { display: inline-flex; padding: 3px; border-radius: 9px; background: var(--panel-hover); }
   .preview-sizes button,
   .mobile-view-switcher button {
@@ -1457,7 +1457,7 @@ const ADMIN_JS = `
     els.domainTitle.value = cfg.domainTitle || '';
     els.title.value = cfg.title || '';
     els.description.value = cfg.description || '';
-    els.accentColor.value = cfg.accentColor || '#3b82f6';
+    els.accentColor.value = cfg.accentColor || '#e8590c';
     els.salePrice.value = cfg.salePrice || '';
     els.contactEmail.value = cfg.contactEmail || '';
     els.domainAgeYears.value = cfg.domainAgeYears || '';
@@ -1553,7 +1553,7 @@ const ADMIN_JS = `
   }
 
   function syncPreviewAccent() {
-    const accent = els.accentColor.value || '#3b82f6';
+    const accent = els.accentColor.value || '#e8590c';
     try {
       const doc = els.iframe.contentDocument;
       if (!doc) return;
@@ -1652,7 +1652,7 @@ const ADMIN_JS = `
 
   function newDomain() {
     state.current = null;
-    applyConfig({ hostname: '', mode: 'landing', config: { accentColor: '#3b82f6', showCredit: true } });
+    applyConfig({ hostname: '', mode: 'landing', config: { accentColor: '#e8590c', showCredit: true } });
     els.picker.value = '';
     els.hostname.focus();
     scheduleRender();
