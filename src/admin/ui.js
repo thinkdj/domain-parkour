@@ -1235,6 +1235,7 @@ const ADMIN_JS = `
     mode: 'landing',
     isDirty: false,
     avatarObjectKey: null,
+    fullConfig: {},          // accumulates fields from every mode so switching tabs never drops data
   };
 
   function toast(msg, isError = false) {
@@ -1410,16 +1411,16 @@ const ADMIN_JS = `
   }
 
   function gatherConfig() {
-    const cfg = {
-      mode: state.mode,
-      domainTitle: els.domainTitle.value.trim() || undefined,
-      title: els.title.value.trim() || undefined,
-      description: els.description.value.trim() || undefined,
-      accentColor: els.accentColor.value,
-      footerText: els.footerText.value,
-      showCredit: els.showCredit.checked,
-      socialLinks: collectSocial(),
-    };
+    // Start from everything already known (incl. fields belonging to other page
+    // types) so switching the mode tab never drops previously filled-in data.
+    const cfg = { ...state.fullConfig, mode: state.mode };
+    cfg.domainTitle = els.domainTitle.value.trim() || undefined;
+    cfg.title = els.title.value.trim() || undefined;
+    cfg.description = els.description.value.trim() || undefined;
+    cfg.accentColor = els.accentColor.value;
+    cfg.footerText = els.footerText.value;
+    cfg.showCredit = els.showCredit.checked;
+    cfg.socialLinks = collectSocial();
     collectCopySettings(cfg);
     if (state.mode === 'parking') {
       cfg.salePrice = els.salePrice.value.trim() || undefined;
@@ -1446,6 +1447,7 @@ const ADMIN_JS = `
       cfg.links = collectRepeater(els.profileLinksList, 'profileLink');
     }
     Object.keys(cfg).forEach((k) => cfg[k] === undefined && delete cfg[k]);
+    state.fullConfig = cfg;
     return cfg;
   }
 
@@ -1453,6 +1455,7 @@ const ADMIN_JS = `
     const cfg = (record && record.config) || {};
     const mode = (record && record.mode) || cfg.mode || 'landing';
     const defaults = MODE_DEFAULTS[mode] || {};
+    state.fullConfig = { ...cfg, mode };
     els.hostname.value = (record && record.hostname) || '';
     els.domainTitle.value = cfg.domainTitle || '';
     els.title.value = cfg.title || '';
