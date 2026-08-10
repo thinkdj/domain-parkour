@@ -68,11 +68,30 @@ test("layering comes from the z-index scale (§04)", () => {
   }
 });
 
+test("the admin renders from the shared component layer, not a copy of it (§06)", () => {
+  const admin = styleOf(renderAdminUI({ presets: [] }));
+  // The generated component layer is inlined verbatim, so these are its rules,
+  // not lookalikes: if the admin ever forks one, the duplicate shows up here.
+  for (const rule of [
+    ".btn{", ".btn-primary{", ".badge{", ".badge-success{", ".alert{", ".alert-warning{",
+    ".input,.textarea,.select{", ".switch-track{", ".dialog{", ".toast{", ".undo-bar{",
+    ".choice-card{", ".msg-list{", ".filter-tab{", ".empty-state{", ".repeater{",
+  ]) {
+    assert.ok(admin.includes(rule), `admin is missing the shared ${rule} recipe`);
+  }
+  // One implementation, not two: nothing may open a second rule for these.
+  // Anchored on a rule boundary so `.card-actions .btn{...}` is not a match.
+  for (const selector of ["btn", "badge", "alert", "switch-track", "toast", "undo-bar", "choice-card"]) {
+    const opens = admin.match(new RegExp(`(?:^|\\}|\\n)\\.${selector}\\{`, "g")) || [];
+    assert.equal(opens.length, 1, `.${selector} opens ${opens.length} rules, expected 1`);
+  }
+});
+
 test("the admin and the pages it edits share one token block (§02, §07)", () => {
   const page = styleOf(renderPage("landing"));
   const admin = styleOf(renderAdminUI({ presets: [] }));
   // Both resolve to the same design-system/tokens.css values, though the page
-  // carries only the subset it uses (pages/build-tokens.mjs) — danger and
+  // carries only the subset it uses (pages/build-tokens.mjs) - danger and
   // warning belong to the admin, so they are not in this list.
   for (const token of [
     "--color-surface:light-dark(#FFFFFF,#0D1220)",

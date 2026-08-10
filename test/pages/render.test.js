@@ -17,6 +17,7 @@ const FIXTURES = {
     registration_date: '2015-04-02',
     socials: { github: 'https://github.com/thinkdj', email: 'hi@example.com' },
     theme: { accent: '#0f766e' },
+    capture: { offer: true, contact: true },
   },
   coming_soon: {
     headline: 'Something is coming',
@@ -24,7 +25,7 @@ const FIXTURES = {
     launch_date: '2048-01-01T00:00:00Z',
     launch_note: 'Check back then.',
     features: [{ title: 'Fast', description: 'Very' }, { title: 'Small' }],
-    capture: { waitlist: true, consent: 'Email me once at launch.' },
+    capture: { waitlist: true, contact: true, consent: 'Email me once at launch.' },
   },
   landing: {
     headline: 'Email and API services',
@@ -32,12 +33,14 @@ const FIXTURES = {
     destination_url: 'https://www.example.com/',
     links_label: 'Explore',
     links: [{ title: 'Main site', url: 'https://www.example.com' }, { title: 'Docs', url: 'https://docs.example.com' }],
+    capture: { contact: true },
   },
   profile: {
     name: 'Ada Example',
     role: 'Designer & Engineer',
     bio: 'Building delightful tools.',
     links: [{ title: 'Portfolio', url: 'https://example.com' }, { title: 'Mail', url: 'hi@example.com' }],
+    capture: { contact: true, survey_question: 'What would you build here?' },
   },
   maintenance: {
     headline: 'Back shortly',

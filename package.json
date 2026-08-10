@@ -14,7 +14,7 @@
     "db:migrate:local": "wrangler d1 migrations apply domain-parkour-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply domain-parkour-db --remote",
     "db:console": "wrangler d1 execute domain-parkour-db --local --command \"SELECT hostname, mode, datetime(updated_at, 'unixepoch') AS updated FROM domains ORDER BY updated_at DESC\"",
-    "db:leads": "wrangler d1 execute domain-parkour-db --local --command \"SELECT datetime(created_at,'unixepoch') AS at, hostname, kind, email, offer_amount, message, answer FROM submissions ORDER BY created_at DESC LIMIT 50\"",
+    "db:inbox": "wrangler d1 execute domain-parkour-db --local --command \"SELECT datetime(created_at,'unixepoch') AS at, hostname, kind, status, email, subject, offer_amount, message, answer FROM submissions ORDER BY created_at DESC LIMIT 50\"",
     "tail": "wrangler tail"
   },
   "keywords": [

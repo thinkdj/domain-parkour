@@ -3,7 +3,7 @@
  *
  * Every rule is a recipe from design-system/parkour_design_system.html applied to
  * the tokens in ./tokens.generated.js. Carried over from the OSS `styles/core.js`,
- * which was the better of the two implementations — cloud shipped a 1 KB inline
+ * which was the better of the two implementations - cloud shipped a 1 KB inline
  * string with no design system at all.
  *
  * Two changes from the OSS original:
@@ -123,25 +123,6 @@ const PANEL = `
 .dp-price{
   margin-top:12px;color:var(--color-ink);font-family:var(--font-display);
   font-size:clamp(1.75rem,4vw,2.25rem);font-weight:700;line-height:1.15;letter-spacing:-0.02em;
-}
-.dp-contact-disclosure{
-  margin-top:24px;overflow:hidden;border:1px solid var(--color-primary);border-radius:var(--radius-md);
-}
-.dp-contact-disclosure summary{
-  min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:0 16px;background:var(--color-primary);color:#fff;font-size:14px;font-weight:600;
-  cursor:pointer;list-style:none;transition:background-color var(--t-fast) var(--ease);
-}
-.dp-contact-disclosure summary:hover{background:var(--color-primary-hover)}
-.dp-contact-disclosure summary::-webkit-details-marker{display:none}
-.dp-contact-disclosure summary::after{
-  content:'';width:8px;height:8px;flex:0 0 auto;
-  border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
-  transform:translateY(-2px) rotate(45deg);transition:transform var(--t-fast) var(--ease);
-}
-.dp-contact-disclosure[open] summary::after{transform:translateY(2px) rotate(225deg)}
-.dp-contact-disclosure .dp-form{
-  margin:0;padding:16px;background:var(--color-surface);border-top:1px solid var(--color-line);
 }`;
 
 const BUTTON = `
@@ -225,8 +206,46 @@ const PROFILE = `
   .dp-profile-head-copy{margin-top:20px}
 }`;
 
+/**
+ * Forms and the disclosures that hold them. One block, because a disclosure only
+ * ever wraps a capture form - shipping its 600 bytes to a page with no form was
+ * the difference between the parking template fitting the raw budget and not.
+ */
 const FORM = `
-.dp-form{display:grid;gap:12px;margin-top:24px;text-align:left}
+.dp-capture{display:grid;gap:12px;margin-top:24px;max-width:60ch}
+.dp-contact-disclosure{
+  overflow:hidden;border:1px solid var(--color-primary);border-radius:var(--radius-md);
+}
+.dp-panel .dp-contact-disclosure{margin-top:24px}
+.dp-capture .dp-contact-disclosure{margin-top:0}
+.dp-contact-disclosure summary{
+  min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 16px;background:var(--color-primary);color:#fff;font-size:14px;font-weight:600;
+  cursor:pointer;list-style:none;transition:background-color var(--t-fast) var(--ease);
+}
+.dp-contact-disclosure summary:hover{background:var(--color-primary-hover)}
+.dp-contact-disclosure summary::-webkit-details-marker{display:none}
+.dp-contact-disclosure summary::after{
+  content:'';width:8px;height:8px;flex:0 0 auto;
+  border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+  transform:translateY(-2px) rotate(45deg);transition:transform var(--t-fast) var(--ease);
+}
+.dp-contact-disclosure[open] summary::after{transform:translateY(2px) rotate(225deg)}
+.dp-disclosure-body{
+  padding:16px;background:var(--color-surface);border-top:1px solid var(--color-line);
+}
+/* Only the first way to reach the owner is a filled button. A page offering
+ * two of them is a wall of orange that says nothing about which one to use. */
+.dp-quiet{border-color:var(--color-line-strong)}
+.dp-quiet summary{background:var(--color-surface-2);color:var(--color-ink)}
+.dp-quiet summary:hover{background:var(--color-surface-3)}
+.dp-disclosure-body .dp-copy{margin-top:0}
+.dp-form{display:grid;gap:12px;text-align:left}
+/* A form sitting straight in a panel - the waitlist - needs the panel's rhythm.
+ * Inside a disclosure the padding already provides it, and that rule wins by
+ * coming second at equal specificity. */
+.dp-panel .dp-form{margin-top:24px}
+.dp-disclosure-body .dp-form{margin-top:16px}
 .dp-form label{display:grid;gap:6px;color:var(--color-body);font-size:13px}
 .dp-form input,.dp-form textarea{
   width:100%;padding:10px 12px;border:1px solid var(--color-line-strong);
@@ -262,10 +281,17 @@ function minify(css) {
  * @param {{ accent?: string, withForm?: boolean }} [options]
  */
 export function pageCss(mode, { accent = '', withForm = false } = {}) {
-  const blocks = [BASE, ...(BLOCKS[mode] || BLOCKS.parking)];
-  if (withForm) blocks.push(FORM);
+  // A Set, because a form needs the button recipe and most modes already carry
+  // it - pushing blindly shipped `.dp-button` twice on a parking page and not at
+  // all on a coming-soon one, where the waitlist submit is the only button.
+  const blocks = new Set([BASE, ...(BLOCKS[mode] || BLOCKS.parking)]);
+  if (withForm) {
+    blocks.add(PANEL);
+    blocks.add(BUTTON);
+    blocks.add(FORM);
+  }
   // The accent override must land on :root, where the derived mixes are declared;
   // set further down the tree the hovers stay on the old colour.
   const override = accent ? `:root{--color-primary:${accent}}` : '';
-  return pageTokens + minify(blocks.join('\n')) + override;
+  return pageTokens + minify([...blocks].join('\n')) + override;
 }

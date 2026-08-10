@@ -1,15 +1,18 @@
 /**
  * Capture form handling for the self-hosted app.
  *
- * The shared renderer emits offer / waitlist / survey forms, so this app has to
- * accept them — a form that posts into a 404 is worse than no form. The markup
- * and the "is this kind allowed" rule come from @domainparkour/pages so the two cannot
- * disagree; everything below is storage, which is this app's own business.
+ * The shared renderer emits contact / offer / waitlist / survey forms, so this
+ * app has to accept them - a form that posts into a 404 is worse than no form.
+ * The markup, the field caps and the "is this kind allowed" rule come from
+ * @domainparkour/pages so the two cannot disagree; everything below is storage,
+ * which is this app's own business.
  *
- * Read what arrives with `pnpm db:leads`.
+ * What arrives lands in the inbox at `/_admin_/#inbox`.
  */
 
-import { captureAllows, KINDS, plainText, safeEmail, THANKS_PATH } from '../pages/index.js';
+import {
+  captureAllows, FIELD_LIMITS, KINDS, plainText, safeEmail, THANKS_PATH,
+} from '../pages/index.js';
 
 const MAX_BODY_BYTES = 16 * 1024;
 
@@ -72,32 +75,40 @@ export async function submitLead(request, env, hostname, site) {
   if (!KINDS.includes(kind) || !captureAllows(kind, site.mode, site.config)) return reject('Not found.', 404);
 
   // Honeypot: a bot fills every field, so a filled one means silence, not an
-  // error — telling it what tripped the check just helps it try again.
+  // error - telling it what tripped the check just helps it try again.
   if (plainText(form.get('website'), 200)) return thanks(kind);
 
   const capture = site.config.capture || {};
-  if (capture.consent && form.get('consent') !== 'yes') return reject('Consent is required.', 400);
+  const consented = form.get('consent') === 'yes';
+  if (capture.consent && !consented) return reject('Consent is required.', 400);
 
   const email = safeEmail(form.get('email'));
-  const answer = plainText(form.get('answer'), 500);
-  if ((kind === 'offer' || kind === 'waitlist') && !email) return reject('A valid email is required.', 400);
+  const answer = plainText(form.get('answer'), FIELD_LIMITS.answer);
+  const message = plainText(form.get('message'), FIELD_LIMITS.message);
+  if (kind !== 'survey' && !email) return reject('A valid email is required.', 400);
   if (kind === 'survey' && !answer) return reject('An answer is required.', 400);
+  if (kind === 'contact' && !message) return reject('A message is required.', 400);
 
+  const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
     `INSERT OR IGNORE INTO submissions
-       (id, hostname, kind, email, name, message, offer_amount, answer, dedupe_key, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, hostname, kind, status, email, name, subject, message, offer_amount, answer,
+        consent, dedupe_key, created_at, updated_at)
+     VALUES (?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     crypto.randomUUID(),
     hostname,
     kind,
     email || null,
-    plainText(form.get('name'), 120) || null,
-    plainText(form.get('message'), 1000) || null,
-    plainText(form.get('offer_amount'), 80) || null,
+    plainText(form.get('name'), FIELD_LIMITS.name) || null,
+    plainText(form.get('subject'), FIELD_LIMITS.subject) || null,
+    message || null,
+    plainText(form.get('offer_amount'), FIELD_LIMITS.offer_amount) || null,
     answer || null,
+    consented ? 1 : 0,
     await dedupeKey(hostname, kind, email),
-    Math.floor(Date.now() / 1000),
+    now,
+    now,
   ).run();
 
   return thanks(kind);

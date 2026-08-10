@@ -1,5 +1,5 @@
 /**
- * Coming soon — a launch date, what to expect, and optionally a waitlist.
+ * Coming soon - a launch date, what to expect, and optionally a waitlist.
  *
  * OSS's layout and feature cards. The ticking countdown is deliberately gone: it
  * was the page's only reason to run script, and a visitor page now ships none.
@@ -12,12 +12,14 @@
  */
 
 import { escapeHtml } from '../safety.js';
-import { eyebrow, features, footer, masthead, socials, stats } from '../components.js';
+import {
+  captureBlock, captureNeedsForm, eyebrow, features, footer, masthead, socials, stats,
+} from '../components.js';
 import { captureAllows, leadForm } from '../forms.js';
 import { label, LABELS } from '../defaults.js';
 
 export function needsForm(config) {
-  return captureAllows('waitlist', 'coming_soon', config);
+  return captureNeedsForm('coming_soon', config, 'waitlist');
 }
 
 /** A launch date the owner typed, shown the way a reader expects it. */
@@ -71,6 +73,7 @@ export function render(view) {
         ${cfg.subhead ? `<p class="dp-lede">${escapeHtml(cfg.subhead)}</p>` : ''}
         ${cfg.body ? `<p class="dp-copy">${escapeHtml(cfg.body)}</p>` : ''}
         ${socials(cfg.socials)}
+        ${captureBlock('coming_soon', cfg, { quiet: captureAllows('waitlist', 'coming_soon', cfg) })}
       </section>
       ${side}
     </div>

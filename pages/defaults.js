@@ -8,7 +8,7 @@
  * OVERRIDABLE), which is one schema entry instead of nineteen.
  *
  * Everything here is the fallback. Localisation, when it arrives, swaps this
- * object for a per-language one — one seam rather than nineteen.
+ * object for a per-language one - one seam rather than nineteen.
  */
 
 export const LABELS = {
@@ -17,6 +17,7 @@ export const LABELS = {
   linksRegion: 'Links',
   featuresRegion: 'What to expect',
   offerRegion: 'Purchase inquiry',
+  captureRegion: 'Get in touch',
 
   priceLabel: 'Asking price',
   inquiryLabel: 'Purchase inquiries',
@@ -35,6 +36,11 @@ export const LABELS = {
   continueButton: 'Continue',
   surveyButton: 'Send answer',
 
+  contactSummary: 'Contact the owner',
+  contactIntro: 'Write to the owner directly. Their address is never published on this page.',
+  contactButton: 'Send message',
+  surveySummary: 'Answer one question',
+
   maintenanceTitle: 'We are making a careful update.',
   maintenanceCopy: 'Please try again shortly.',
   maintenanceHelp: 'Status or help',
@@ -43,16 +49,18 @@ export const LABELS = {
   thanksOffer: 'Your offer is with the owner.',
   thanksWaitlist: 'You are on the list.',
   thanksSurvey: 'Thank you for sharing your answer.',
+  thanksContact: 'Your message is with the owner.',
 };
 
 /**
  * The labels an owner may override through `config.labels`. Anything outside this
- * list is renderer copy, not configuration — the aria-labels on landmark regions
+ * list is renderer copy, not configuration - the aria-labels on landmark regions
  * in particular, which are accessibility contract rather than voice.
  */
 export const OVERRIDABLE = [
   'priceLabel', 'inquiryLabel', 'noPriceTitle', 'contactCopy', 'availabilityCopy',
   'offerButton', 'launchLabel', 'pageTitleSuffix',
+  'contactSummary', 'contactIntro', 'contactButton',
 ];
 
 /** The owner's word for something, or ours. */

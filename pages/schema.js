@@ -2,7 +2,7 @@
  * The one config vocabulary both apps speak.
  *
  * Canonical keys are snake_case, because that is what cloud's live
- * `published_sites.config_json` rows already contain — switching to OSS's
+ * `published_sites.config_json` rows already contain - switching to OSS's
  * camelCase would have needed a data migration for zero benefit. The alias table
  * absorbs the OSS spelling and cloud's older key names instead, so every stored
  * row and every demo preset keeps rendering.
@@ -21,7 +21,7 @@ export const MODES = ['parking', 'coming_soon', 'landing', 'profile', 'redirect'
 export const DEFAULT_MODE = 'parking';
 export const SCHEMA_VERSION = 2;
 
-/** Text fields and their caps. The cap is the validation — there is no free-length field. */
+/** Text fields and their caps. The cap is the validation - there is no free-length field. */
 const TEXT = {
   domain_title: 120,
   eyebrow: 120,
@@ -90,7 +90,7 @@ const RETIRED = new Set(['daysLabel', 'hoursLabel', 'minutesLabel', 'secondsLabe
 
 /**
  * The parking stats row used to be six flat fields. It is a bounded list now, so
- * the pairs fold into entries — value first, because a label with nothing to
+ * the pairs fold into entries - value first, because a label with nothing to
  * label is not a stat.
  */
 const STAT_PAIRS = [
@@ -278,7 +278,7 @@ function normalizeDelivery(raw, strict) {
       countdown_seconds: Number.isInteger(countdown) && countdown >= 1 && countdown <= 60 ? countdown : 5,
     },
     maintenance: {
-      // 60s–7d. Below a minute it is noise; above a week no client will honour it.
+      // 60s-7d. Below a minute it is noise; above a week no client will honour it.
       retry_after_seconds: Number.isInteger(retry) && retry >= 60 && retry <= 604800 ? retry : 0,
       help_url: safeHttpsUrl(maintenance.help_url),
     },
@@ -387,10 +387,13 @@ export function normalize(raw, { mode, strict = false } = {}) {
   const captured = {
     offer: bool(capture.offer),
     waitlist: bool(capture.waitlist),
+    contact: bool(capture.contact),
     survey_question: plainText(capture.survey_question, 180),
     consent: plainText(capture.consent, 240),
   };
-  if (captured.offer || captured.waitlist || captured.survey_question) config.capture = captured;
+  if (captured.offer || captured.waitlist || captured.contact || captured.survey_question) {
+    config.capture = captured;
+  }
 
   const labels = {};
   for (const [key, value] of Object.entries(object(source.labels))) {

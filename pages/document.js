@@ -3,7 +3,7 @@
  *
  * The SEO and social block comes from the cloud runtime, which was the only side
  * that had one. `configured` exists because a hostile Host header must not become
- * a canonical URL or a sitemap entry — an unconfigured host renders, but claims
+ * a canonical URL or a sitemap entry - an unconfigured host renders, but claims
  * nothing about itself.
  */
 
@@ -45,7 +45,7 @@ function buildView(mode, hostname, config) {
 }
 
 /**
- * The body fragment only — what the editor preview shows inside its panel.
+ * The body fragment only - what the editor preview shows inside its panel.
  * Same code path as the served page, so the preview cannot drift from production.
  */
 export function renderBody(mode, hostname, rawConfig = {}) {
@@ -148,7 +148,7 @@ export function renderPage(mode, hostname, rawConfig = {}, { configured = true, 
  * The pieces the control plane's editor panel shows while someone types.
  *
  * The panel is a styled box inside the admin, not a page, so it wants the parts
- * rather than a document — but they come from the same normalization and the same
+ * rather than a document - but they come from the same normalization and the same
  * templates, so what it shows cannot describe a page the renderer would not
  * produce.
  *
@@ -172,13 +172,19 @@ export function renderPreviewParts(mode, hostname, rawConfig = {}) {
 /**
  * The confirmation shown after a capture form is submitted.
  *
- * It borrows the maintenance layout — a narrow card with a heading and a line of
- * copy — rather than earning a seventh template. `configured: false` keeps it out
+ * It borrows the maintenance layout - a narrow card with a heading and a line of
+ * copy - rather than earning a seventh template. `configured: false` keeps it out
  * of the index and off the canonical URL.
  */
+const THANKS_COPY = {
+  offer: 'thanksOffer',
+  waitlist: 'thanksWaitlist',
+  survey: 'thanksSurvey',
+  contact: 'thanksContact',
+};
+
 export function renderThanks(kind, hostname = '') {
-  const message = kind === 'offer' ? LABELS.thanksOffer
-    : kind === 'waitlist' ? LABELS.thanksWaitlist : LABELS.thanksSurvey;
+  const message = LABELS[THANKS_COPY[kind] || 'thanksContact'];
   return renderPage('maintenance', hostname, {
     status_label: 'Received',
     headline: LABELS.thanksTitle,

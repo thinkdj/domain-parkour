@@ -1,5 +1,5 @@
 /**
- * Landing — the domain is in use and points somewhere, or lists a few links.
+ * Landing - the domain is in use and points somewhere, or lists a few links.
  *
  * OSS's layout, plus the cloud runtime's single-destination CTA. The masthead
  * badge is the live variant here: this is the one mode where the hostname is
@@ -7,13 +7,13 @@
  */
 
 import { escapeHtml } from '../safety.js';
-import { eyebrow, footer, linkList, masthead, socials } from '../components.js';
+import { captureBlock, captureNeedsForm, eyebrow, footer, linkList, masthead, socials } from '../components.js';
 import { LABELS } from '../defaults.js';
 
 export const DESTINATION_PATH = '/_parkour/go/destination';
 
-export function needsForm() {
-  return false;
+export function needsForm(config) {
+  return captureNeedsForm('landing', config);
 }
 
 export function render(view) {
@@ -34,6 +34,7 @@ export function render(view) {
             + `${escapeHtml(LABELS.continueButton)}</a></p>`
           : ''}
         ${socials(cfg.socials)}
+        ${captureBlock('landing', cfg)}
       </section>
       ${links}
     </div>

@@ -1,20 +1,24 @@
 /**
- * Admin SPA — single HTML document with embedded styles and client script.
- * Talks to /_admin_/api/* for domain data and R2 uploads, then POSTs unsaved
- * configs to /_admin_/preview for the live iframe.
+ * Admin SPA - a single HTML document with embedded styles and client script.
  *
- * Every recipe here comes from parkour_design_system.html and runs on the
- * shared tokens in ../styles/tokens.js — the admin and the pages it edits
- * are the same design system, not two that resemble each other.
+ * Two views live here, switched without a page load:
+ *   Pages   the editor and its live preview, talking to /_admin_/api/domains
+ *   Inbox   everything visitors have sent, from /_admin_/api/inbox
+ *
+ * The component vocabulary is the design system's, imported through
+ * ../styles/tokens.js and inlined because an admin page must ship no external
+ * request. What is left in ADMIN_CSS below is only what this Studio has and no
+ * other product would want unchanged - the two-pane workspace, the preview
+ * device, and the form sections.
  */
 
 import { MODE_DEFAULTS } from "../config.js";
 import { serializeForScript } from "../safety.js";
-import { tokens, baseRules, motion } from "../styles/tokens.js";
+import { tokens, baseRules, motion, components } from "../styles/tokens.js";
 import { icon } from "../icons.js";
 import { themeScript, themeToggle } from "../../pages/index.js";
 
-// The trail — brand mark and favicon share these exact paths. Two fading echoes
+// The trail - brand mark and favicon share these exact paths. Two fading echoes
 // of the stem, then the P. The echoes are stems only, not whole letters: that is
 // what keeps the 3-unit gaps between them open at a 16px favicon.
 // Canonical source: /brand/mark.svg at the workspace root.
@@ -34,24 +38,24 @@ const ADMIN_FAVICON = `data:image/svg+xml,${encodeURIComponent(
 )}`;
 
 // Canonical source: /template-glyphs.js at the workspace root (see
-// parkour_design_system.html §05). Copied in verbatim — no shared package
+// parkour_design_system.html §05). Copied in verbatim - no shared package
 // exists between this app and the cloud control plane yet.
 const MODE_SVGS = {
-  parking: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+  parking: `<svg class="choice-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
     <rect x="6" y="4" width="44" height="6" rx="3" fill="var(--color-line-strong)"/>
     <rect x="6" y="16" width="20" height="9" rx="4.5" fill="var(--color-muted)"/>
     <rect x="70" y="16" width="20" height="9" rx="4.5" fill="var(--color-line-strong)"/>
     <rect x="6" y="33" width="64" height="4" rx="2" fill="var(--color-line)"/>
     <rect x="6" y="41" width="50" height="4" rx="2" fill="var(--color-line)"/>
   </svg>`,
-  comingSoon: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+  comingSoon: `<svg class="choice-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
     <rect x="26" y="4" width="44" height="6" rx="3" fill="var(--color-line-strong)"/>
     <rect x="26" y="16" width="12" height="12" rx="2.5" fill="var(--color-line)"/>
     <rect x="42" y="16" width="12" height="12" rx="2.5" fill="var(--color-line)"/>
     <rect x="58" y="16" width="12" height="12" rx="2.5" fill="var(--color-line)"/>
     <rect x="34" y="38" width="28" height="9" rx="4.5" fill="var(--color-muted)"/>
   </svg>`,
-  landing: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+  landing: `<svg class="choice-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
     <rect x="6" y="4" width="36" height="6" rx="3" fill="var(--color-line-strong)"/>
     <rect x="6" y="16" width="64" height="4" rx="2" fill="var(--color-line)"/>
     <rect x="6" y="24" width="56" height="4" rx="2" fill="var(--color-line)"/>
@@ -60,13 +64,13 @@ const MODE_SVGS = {
     <circle cx="47" cy="38.5" r="3" fill="var(--color-line)"/>
     <circle cx="56" cy="38.5" r="3" fill="var(--color-line)"/>
   </svg>`,
-  profile: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+  profile: `<svg class="choice-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
     <circle cx="48" cy="10" r="8" fill="var(--color-line)"/>
     <rect x="32" y="23" width="32" height="5" rx="2.5" fill="var(--color-line-strong)"/>
     <rect x="24" y="32" width="48" height="4" rx="2" fill="var(--color-line)"/>
     <rect x="26" y="42" width="44" height="9" rx="4.5" fill="var(--color-muted)"/>
   </svg>`,
-  redirect: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+  redirect: `<svg class="choice-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
     <rect x="6" y="8" width="22" height="9" rx="4.5" fill="var(--color-line-strong)"/>
     <path d="M30 12.5h28" stroke="var(--color-muted)" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 5"/>
     <path d="m54 5 11 7.5L54 20" stroke="var(--color-line-strong)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -74,14 +78,14 @@ const MODE_SVGS = {
     <rect x="22" y="34" width="52" height="5" rx="2.5" fill="var(--color-line)"/>
     <rect x="32" y="44" width="32" height="5" rx="2.5" fill="var(--color-line)"/>
   </svg>`,
-  maintenance: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+  maintenance: `<svg class="choice-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
     <path d="m48 5 25 43H23L48 5Z" fill="var(--color-line)"/>
     <path d="M48 18v13" stroke="var(--color-muted)" stroke-width="5" stroke-linecap="round"/>
     <circle cx="48" cy="39" r="2.5" fill="var(--color-muted)"/>
   </svg>`,
 };
 
-/** §06.3 — the signature choice in the product: one radio card per mode. */
+/** §06.3 - the signature choice in the product: one radio card per mode. */
 const MODE_CARDS = [
   { mode: "parking", glyph: MODE_SVGS.parking, name: "Parking", copy: "Price, history, contact, trust." },
   { mode: "coming-soon", glyph: MODE_SVGS.comingSoon, name: "Coming soon", copy: "Launch date and feature cards." },
@@ -94,14 +98,27 @@ const MODE_CARDS = [
 function renderModePicker() {
   return MODE_CARDS.map(
     ({ mode, glyph, name, copy }) => `
-        <label class="mode-card">
+        <label class="choice-card">
           <input type="radio" name="page-mode" value="${mode}" />
-          <span class="mode-check" aria-hidden="true">${icon("check", { size: 16 })}</span>
+          <span class="choice-check" aria-hidden="true">${icon("check", { size: 16 })}</span>
           ${glyph}
-          <span class="mode-name">${name}</span>
-          <span class="mode-copy">${copy}</span>
+          <span class="choice-name">${name}</span>
+          <span class="choice-desc">${copy}</span>
         </label>`,
   ).join("");
+}
+
+/**
+ * A bordered switch row, the design system's §06.2 recipe.
+ *
+ * `disabled` is rendered into the markup rather than only applied by script, so
+ * a control that depends on another starts out visibly inert.
+ */
+function switchRow(id, title, copy, { mode = "", disabled = false } = {}) {
+  return `<label class="switch-row"${mode ? ` data-capture-mode="${mode}"` : ""}>
+    <span><span class="switch-title">${title}</span><span class="switch-desc">${copy}</span></span>
+    <span class="switch"><input id="${id}" type="checkbox"${disabled ? " disabled" : ""} /><span class="switch-track" aria-hidden="true"></span></span>
+  </label>`;
 }
 
 export function renderAdminUI({ isDefaultCreds, presets } = {}) {
@@ -110,7 +127,7 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
   const warnDefaultCreds = isDefaultCreds
     ? `<div id="cred-warning" class="alert alert-warning" role="status">
          ${icon("alert-triangle")}
-         <div>
+         <div class="alert-body">
            <p class="alert-title">Local credentials are active</p>
            <p>Replace <code>admin / admin</code> with the <code>ADMIN_USER</code> and <code>ADMIN_PASSWORD</code> secrets before deploying.</p>
          </div>
@@ -123,12 +140,12 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <title>Domain Parkour — Parking Page Studio</title>
+  <title>Domain Parkour - Parking Page Studio</title>
   <link rel="icon" href="${ADMIN_FAVICON}" />
   <script data-theme-script>${themeScript()}</script>
   <style>${ADMIN_CSS}</style>
 </head>
-<body data-mobile-view="editor">
+<body data-view="pages" data-mobile-view="editor">
   <header class="topbar">
     <div class="brand">
       <span class="logo" aria-hidden="true">${BRAND_GLYPH}</span>
@@ -137,20 +154,37 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
         <span class="brand-subtitle">Parking Page Studio</span>
       </span>
     </div>
-    <div class="site-switcher">
-      <label class="sr-only" for="domain-picker">Current domain</label>
-      <select id="domain-picker" title="Switch domain" aria-label="Current domain"></select>
+
+    <div class="segmented view-switcher" role="tablist" aria-label="Workspace">
+      <button type="button" role="tab" data-view="pages" aria-selected="true">Pages</button>
+      <button type="button" role="tab" data-view="inbox" aria-selected="false">
+        Inbox<span class="filter-count" id="inbox-unread" hidden></span>
+      </button>
     </div>
-    <div class="topbar-actions">
-      <button id="new-btn" class="btn" title="New page (Ctrl/Command + N)">${icon("plus", { size: 16 })}<span>New page</span></button>
-      <button id="open-btn" class="btn" title="Open the live page in a new tab">${icon("external-link", { size: 16 })}<span>Visit</span></button>
-      <button id="delete-btn" class="btn btn-danger-ghost" title="Delete this page">${icon("trash", { size: 16 })}<span class="sr-only">Delete page</span></button>
-      ${themeToggle({ className: 'btn btn-icon' })}
-      <button id="save-btn" class="btn btn-primary" title="Save changes (Ctrl/Command + S)">
+
+    <div class="site-switcher" data-view-only="pages">
+      <label class="sr-only" for="domain-picker">Current domain</label>
+      <select id="domain-picker" class="select mono" title="Switch domain" aria-label="Current domain"></select>
+    </div>
+
+    <div class="topbar-actions" data-view-only="pages">
+      <button id="new-btn" class="btn btn-sm" title="New page (Ctrl/Command + N)">${icon("plus", { size: 16 })}<span class="btn-label">New page</span></button>
+      <button id="open-btn" class="btn btn-sm" title="Open the live page in a new tab">${icon("external-link", { size: 16 })}<span class="btn-label">Visit</span></button>
+      <button id="delete-btn" class="btn btn-sm btn-icon btn-danger-ghost" title="Delete this page">${icon("trash", { size: 16 })}<span class="sr-only">Delete page</span></button>
+      ${themeToggle({ className: 'btn btn-sm btn-icon' })}
+      <button id="save-btn" class="btn btn-sm btn-primary" title="Save changes (Ctrl/Command + S)">
         <span id="save-label">Saved</span><kbd>Ctrl S</kbd>
       </button>
     </div>
-    <div class="mobile-view-switcher" role="tablist" aria-label="Workspace view">
+
+    <div class="topbar-actions" data-view-only="inbox">
+      <button id="inbox-refresh" class="btn btn-sm" title="Reload the inbox">${icon("refresh", { size: 16 })}<span class="btn-label">Refresh</span></button>
+      <a id="inbox-export" class="btn btn-sm" href="/_admin_/api/inbox.csv" download>${icon("download", { size: 16 })}<span class="btn-label">Export CSV</span></a>
+      ${themeToggle({ className: 'btn btn-sm btn-icon' })}
+      <button id="inbox-read-all" class="btn btn-sm btn-primary">${icon("mail-opened", { size: 16 })}<span class="btn-label">Mark all read</span></button>
+    </div>
+
+    <div class="segmented mobile-view-switcher" role="tablist" aria-label="Pane" data-view-only="pages">
       <button type="button" data-mobile-view="editor" role="tab" aria-selected="true">Editor</button>
       <button type="button" data-mobile-view="preview" role="tab" aria-selected="false">Preview</button>
     </div>
@@ -158,16 +192,16 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
 
   ${warnDefaultCreds}
 
-  <main class="workspace">
+  <main class="workspace" data-view-panel="pages">
     <section class="editor" id="editor">
       <div class="editor-inner">
         <div class="editor-heading">
           <div>
-            <p class="overline">Page editor</p>
+            <p class="eyebrow">Page editor</p>
             <h1>Shape the page</h1>
             <p class="editor-sub">Every change renders in the preview as you type.</p>
           </div>
-          <span id="dirty-state" class="badge badge-success"><span class="badge-dot"></span><span id="dirty-label">Saved</span></span>
+          <span id="dirty-state" class="badge badge-success"><span id="dirty-label">Saved</span></span>
         </div>
 
         <section class="form-section" aria-labelledby="identity-heading">
@@ -180,24 +214,24 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
           </div>
 
         <div class="field">
-          <label for="f-hostname">Hostname</label>
-          <input id="f-hostname" type="text" class="mono" placeholder="example.com" autocomplete="off" spellcheck="false" />
-          <p class="hint">Exact host matched by the Worker. Use <code>_default</code> for the catch-all page.</p>
+          <label class="label" for="f-hostname">Hostname</label>
+          <input id="f-hostname" type="text" class="input mono" placeholder="example.com" autocomplete="off" spellcheck="false" />
+          <p class="help">Exact host matched by the Worker. Use <code>_default</code> for the catch-all page.</p>
         </div>
 
         <div class="field">
-          <span class="field-label" id="template-label">Template</span>
-          <div class="mode-cards" role="radiogroup" aria-labelledby="template-label">${renderModePicker()}</div>
+          <span class="label" id="template-label">Template</span>
+          <div class="choice-grid" role="radiogroup" aria-labelledby="template-label">${renderModePicker()}</div>
         </div>
 
         <div class="field row">
           <div class="col">
-            <label for="f-domainTitle">Display name</label>
-            <input id="f-domainTitle" type="text" placeholder="My Domain" />
+            <label class="label" for="f-domainTitle">Display name</label>
+            <input id="f-domainTitle" type="text" class="input" placeholder="My Domain" />
           </div>
           <div class="col color-col">
-            <label for="f-accentColor">Accent</label>
-            <input id="f-accentColor" type="color" aria-label="Accent color" />
+            <label class="label" for="f-accentColor">Accent</label>
+            <input id="f-accentColor" type="color" class="input-color" aria-label="Accent color" />
           </div>
         </div>
         </section>
@@ -213,13 +247,13 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
 
         <div class="common-content">
           <div class="field">
-            <label id="title-label" for="f-title">Headline</label>
-            <input id="f-title" type="text" placeholder="Premium domain for sale" />
+            <label class="label" id="title-label" for="f-title">Headline</label>
+            <input id="f-title" type="text" class="input" placeholder="Premium domain for sale" />
           </div>
 
           <div class="field">
-            <label id="description-label" for="f-description">Description</label>
-            <textarea id="f-description" rows="3" placeholder="A short, useful description"></textarea>
+            <label class="label" id="description-label" for="f-description">Description</label>
+            <textarea id="f-description" class="textarea" rows="3" placeholder="A short, useful description"></textarea>
           </div>
         </div>
 
@@ -227,154 +261,175 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
         <div data-mode-block="parking" class="mode-block">
           <div class="field row">
             <div class="col">
-              <label for="f-salePrice">Sale price</label>
-              <input id="f-salePrice" type="text" placeholder="25,000 USD" />
+              <label class="label" for="f-salePrice">Sale price</label>
+              <input id="f-salePrice" type="text" class="input" placeholder="25,000 USD" />
             </div>
             <div class="col">
-              <label for="f-contactEmail">Contact email</label>
-              <input id="f-contactEmail" type="email" class="mono" placeholder="you@example.com" />
+              <label class="label" for="f-contactEmail">Contact email</label>
+              <input id="f-contactEmail" type="email" class="input mono" placeholder="you@example.com" />
             </div>
           </div>
           <div class="field row">
             <div class="col">
-              <label for="f-domainAgeYears">Age label</label>
-              <input id="f-domainAgeYears" type="text" placeholder="15+" />
+              <label class="label" for="f-domainAgeYears">Age label</label>
+              <input id="f-domainAgeYears" type="text" class="input" placeholder="15+" />
             </div>
             <div class="col">
-              <label for="f-domainExtension">Extension value</label>
-              <input id="f-domainExtension" type="text" class="mono" placeholder=".com" />
+              <label class="label" for="f-domainExtension">Extension value</label>
+              <input id="f-domainExtension" type="text" class="input mono" placeholder=".com" />
             </div>
           </div>
           <div class="field">
-            <label for="f-domainRegistration">Registration note</label>
-            <input id="f-domainRegistration" type="text" placeholder="Registered in 2010" />
+            <label class="label" for="f-domainRegistration">Registration note</label>
+            <input id="f-domainRegistration" type="text" class="input" placeholder="Registered in 2010" />
           </div>
         </div>
 
         <div data-mode-block="coming-soon" class="mode-block">
           <div class="field row">
             <div class="col">
-              <label for="f-tagline">Tagline</label>
-              <input id="f-tagline" type="text" placeholder="Launching 2026" />
+              <label class="label" for="f-tagline">Tagline</label>
+              <input id="f-tagline" type="text" class="input" placeholder="Launching 2026" />
             </div>
             <div class="col">
-              <label for="f-launchDate">Launch date</label>
-              <input id="f-launchDate" type="datetime-local" class="mono" />
+              <label class="label" for="f-launchDate">Launch date</label>
+              <input id="f-launchDate" type="datetime-local" class="input mono" />
             </div>
           </div>
           <div class="field">
-            <span class="field-label">Feature highlights <span class="muted">Optional</span></span>
+            <span class="label">Feature highlights <span class="muted">Optional</span></span>
             <div id="features-list" class="repeater"></div>
-            <button type="button" class="btn btn-add btn-sm" data-add="feature">${icon("plus", { size: 16 })}Add feature</button>
+            <button type="button" class="btn btn-sm btn-add" data-add="feature">${icon("plus", { size: 16 })}Add feature</button>
           </div>
         </div>
 
         <div data-mode-block="landing" class="mode-block">
           <div class="field">
-            <label for="f-subtitle">Subtitle</label>
-            <input id="f-subtitle" type="text" placeholder="Used for email and APIs" />
+            <label class="label" for="f-subtitle">Subtitle</label>
+            <input id="f-subtitle" type="text" class="input" placeholder="Used for email and APIs" />
           </div>
           <div class="field">
-            <span class="field-label">Destination links</span>
+            <span class="label">Destination links</span>
             <div id="links-list" class="repeater"></div>
-            <button type="button" class="btn btn-add btn-sm" data-add="link">${icon("plus", { size: 16 })}Add link</button>
+            <button type="button" class="btn btn-sm btn-add" data-add="link">${icon("plus", { size: 16 })}Add link</button>
           </div>
         </div>
 
         <div data-mode-block="profile" class="mode-block">
           <div class="field row">
             <div class="col">
-              <label for="f-name">Name</label>
-              <input id="f-name" type="text" placeholder="Ada Lovelace" />
+              <label class="label" for="f-name">Name</label>
+              <input id="f-name" type="text" class="input" placeholder="Ada Lovelace" />
             </div>
             <div class="col">
-              <label for="f-role">Role / tagline</label>
-              <input id="f-role" type="text" placeholder="Designer & Engineer" />
+              <label class="label" for="f-role">Role / tagline</label>
+              <input id="f-role" type="text" class="input" placeholder="Designer & Engineer" />
             </div>
           </div>
           <div class="field">
-            <span class="field-label">Profile image <span class="muted">PNG, JPEG, WebP, or GIF, up to 5 MB</span></span>
-            <div class="avatar-uploader">
-              <div id="avatar-preview" class="avatar-preview" aria-hidden="true">?</div>
-              <div class="avatar-upload-actions">
+            <span class="label">Profile image <span class="muted">PNG, JPEG, WebP, or GIF, up to 5 MB</span></span>
+            <div class="uploader">
+              <div id="avatar-preview" class="uploader-preview" aria-hidden="true">?</div>
+              <div class="uploader-actions">
                 <input id="f-avatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
-                <div class="avatar-buttons">
+                <div class="cluster cluster-tight">
                   <button id="avatar-upload-btn" type="button" class="btn btn-sm">Upload image</button>
                   <button id="avatar-remove-btn" type="button" class="btn btn-sm">Remove image</button>
                 </div>
-                <p id="avatar-upload-status" class="hint">Stored privately in the configured R2 bucket.</p>
+                <p id="avatar-upload-status" class="help">Stored privately in the configured R2 bucket.</p>
               </div>
             </div>
           </div>
           <div class="field">
-            <label for="f-avatarUrl">Image URL <span class="muted">Uploaded path or external URL</span></label>
-            <input id="f-avatarUrl" type="text" class="mono" placeholder="https://example.com/avatar.jpg" />
+            <label class="label" for="f-avatarUrl">Image URL <span class="muted">Uploaded path or external URL</span></label>
+            <input id="f-avatarUrl" type="text" class="input mono" placeholder="https://example.com/avatar.jpg" />
           </div>
           <div class="field">
-            <label for="f-bio">Bio</label>
-            <textarea id="f-bio" rows="3" placeholder="A short bio"></textarea>
+            <label class="label" for="f-bio">Bio</label>
+            <textarea id="f-bio" class="textarea" rows="3" placeholder="A short bio"></textarea>
           </div>
           <div class="field">
-            <span class="field-label">Featured links</span>
+            <span class="label">Featured links</span>
             <div id="profile-links-list" class="repeater"></div>
-            <button type="button" class="btn btn-add btn-sm" data-add="profileLink">${icon("plus", { size: 16 })}Add link</button>
+            <button type="button" class="btn btn-sm btn-add" data-add="profileLink">${icon("plus", { size: 16 })}Add link</button>
           </div>
         </div>
 
         <div data-mode-block="redirect" class="mode-block">
           <div class="field">
-            <label for="redirect-target-url">Redirect target</label>
-            <input id="redirect-target-url" type="url" class="mono" placeholder="https://example.com/new-home" autocomplete="off" spellcheck="false" />
-            <p class="hint">HTTPS only. The target cannot be this hostname.</p>
+            <label class="label" for="redirect-target-url">Redirect target</label>
+            <input id="redirect-target-url" type="url" class="input mono" placeholder="https://example.com/new-home" autocomplete="off" spellcheck="false" />
+            <p class="help">HTTPS only. The target cannot be this hostname.</p>
           </div>
           <div class="field">
-            <span class="field-label">Redirect behavior</span>
-            <label class="toggle-row">
-              <span><span class="toggle-title">Show redirect page</span><span class="toggle-copy">Show a short message before forwarding.</span></span>
-              <span class="switch"><input id="redirect-show-ui" type="checkbox" /><span class="switch-track" aria-hidden="true"></span></span>
-            </label>
+            <span class="label">Redirect behavior</span>
+            ${switchRow("redirect-show-ui", "Show redirect page", "Show a short message before forwarding.")}
           </div>
           <div class="field" data-redirect-ui-field>
-            <label for="redirect-countdown-seconds">Redirect after</label>
-            <input id="redirect-countdown-seconds" type="number" min="1" max="60" step="1" class="mono" placeholder="5" disabled />
-            <p class="hint">Seconds to show the message before forwarding.</p>
+            <label class="label" for="redirect-countdown-seconds">Redirect after</label>
+            <input id="redirect-countdown-seconds" type="number" min="1" max="60" step="1" class="input mono" placeholder="5" disabled />
+            <p class="help">Seconds to show the message before forwarding.</p>
           </div>
           <div class="field" data-redirect-ui-field>
-            <label for="redirect-status-code">Redirect type</label>
-            <select id="redirect-status-code" disabled>
-              <option value="302">302 — temporary (recommended)</option>
-              <option value="307">307 — temporary, keep method</option>
-              <option value="301">301 — permanent</option>
-              <option value="308">308 — permanent, keep method</option>
+            <label class="label" for="redirect-status-code">Redirect type</label>
+            <select id="redirect-status-code" class="select" disabled>
+              <option value="302">302 - temporary (recommended)</option>
+              <option value="307">307 - temporary, keep method</option>
+              <option value="301">301 - permanent</option>
+              <option value="308">308 - permanent, keep method</option>
             </select>
           </div>
-          <label class="toggle-row" data-redirect-ui-field>
-            <span><span class="toggle-title">Preserve path</span><span class="toggle-copy">Append the incoming path to the target.</span></span>
-            <span class="switch"><input id="redirect-preserve-path" type="checkbox" disabled /><span class="switch-track" aria-hidden="true"></span></span>
-          </label>
-          <label class="toggle-row" data-redirect-ui-field>
-            <span><span class="toggle-title">Preserve query</span><span class="toggle-copy">Append incoming query parameters to the target.</span></span>
-            <span class="switch"><input id="redirect-preserve-query" type="checkbox" disabled /><span class="switch-track" aria-hidden="true"></span></span>
-          </label>
+          <div class="switch-stack" data-redirect-ui-field>
+            ${switchRow("redirect-preserve-path", "Preserve path", "Append the incoming path to the target.", { disabled: true })}
+            ${switchRow("redirect-preserve-query", "Preserve query", "Append incoming query parameters to the target.", { disabled: true })}
+          </div>
         </div>
 
         <div data-mode-block="maintenance" class="mode-block">
           <div class="field">
-            <label for="maintenance-retry-after">Retry-After seconds <span class="muted">Optional</span></label>
-            <input id="maintenance-retry-after" type="number" min="60" max="604800" class="mono" placeholder="3600" />
-            <p class="hint">Between 60 seconds and 7 days. The page returns HTTP 503.</p>
+            <label class="label" for="maintenance-retry-after">Retry-After seconds <span class="muted">Optional</span></label>
+            <input id="maintenance-retry-after" type="number" min="60" max="604800" class="input mono" placeholder="3600" />
+            <p class="help">Between 60 seconds and 7 days. The page returns HTTP 503.</p>
           </div>
           <div class="field">
-            <label for="maintenance-help-url">Status or help link <span class="muted">Optional</span></label>
-            <input id="maintenance-help-url" type="url" class="mono" placeholder="https://status.example.com" autocomplete="off" spellcheck="false" />
+            <label class="label" for="maintenance-help-url">Status or help link <span class="muted">Optional</span></label>
+            <input id="maintenance-help-url" type="url" class="input mono" placeholder="https://status.example.com" autocomplete="off" spellcheck="false" />
           </div>
         </div>
 
         </section>
 
-        <section class="form-section extras-section" aria-labelledby="extras-heading">
+        <section class="form-section" aria-labelledby="messages-heading">
           <div class="section-heading">
             <span class="section-index">03</span>
+            <div>
+              <h2 id="messages-heading">Messages</h2>
+              <p>Which forms this page shows. Everything sent lands in the Inbox.</p>
+            </div>
+          </div>
+
+          <div class="switch-stack">
+            ${switchRow("capture-contact", "Contact form", "A visitor can write to you without your address ever appearing on the page.")}
+            ${switchRow("capture-offer", "Offer form", "Name, email, amount and message, beside the asking price.", { mode: "parking" })}
+            ${switchRow("capture-waitlist", "Waitlist form", "One email field under the launch date.", { mode: "coming-soon" })}
+          </div>
+
+          <div class="field">
+            <label class="label" for="capture-survey">Survey question <span class="muted">Optional</span></label>
+            <input id="capture-survey" type="text" class="input" maxlength="180" placeholder="What would you want this domain to become?" />
+            <p class="help">Asked in its own short form. Leave empty for no survey.</p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="capture-consent">Consent text <span class="muted">Optional</span></label>
+            <input id="capture-consent" type="text" class="input" maxlength="240" placeholder="I agree that the owner may reply about this domain." />
+            <p class="help">When set, every form requires this checkbox and records the answer with the message.</p>
+          </div>
+        </section>
+
+        <section class="form-section extras-section" aria-labelledby="extras-heading">
+          <div class="section-heading">
+            <span class="section-index">04</span>
             <div>
               <h2 id="extras-heading">Finishing touches</h2>
               <p>Social links, footer, wording, and starting points.</p>
@@ -384,12 +439,12 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
         <details class="advanced">
           <summary><span>Social links</span><span class="summary-hint">Optional</span></summary>
           <div class="social-grid">
-            <label>Twitter / X <input data-social="twitter" type="url" class="mono" placeholder="https://x.com/handle" /></label>
-            <label>LinkedIn <input data-social="linkedin" type="url" class="mono" placeholder="https://linkedin.com/in/handle" /></label>
-            <label>GitHub <input data-social="github" type="url" class="mono" placeholder="https://github.com/handle" /></label>
-            <label>Instagram <input data-social="instagram" type="url" class="mono" placeholder="https://instagram.com/handle" /></label>
-            <label>Facebook <input data-social="facebook" type="url" class="mono" placeholder="https://facebook.com/handle" /></label>
-            <label>Email <input data-social="email" type="text" class="mono" placeholder="you@example.com" /></label>
+            <label class="label">Twitter / X <input data-social="twitter" type="url" class="input mono" placeholder="https://x.com/handle" /></label>
+            <label class="label">LinkedIn <input data-social="linkedin" type="url" class="input mono" placeholder="https://linkedin.com/in/handle" /></label>
+            <label class="label">GitHub <input data-social="github" type="url" class="input mono" placeholder="https://github.com/handle" /></label>
+            <label class="label">Instagram <input data-social="instagram" type="url" class="input mono" placeholder="https://instagram.com/handle" /></label>
+            <label class="label">Facebook <input data-social="facebook" type="url" class="input mono" placeholder="https://facebook.com/handle" /></label>
+            <label class="label">Email <input data-social="email" type="text" class="input mono" placeholder="you@example.com" /></label>
           </div>
         </details>
 
@@ -397,45 +452,45 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
           <summary><span>Template wording</span><span class="summary-hint">Fully configurable</span></summary>
           <div class="copy-settings">
             <div class="copy-block" data-copy-block="parking">
-              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
-              <label>Eyebrow<input data-config-key="eyebrowText" type="text" /></label>
-              <label>Price label<input data-config-key="priceLabel" type="text" /></label>
-              <label>Inquiry label<input data-config-key="inquiryLabel" type="text" /></label>
-              <label class="wide">No-price heading<input data-config-key="noPriceTitle" type="text" /></label>
-              <label class="wide">Contact copy<textarea data-config-key="contactCopy" rows="2"></textarea></label>
-              <label class="wide">Availability copy<textarea data-config-key="availabilityCopy" rows="2"></textarea></label>
-              <label>Contact button<input data-config-key="contactButtonText" type="text" /></label>
-              <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
-              <label>Domain age label<input data-config-key="domainAgeLabel" type="text" /></label>
-              <label>Extension label<input data-config-key="extensionLabel" type="text" /></label>
-              <label>Trust value<input data-config-key="trustValue" type="text" /></label>
-              <label>Trust label<input data-config-key="trustLabel" type="text" /></label>
+              <label class="label">Status label<input data-config-key="statusLabel" type="text" class="input" /></label>
+              <label class="label">Eyebrow<input data-config-key="eyebrowText" type="text" class="input" /></label>
+              <label class="label">Price label<input data-config-key="priceLabel" type="text" class="input" /></label>
+              <label class="label">Inquiry label<input data-config-key="inquiryLabel" type="text" class="input" /></label>
+              <label class="label wide">No-price heading<input data-config-key="noPriceTitle" type="text" class="input" /></label>
+              <label class="label wide">Contact copy<textarea data-config-key="contactCopy" class="textarea" rows="2"></textarea></label>
+              <label class="label wide">Availability copy<textarea data-config-key="availabilityCopy" class="textarea" rows="2"></textarea></label>
+              <label class="label">Contact button<input data-config-key="contactButtonText" type="text" class="input" /></label>
+              <label class="label">Browser title suffix<input data-config-key="pageTitleSuffix" type="text" class="input" /></label>
+              <label class="label">Domain age label<input data-config-key="domainAgeLabel" type="text" class="input" /></label>
+              <label class="label">Extension label<input data-config-key="extensionLabel" type="text" class="input" /></label>
+              <label class="label">Trust value<input data-config-key="trustValue" type="text" class="input" /></label>
+              <label class="label">Trust label<input data-config-key="trustLabel" type="text" class="input" /></label>
             </div>
             <div class="copy-block" data-copy-block="coming-soon">
-              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
-              <label>Eyebrow<input data-config-key="eyebrowText" type="text" /></label>
-              <label>Launch label<input data-config-key="launchLabel" type="text" /></label>
-              <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
-              <label class="wide">Countdown note<textarea data-config-key="countdownNote" rows="2"></textarea></label>
-              <label>Fallback panel label<input data-config-key="statusPanelLabel" type="text" /></label>
-              <label class="wide">Fallback panel heading<input data-config-key="statusPanelTitle" type="text" /></label>
-              <label class="wide">Fallback panel copy<textarea data-config-key="statusPanelText" rows="2"></textarea></label>
+              <label class="label">Status label<input data-config-key="statusLabel" type="text" class="input" /></label>
+              <label class="label">Eyebrow<input data-config-key="eyebrowText" type="text" class="input" /></label>
+              <label class="label">Launch label<input data-config-key="launchLabel" type="text" class="input" /></label>
+              <label class="label">Browser title suffix<input data-config-key="pageTitleSuffix" type="text" class="input" /></label>
+              <label class="label wide">Countdown note<textarea data-config-key="countdownNote" class="textarea" rows="2"></textarea></label>
+              <label class="label">Fallback panel label<input data-config-key="statusPanelLabel" type="text" class="input" /></label>
+              <label class="label wide">Fallback panel heading<input data-config-key="statusPanelTitle" type="text" class="input" /></label>
+              <label class="label wide">Fallback panel copy<textarea data-config-key="statusPanelText" class="textarea" rows="2"></textarea></label>
             </div>
             <div class="copy-block" data-copy-block="landing">
-              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
-              <label>Eyebrow<input data-config-key="eyebrowText" type="text" /></label>
-              <label>Links label<input data-config-key="linksLabel" type="text" /></label>
+              <label class="label">Status label<input data-config-key="statusLabel" type="text" class="input" /></label>
+              <label class="label">Eyebrow<input data-config-key="eyebrowText" type="text" class="input" /></label>
+              <label class="label">Links label<input data-config-key="linksLabel" type="text" class="input" /></label>
             </div>
             <div class="copy-block" data-copy-block="profile">
-              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
+              <label class="label">Status label<input data-config-key="statusLabel" type="text" class="input" /></label>
             </div>
             <div class="copy-block" data-copy-block="redirect">
-              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
-              <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
+              <label class="label">Status label<input data-config-key="statusLabel" type="text" class="input" /></label>
+              <label class="label">Browser title suffix<input data-config-key="pageTitleSuffix" type="text" class="input" /></label>
             </div>
             <div class="copy-block" data-copy-block="maintenance">
-              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
-              <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
+              <label class="label">Status label<input data-config-key="statusLabel" type="text" class="input" /></label>
+              <label class="label">Browser title suffix<input data-config-key="pageTitleSuffix" type="text" class="input" /></label>
             </div>
           </div>
         </details>
@@ -443,19 +498,10 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
         <details class="advanced">
           <summary><span>Footer</span><span class="summary-hint">Optional</span></summary>
           <div class="field">
-            <label for="f-footerText">Custom footer text <span class="muted">Optional</span></label>
-            <input id="f-footerText" type="text" placeholder="© 2026 example.com" />
+            <label class="label" for="f-footerText">Custom footer text <span class="muted">Optional</span></label>
+            <input id="f-footerText" type="text" class="input" placeholder="© 2026 example.com" />
           </div>
-          <label class="toggle-row">
-            <span>
-              <span class="toggle-title">Show footer credit</span>
-              <span class="toggle-copy">“Built with Domain Parkour · powered by Cloudflare”</span>
-            </span>
-            <span class="switch">
-              <input id="f-showCredit" type="checkbox" />
-              <span class="switch-track" aria-hidden="true"></span>
-            </span>
-          </label>
+          ${switchRow("f-showCredit", "Show footer credit", "&ldquo;Built with Domain Parkour · powered by Cloudflare&rdquo;")}
         </details>
 
         <details class="advanced">
@@ -465,15 +511,13 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
 
         </section>
 
-        <p class="editor-meta" id="meta"></p>
+        <p class="help" id="meta"></p>
       </div>
     </section>
 
     <section class="preview" id="preview" data-preview-size="desktop">
       <div class="preview-header">
-        <span id="preview-badge" class="badge badge-success">
-          <span class="badge-dot"></span><span id="preview-status">Live preview</span>
-        </span>
+        <span id="preview-badge" class="badge badge-success"><span id="preview-status">Live preview</span></span>
         <div class="segmented" role="group" aria-label="Preview width">
           <button type="button" data-preview-size="desktop" aria-pressed="true">Desktop</button>
           <button type="button" data-preview-size="mobile" aria-pressed="false">Mobile</button>
@@ -487,27 +531,72 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
     </section>
   </main>
 
+  <!-- Everything visitors have sent, from every hostname, in one list. -->
+  <section class="inbox-view" data-view-panel="inbox" hidden>
+    <div class="inbox-inner">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">One desk</p>
+          <h1 class="page-title">Inbox</h1>
+          <p class="lede">Contact messages, offers, waitlist signups and survey answers from every page this Worker serves. Nothing leaves your D1.</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <nav class="filter-tabs" id="inbox-status-tabs" aria-label="Filter by status"></nav>
+      </div>
+
+      <div class="cluster inbox-filters">
+        <label class="search-wrap">
+          <span class="sr-only">Search the inbox</span>
+          ${icon("search", { size: 16, cls: "icon" })}
+          <input id="inbox-search" type="search" class="input search" placeholder="Search name, address, subject or message" />
+        </label>
+        <label class="sr-only" for="inbox-hostname">Domain</label>
+        <select id="inbox-hostname" class="select"><option value="">All domains</option></select>
+        <label class="sr-only" for="inbox-kind">Type</label>
+        <select id="inbox-kind" class="select">
+          <option value="">All types</option>
+          <option value="contact">Message</option>
+          <option value="offer">Offer</option>
+          <option value="waitlist">Waitlist</option>
+          <option value="survey">Survey</option>
+        </select>
+      </div>
+
+      <div id="inbox-list" class="msg-list" hidden></div>
+
+      <div id="inbox-empty" class="card empty-state">
+        <span class="empty-state-icon">${icon("inbox")}</span>
+        <p class="empty-state-title">Nothing here</p>
+        <p class="empty-state-body">Turn on a form under <strong>Messages</strong> in the page editor. Everything a visitor sends arrives here - offers, questions, waitlist signups - and never leaves your database.</p>
+      </div>
+
+      <p class="help">Replies open in your own mail client. Domain Parkour never sends mail as you, and never keeps a copy of what you send.</p>
+    </div>
+  </section>
+
   <dialog id="delete-dialog" class="dialog">
     <div class="dialog-mark" aria-hidden="true">${icon("trash")}</div>
-    <h2>Delete this page?</h2>
-    <p id="delete-message"></p>
+    <h2 class="dialog-title">Delete this page?</h2>
+    <p class="dialog-body" id="delete-message"></p>
     <div class="dialog-actions">
       <button type="button" class="btn" data-close-dialog>Keep page</button>
       <button type="button" class="btn btn-danger" id="confirm-delete">Delete page</button>
     </div>
   </dialog>
 
-  <!-- §06.9 — every domain mutation is reversible, and the interface says so. -->
+  <!-- §06.9 - every destructive action is reversible, and the interface says so. -->
   <div id="undo-bar" class="undo-bar" role="status" hidden>
     ${icon("arrow-back-up")}
     <p id="undo-message"></p>
     <div class="undo-actions">
-      <button type="button" id="undo-btn" class="btn btn-sm undo-action">Undo</button>
+      <button type="button" id="undo-btn" class="btn btn-sm">Undo</button>
       <button type="button" id="undo-dismiss" class="undo-dismiss" aria-label="Dismiss">${icon("x", { size: 16 })}</button>
     </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script>
     window.__PRESETS__ = ${presetsJson};
@@ -518,23 +607,16 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
 </html>`;
 }
 
-// Tokens, element defaults, the shared motion primitives, then the Studio's own
-// rules. Inlined rather than linked because every page this runtime serves must
-// be self-contained.
+// Tokens, element defaults, motion, then the shared component layer - the same
+// four files the control plane links as static assets, inlined here because every
+// page this runtime serves must be self-contained.
 //
-// The shared COMPONENT layer is deliberately not included. The Studio already
-// implements the same §06 recipes against the same tokens, and it predates the
-// extracted layer. Injecting components.css underneath it was measured: it moved
-// ~8% of pixels — a doubled status dot, and a cascade of small shifts from
-// properties the shared rules set that the Studio's equivalents never did
-// (`display` on .field, spacing on .help). It would have bought the deletion of
-// eleven duplicate rules in exchange for a visual delta and permanent coupling
-// between two component sets that are already both correct.
-//
-// What actually has to agree is the tokens, and design-system.test.mjs enforces
-// that. Fold the Studio onto components.css when a screen is next redesigned,
-// not as a refactor of working UI.
-const ADMIN_CSS = `${tokens}${baseRules}${motion}
+// What follows is only what the Studio has and no second product would want: the
+// two-pane workspace, the preview device, the numbered form sections, and the
+// inbox shell. Every button, badge, alert, field, switch, dialog, toast and undo
+// bar above comes from components.css, so there is one implementation of each in
+// the product rather than two that happen to agree today.
+const ADMIN_CSS = `${tokens}${baseRules}${motion}${components}
   html, body { height: 100%; }
   body {
     display: flex;
@@ -544,33 +626,29 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     font-size: 14px;
     line-height: 1.5;
   }
-  .sr-only {
-    position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  code, kbd { font-family: var(--font-mono); }
+  /* A banner spanning the window, not a card floating in it. */
+  body > .alert { flex: 0 0 auto; border-radius: 0; border-bottom: 1px solid var(--color-line); padding: 14px 20px; }
+  .help code {
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-3);
+    font-size: 12px;
   }
-  .mono, code, kbd { font-family: var(--font-mono); }
 
   /* ---- §06.10 App bar: 56px, border-bottom, no shadow ---- */
   .topbar {
     flex: 0 0 auto;
     min-height: 56px;
-    display: grid;
-    grid-template-columns: auto minmax(200px, 1fr) auto;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     padding: 8px 20px;
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-line);
   }
-  .topbar > .brand,
-  .topbar > .site-switcher,
-  .topbar > .topbar-actions { align-self: center; }
-  .brand { display: flex; align-items: center; gap: 10px; min-width: 160px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo {
     width: 28px; height: 28px;
     display: grid;
@@ -585,259 +663,27 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
   .brand-copy { display: flex; flex-direction: column; line-height: 1.2; }
   .brand-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--color-ink); }
   .brand-subtitle { color: var(--color-muted); font-size: 12px; }
-  .site-switcher { width: min(100%, 420px); justify-self: center; display: flex; align-items: center; }
-  .site-switcher #domain-picker { height: 32px; min-height: 32px; }
-  .topbar-actions { display: flex; align-items: center; gap: 8px; }
-
-  /* ---- §06.1 Buttons: 40 default, 32 small, radius 10, hover is color ---- */
-  .btn {
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 16px;
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-ink);
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
-  }
-  .btn:hover { background: var(--color-surface-2); }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn:disabled:hover { background: var(--color-surface); }
-  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
-  .btn-icon { width: 40px; padding: 0; }
-  .btn-primary {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    color: #fff;
-  }
-  .btn-primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
-  .btn-primary:active { background: var(--color-primary-active); border-color: var(--color-primary-active); }
-  .btn-primary:disabled { background: var(--color-surface-3); border-color: var(--color-line); color: var(--color-muted); opacity: 1; }
-  .btn-primary:disabled:hover { background: var(--color-surface-3); }
-  .btn-danger {
-    border-color: var(--color-danger);
-    background: var(--color-danger);
-    color: #fff;
-  }
-  .btn-danger:hover { background: var(--color-danger-hover); border-color: var(--color-danger-hover); }
-  .btn-danger-ghost { border-color: var(--color-line-strong); color: var(--color-danger); }
-  .btn-danger-ghost:hover { background: var(--color-danger-soft); border-color: var(--color-danger); }
-  .btn-add { border-style: dashed; color: var(--color-body); align-self: start; }
+  .view-switcher button { min-width: 78px; }
+  /* The unread count rides the tab it belongs to. */
+  .view-switcher .filter-count { margin-left: 6px; color: var(--color-primary); font-weight: 700; }
+  .site-switcher { flex: 1 1 200px; min-width: 0; max-width: 420px; margin-left: auto; }
+  .site-switcher .select { height: 32px; font-size: 13px; }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
   .btn kbd {
     padding: 2px 5px;
-    border: 1px solid rgba(255,255,255,0.24);
+    border: 1px solid rgba(255, 255, 255, 0.24);
     border-radius: var(--radius-sm);
-    background: rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.8);
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 10px;
     font-weight: 500;
   }
-  .topbar-actions .btn { height: 32px; padding: 0 12px; font-size: 13px; }
-  .topbar-actions .btn-icon { width: 32px; padding: 0; }
+  /* A dashed button reads as "there is not one of these yet". */
+  .btn-add { border-style: dashed; color: var(--color-body); }
+  body[data-view="pages"] [data-view-only="inbox"],
+  body[data-view="inbox"] [data-view-only="pages"] { display: none; }
 
-  /* ---- §06.2 Forms: label above, help below, 40px controls ---- */
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field.row { flex-direction: row; gap: 16px; }
-  .field.row .col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-  .field.row .color-col { flex: 0 0 88px; }
-  label, .field-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-ink);
-  }
-  .hint { color: var(--color-muted); font-size: 13px; }
-  .muted { color: var(--color-muted); font-weight: 400; }
-  .hint code {
-    padding: 1px 5px;
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-3);
-    font-size: 12px;
-  }
-  select,
-  input:not([type="color"]):not([type="checkbox"]):not([type="radio"]),
-  textarea {
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 12px;
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-ink);
-    font-size: 14px;
-    outline: none;
-    transition: border-color var(--t-fast) var(--ease);
-  }
-  /* Machine values render in the mono role, at the mono size. */
-  input.mono, textarea.mono, select.mono { font-family: var(--font-mono); font-size: 13px; }
-  input::placeholder, textarea::placeholder { color: var(--color-muted); }
-  select:disabled,
-  input:not([type="color"]):not([type="checkbox"]):not([type="radio"]):disabled,
-  textarea:disabled {
-    background: var(--color-surface-2);
-    border-color: var(--color-line);
-    color: var(--color-muted);
-    opacity: 0.72;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  select:disabled:focus,
-  input:not([type="color"]):not([type="checkbox"]):not([type="radio"]):disabled:focus,
-  textarea:disabled:focus { outline: none; }
-  input[type="checkbox"]:disabled, input[type="radio"]:disabled {
-    cursor: not-allowed;
-    accent-color: var(--color-line-strong);
-  }
-  textarea { min-height: 76px; resize: vertical; line-height: 1.6; }
-  select {
-    appearance: none;
-    -webkit-appearance: none;
-    padding-right: 36px;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2398A2B3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-  }
-  #domain-picker { font-family: var(--font-mono); font-size: 13px; }
-  input[type="color"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 40px;
-    padding: 3px;
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    cursor: pointer;
-  }
-  input[type="color"]:disabled {
-    border-color: var(--color-line);
-    background: var(--color-surface-2);
-    cursor: not-allowed;
-    opacity: 0.72;
-  }
-  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-  input[type="color"]::-webkit-color-swatch { border: none; border-radius: var(--radius-sm); }
-
-  /* Toggle */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-  }
-  .toggle-title { display: block; font-size: 14px; font-weight: 500; color: var(--color-ink); }
-  .toggle-copy { display: block; margin-top: 2px; font-size: 13px; color: var(--color-muted); }
-  .switch { position: relative; display: inline-flex; flex: 0 0 auto; width: 40px; height: 24px; }
-  .switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-  .switch-track {
-    position: absolute; inset: 0;
-    border-radius: var(--radius-pill);
-    background: var(--color-line-strong);
-    transition: background-color var(--t-fast) var(--ease);
-  }
-  .switch-track::after {
-    content: '';
-    position: absolute; top: 2px; left: 2px;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: var(--shadow-card);
-    transition: transform var(--t-fast) var(--ease);
-  }
-  .switch input:checked + .switch-track { background: var(--color-primary); }
-  .switch input:checked + .switch-track::after { transform: translateX(16px); }
-  .switch input:focus-visible + .switch-track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  .switch:has(input:disabled), .toggle-row:has(input:disabled) { cursor: not-allowed; }
-  .switch input:disabled + .switch-track {
-    background: var(--color-line);
-    opacity: 0.72;
-    cursor: not-allowed;
-  }
-  .toggle-row:has(input:disabled) .toggle-title,
-  .toggle-row:has(input:disabled) .toggle-copy { opacity: 0.72; }
-
-  /* ---- §06.3 Template picker: radio cards ---- */
-  .mode-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .mode-card {
-    position: relative;
-    padding: 16px;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    cursor: pointer;
-    transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
-  }
-  .mode-card:hover { border-color: var(--color-line-strong); }
-  /* Hidden from sight, not from focus or the accessibility tree. */
-  .mode-card input {
-    position: absolute;
-    width: 1px; height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-  }
-  .mode-card:has(:checked) { border-color: var(--color-primary); background: var(--color-primary-soft); }
-  .mode-card:has(:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  .mode-check { position: absolute; right: 12px; top: 12px; color: var(--color-primary); visibility: hidden; }
-  .mode-card:has(:checked) .mode-check { visibility: visible; }
-  /* Neutral by design (§05): the glyph never recolors. The card border and
-     background carry the selected state. */
-  .mode-glyph { width: 100%; max-width: 96px; height: auto; display: block; }
-  .mode-name { display: block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--color-ink); }
-  .mode-copy { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--color-muted); }
-
-  /* ---- §06.4 Badges: a dot plus a word ---- */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: var(--radius-pill);
-    background: var(--color-surface-3);
-    color: var(--color-body);
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  /* An explicit element rather than the shared layer's ::before dot: this one
-     animates while work is in flight, which needs a real node to target. */
-  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-muted); }
-  .badge-success { background: var(--color-success-soft); color: var(--color-success); }
-  .badge-success .badge-dot { background: var(--color-success); }
-  .badge-warning { background: var(--color-warning-soft); color: var(--color-warning); }
-  /* The one thing that moves: work still in flight. */
-  .badge-warning .badge-dot { background: var(--color-warning); animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-  .badge-danger { background: var(--color-danger-soft); color: var(--color-danger); }
-  .badge-danger .badge-dot { background: var(--color-danger); }
-  @keyframes pulse { 50% { opacity: 0.35; } }
-
-  /* ---- §06.7 Alerts ---- */
-  .alert {
-    flex: 0 0 auto;
-    display: flex;
-    gap: 12px;
-    padding: 16px 20px;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .alert svg { flex: 0 0 auto; margin-top: 2px; }
-  .alert-title { font-weight: 600; color: var(--color-ink); }
-  .alert code { padding: 1px 5px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--color-ink) 7%, transparent); font-size: 12px; }
-  .alert-warning { background: var(--color-warning-soft); color: var(--color-body); border-bottom: 1px solid var(--color-line); }
-  .alert-warning > svg { color: var(--color-warning); }
-
-  /* ---- Workspace ---- */
+  /* ---- Workspace: form left, live page right ---- */
   .workspace {
     flex: 1 1 auto;
     display: grid;
@@ -860,14 +706,6 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     gap: 20px;
   }
   .editor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-  .overline {
-    color: var(--color-accent);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
   .editor-heading h1 { margin-top: 8px; font-size: 26px; line-height: 1.2; }
   .editor-sub { margin-top: 4px; color: var(--color-muted); font-size: 14px; }
   .form-section {
@@ -880,7 +718,10 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     background: var(--color-surface);
     box-shadow: var(--shadow-card);
   }
-  .section-heading { display: flex; align-items: flex-start; gap: 12px; }
+  /* The section is a flex column with its own rhythm, so the shared field
+     margin would add a second, larger gap under every control. */
+  .form-section .field { margin-bottom: 0; }
+  .form-section .section-heading { align-items: flex-start; margin-bottom: 0; }
   /* Accent: section indices and small marks. Never a button, never a surface. */
   .section-index {
     flex: 0 0 auto;
@@ -891,52 +732,19 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     line-height: 1.6;
   }
   .section-heading h2 { font-size: 18px; font-weight: 600; line-height: 1.35; }
-  .section-heading p { margin-top: 2px; color: var(--color-muted); font-size: 13px; }
+  .section-heading p { margin-top: 2px; color: var(--color-muted); font-size: 13px; font-family: var(--font-sans); font-weight: 400; }
   .common-content { display: flex; flex-direction: column; gap: 20px; }
   .common-content.is-hidden { display: none; }
   .mode-block { display: none; flex-direction: column; gap: 20px; }
   .mode-block.active { display: flex; }
-
-  /* Repeater rows */
-  .repeater { display: flex; flex-direction: column; gap: 8px; }
+  .switch-stack { display: grid; gap: 10px; }
+  .field.row { display: flex; flex-direction: row; gap: 16px; }
+  .field.row .col { flex: 1; min-width: 0; }
+  .field.row .color-col { flex: 0 0 88px; }
   .repeater-row { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 40px; gap: 8px; }
-  .repeater-row input { min-width: 0; font-size: 13px; }
-  .repeater-row .del {
-    width: 40px; height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
-  }
-  .repeater-row .del:hover { color: var(--color-danger); border-color: var(--color-danger); background: var(--color-danger-soft); }
+  .repeater-row .input { min-width: 0; font-size: 13px; }
 
-  /* Avatar */
-  .avatar-uploader { display: flex; align-items: center; gap: 16px; }
-  .avatar-preview {
-    width: 64px; height: 64px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    overflow: hidden;
-    border: 1px solid var(--color-line);
-    border-radius: 50%;
-    background: var(--color-surface-3);
-    color: var(--color-ink);
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 600;
-  }
-  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
-  .avatar-upload-actions { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-  .avatar-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-
-  /* Disclosures */
+  /* ---- Disclosures ---- */
   .extras-section { gap: 12px; }
   details.advanced {
     border: 1px solid var(--color-line);
@@ -968,15 +776,13 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
   details.advanced[open] summary { border-bottom: 1px solid var(--color-line); }
   .summary-hint { margin-left: auto; color: var(--color-muted); font-size: 13px; font-weight: 400; }
   details.advanced > .field,
-  details.advanced > .toggle-row,
+  details.advanced > .switch-row,
   details.advanced > .social-grid,
   details.advanced > .copy-settings,
   details.advanced > .presets { margin: 16px; }
   .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .social-grid label { display: flex; flex-direction: column; gap: 6px; }
   .copy-block { display: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .copy-block.active { display: grid; }
-  .copy-block label { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .copy-block .wide { grid-column: 1 / -1; }
   .presets { display: flex; flex-direction: column; gap: 8px; }
   .preset-row {
@@ -998,9 +804,8 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
   }
   .preset-row:hover { border-color: var(--color-line-strong); background: var(--color-surface-2); }
   .preset-row .preset-mode { color: var(--color-muted); font-family: var(--font-mono); font-size: 12px; }
-  .editor-meta { color: var(--color-muted); font-size: 13px; }
 
-  /* ---- Preview ---- */
+  /* ---- Preview pane ---- */
   .preview { display: flex; flex-direction: column; background: var(--color-surface-2); overflow: hidden; }
   .preview-header {
     min-height: 48px;
@@ -1012,21 +817,6 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-line);
   }
-  .segmented { display: inline-flex; padding: 3px; border-radius: var(--radius-md); background: var(--color-surface-3); }
-  .segmented button {
-    height: 26px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--color-body);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
-  }
-  .segmented button[aria-pressed="true"],
-  .segmented button[aria-selected="true"] { background: var(--color-surface); color: var(--color-ink); }
   .preview-canvas {
     flex: 1 1 auto;
     min-height: 0;
@@ -1043,94 +833,35 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     border: 1px solid var(--color-line-strong);
     border-radius: var(--radius-lg);
     background: #fff;
-    transition: width var(--t-enter) var(--ease);
+    transition: opacity var(--t-enter) var(--ease);
   }
   .preview[data-preview-size="mobile"] .preview-device { width: min(390px, 100%); }
   iframe { width: 100%; height: 100%; display: block; border: 0; }
 
-  /* ---- Dialog: modal radius 20, floats, no glass ---- */
-  .dialog {
-    width: min(420px, calc(100vw - 32px));
-    padding: 24px;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-xl);
-    background: var(--color-surface);
-    color: var(--color-body);
-    box-shadow: var(--shadow-pop);
-  }
-  .dialog::backdrop { background: rgba(16, 24, 40, 0.5); }
+  /* ---- Inbox ---- */
+  .inbox-view { flex: 1 1 auto; overflow-y: auto; }
+  .inbox-inner { width: min(100% - 40px, var(--container)); margin: 0 auto; padding: 32px 0 72px; }
+  .inbox-filters { margin-bottom: 16px; }
+  .inbox-filters .search-wrap { flex: 1 1 240px; min-width: 0; }
+  .inbox-filters .select { flex: 0 1 auto; width: auto; min-width: 168px; }
+  .inbox-view .empty-state { margin-top: 8px; }
+  .inbox-view .help { margin-top: 16px; }
+
+  /* The dialog's warning chip. The shared layer has no equivalent: an icon in a
+     danger tint is specific to a confirmation this small. */
   .dialog-mark {
     width: 40px; height: 40px;
     display: grid;
     place-items: center;
+    margin-bottom: 16px;
     border-radius: var(--radius-md);
     background: var(--color-danger-soft);
     color: var(--color-danger);
   }
-  .dialog h2 { margin-top: 16px; font-size: 18px; font-weight: 600; }
-  .dialog p { margin-top: 8px; font-size: 14px; line-height: 1.5; }
-  .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
 
-  /* ---- §06.9 Undo bar ---- */
-  .undo-bar {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: var(--z-overlay);
-    width: min(576px, calc(100vw - 32px));
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
-    border-radius: var(--radius-lg);
-    background: var(--color-secondary);
-    color: var(--color-on-secondary);
-    box-shadow: var(--shadow-pop);
-    font-size: 14px;
-  }
-  .undo-bar[hidden] { display: none; }
-  .undo-bar > svg { flex: 0 0 auto; color: rgba(255,255,255,0.7); }
-  .undo-bar .mono { font-family: var(--font-mono); font-size: 13px; }
-  .undo-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-  .undo-action { border-color: #fff; background: #fff; color: var(--color-ink); }
-  .undo-action:hover { background: rgba(255,255,255,0.9); }
-  .undo-dismiss {
-    width: 32px; height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: rgba(255,255,255,0.6);
-    cursor: pointer;
-    transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
-  }
-  .undo-dismiss:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-  /* ---- Toast ---- */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    z-index: var(--z-toast);
-    transform: translateX(-50%) translateY(12px);
-    padding: 10px 16px;
-    border-radius: var(--radius-lg);
-    background: var(--color-secondary);
-    color: var(--color-on-secondary);
-    box-shadow: var(--shadow-pop);
-    font-size: 13px;
-    font-weight: 500;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--t-enter) var(--ease), transform var(--t-enter) var(--ease);
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: var(--color-danger); }
   /* The undo bar owns bottom-center while it is up; the toast steps above it. */
   body:has(#undo-bar:not([hidden])) .toast { bottom: 88px; }
+  .toast.error { background: var(--color-danger-solid); color: #fff; }
 
   /* ---- Responsive ---- */
   .mobile-view-switcher { display: none; }
@@ -1138,54 +869,35 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     .workspace { grid-template-columns: minmax(420px, 480px) minmax(0, 1fr); }
   }
   @media (max-width: 900px) {
-    .topbar { grid-template-columns: auto minmax(160px, 1fr) auto; gap: 12px; }
     .workspace { display: block; overflow: hidden; }
     .editor, .preview { width: 100%; height: 100%; border: 0; }
     .editor-inner { max-width: 640px; }
-    .mobile-view-switcher {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3px;
-      padding: 3px;
-      border-radius: var(--radius-md);
-      background: var(--color-surface-3);
-    }
-    .mobile-view-switcher button {
-      height: 32px;
-      border: 0;
-      border-radius: var(--radius-sm);
-      background: transparent;
-      color: var(--color-body);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .mobile-view-switcher button[aria-selected="true"] { background: var(--color-surface); color: var(--color-ink); }
+    .mobile-view-switcher { display: inline-flex; order: 5; }
     body[data-mobile-view="editor"] .preview { display: none; }
     body[data-mobile-view="preview"] .editor { display: none; }
   }
   @media (max-width: 680px) {
-    .topbar { grid-template-columns: auto 1fr; padding: 8px 12px; }
-    .brand { min-width: 0; }
+    .topbar { padding: 8px 12px; }
     .brand-copy { display: none; }
-    .site-switcher { grid-column: 1 / -1; grid-row: 2; width: 100%; }
-    .topbar-actions { justify-self: end; }
-    .topbar-actions .btn span:not(.sr-only) { display: none; }
-    .topbar-actions .btn { padding: 0 10px; }
-    .topbar-actions .btn-primary span { display: inline; }
+    .site-switcher { order: 4; flex-basis: 100%; max-width: none; margin-left: 0; }
+    /* Only the labels collapse - an icon-only button still has to keep its
+       icon, and the one primary action keeps its words. */
+    .topbar-actions .btn-label { display: none; }
+    .topbar-actions .btn { width: 32px; padding: 0; }
+    .topbar-actions .btn-primary { width: auto; padding: 6px 12px; }
+    .topbar-actions .btn-primary .btn-label { display: inline; }
     .btn kbd { display: none; }
-    .mobile-view-switcher { grid-row: 3; }
     .editor-inner { padding: 24px 16px 48px; }
     .form-section { padding: 20px 16px; }
     .field.row { flex-direction: column; }
     .field.row .color-col { flex-basis: auto; }
-    .mode-cards, .copy-block, .social-grid { grid-template-columns: 1fr; }
+    .copy-block, .social-grid { grid-template-columns: 1fr; }
     .copy-block .wide { grid-column: auto; }
     .preview-canvas { padding: 12px; }
     .repeater-row { grid-template-columns: 1fr 40px; }
-    .repeater-row input[data-k="b"] { grid-column: 1 / -1; grid-row: 2; }
-    .repeater-row .del { grid-column: 2; grid-row: 1; }
+    .repeater-row .input[data-k="b"] { grid-column: 1 / -1; grid-row: 2; }
+    .repeater-row .btn { grid-column: 2; grid-row: 1; }
+    .inbox-inner { width: min(100% - 24px, var(--container)); padding-top: 24px; }
   }
 `;
 
@@ -1250,8 +962,23 @@ const ADMIN_JS = `
     redirectCountdownSeconds: $('redirect-countdown-seconds'),
     maintenanceRetryAfter: $('maintenance-retry-after'),
     maintenanceHelpUrl: $('maintenance-help-url'),
+    captureContact: $('capture-contact'),
+    captureOffer: $('capture-offer'),
+    captureWaitlist: $('capture-waitlist'),
+    captureSurvey: $('capture-survey'),
+    captureConsent: $('capture-consent'),
     footerText: $('f-footerText'),
     showCredit: $('f-showCredit'),
+    inboxList: $('inbox-list'),
+    inboxEmpty: $('inbox-empty'),
+    inboxTabs: $('inbox-status-tabs'),
+    inboxSearch: $('inbox-search'),
+    inboxHostname: $('inbox-hostname'),
+    inboxKind: $('inbox-kind'),
+    inboxUnread: $('inbox-unread'),
+    inboxExport: $('inbox-export'),
+    inboxRefresh: $('inbox-refresh'),
+    inboxReadAll: $('inbox-read-all'),
   };
 
   let state = {
@@ -1262,14 +989,17 @@ const ADMIN_JS = `
     avatarObjectKey: null,
     fullConfig: {},          // accumulates fields from every mode so switching tabs never drops data
     undo: null,              // last deleted record, restorable until dismissed
+    view: 'pages',
+    inbox: { status: 'open', kind: '', hostname: '', q: '' },
+    inboxLoaded: false,
   };
 
   function toast(msg, isError = false) {
     els.toast.textContent = msg;
     els.toast.classList.toggle('error', isError);
-    els.toast.classList.add('show');
+    els.toast.hidden = false;
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => els.toast.classList.remove('show'), 2200);
+    toast._t = setTimeout(() => { els.toast.hidden = true; }, 2200);
   }
 
   function setMode(mode) {
@@ -1282,6 +1012,11 @@ const ADMIN_JS = `
     });
     document.querySelectorAll('[data-copy-block]').forEach((block) => {
       block.classList.toggle('active', block.dataset.copyBlock === mode);
+    });
+    // A form that only ever renders on one template is hidden on the others,
+    // rather than offered as a switch that quietly does nothing.
+    document.querySelectorAll('[data-capture-mode]').forEach((row) => {
+      row.hidden = row.dataset.captureMode !== mode;
     });
     document.querySelector('.common-content').classList.toggle('is-hidden', mode === 'profile');
     const labels = {
@@ -1326,13 +1061,13 @@ const ADMIN_JS = `
     row.className = 'repeater-row';
     const isFeature = kind === 'feature';
     row.innerHTML =
-      '<input data-k="a" type="text" placeholder="Title" />' +
-      '<input data-k="b" type="text" class="' + (isFeature ? '' : 'mono') + '" placeholder="' +
+      '<input data-k="a" type="text" class="input" placeholder="Title" />' +
+      '<input data-k="b" type="text" class="input' + (isFeature ? '' : ' mono') + '" placeholder="' +
         (isFeature ? 'Description (optional)' : 'https://...') + '" />' +
-      '<button type="button" class="del" aria-label="Remove row">' + DELETE_ROW_ICON + '</button>';
+      '<button type="button" class="btn btn-icon btn-quiet" data-remove-row aria-label="Remove row">' + DELETE_ROW_ICON + '</button>';
     row.querySelector('[data-k="a"]').value = value.title || '';
     row.querySelector('[data-k="b"]').value = (isFeature ? value.description : value.url) || '';
-    row.querySelector('.del').addEventListener('click', () => {
+    row.querySelector('[data-remove-row]').addEventListener('click', () => {
       row.remove();
       scheduleRender();
       markDirty();
@@ -1459,6 +1194,23 @@ const ADMIN_JS = `
     }
   }
 
+  /**
+   * Only the forms this template can actually render are stored. An offer
+   * switch left on from a previous template would otherwise be saved for a
+   * landing page, where the renderer never shows it.
+   */
+  function collectCapture() {
+    const capture = {
+      contact: els.captureContact.checked,
+      offer: state.mode === 'parking' && els.captureOffer.checked,
+      waitlist: state.mode === 'coming-soon' && els.captureWaitlist.checked,
+      survey_question: els.captureSurvey.value.trim(),
+      consent: els.captureConsent.value.trim(),
+    };
+    const wanted = capture.contact || capture.offer || capture.waitlist || capture.survey_question;
+    return wanted ? capture : undefined;
+  }
+
   function gatherConfig() {
     // Start from everything already known (incl. fields belonging to other page
     // types) so switching the mode card never drops previously filled-in data.
@@ -1470,6 +1222,7 @@ const ADMIN_JS = `
     cfg.footerText = els.footerText.value;
     cfg.showCredit = els.showCredit.checked;
     cfg.socialLinks = collectSocial();
+    cfg.capture = collectCapture();
     collectCopySettings(cfg);
     if (state.mode === 'parking') {
       cfg.salePrice = els.salePrice.value.trim() || undefined;
@@ -1557,6 +1310,13 @@ const ADMIN_JS = `
       ? configValue(cfg, 'footerText', 'footer_text')
       : (defaults.footerText || '');
     els.showCredit.checked = configValue(cfg, 'showCredit', 'footer_credit') !== false;
+    const capture = cfg.capture || {};
+    els.captureContact.checked = capture.contact === true;
+    els.captureOffer.checked = capture.offer === true;
+    // "notify" is what the coming-soon waitlist was called before capture existed.
+    els.captureWaitlist.checked = capture.waitlist === true || cfg.notify === true;
+    els.captureSurvey.value = capture.survey_question || '';
+    els.captureConsent.value = capture.consent || '';
     const delivery = cfg.delivery || {};
     const redirect = delivery.redirect || {};
     const maintenance = delivery.maintenance || {};
@@ -1585,7 +1345,7 @@ const ADMIN_JS = `
   }
 
   function renderMeta(record) {
-    if (!record || !record.updatedAt) { els.meta.textContent = 'New page — not saved yet.'; return; }
+    if (!record || !record.updatedAt) { els.meta.textContent = 'New page - not saved yet.'; return; }
     els.meta.textContent = 'Last saved ' + new Date(record.updatedAt * 1000).toLocaleString() + '.';
   }
 
@@ -1597,7 +1357,7 @@ const ADMIN_JS = `
     els.saveLabel.textContent = state.isDirty ? 'Save changes' : 'Saved';
     els.saveBtn.disabled = !state.isDirty;
     els.dirtyLabel.textContent = state.isDirty ? 'Unsaved' : 'Saved';
-    els.dirtyState.className = 'badge ' + (state.isDirty ? 'badge-warning' : 'badge-success');
+    els.dirtyState.className = 'badge ' + (state.isDirty ? 'badge-warning badge-pulse' : 'badge-success');
     els.openBtn.disabled = !state.current;
     els.deleteBtn.disabled = !state.current;
   }
@@ -1607,7 +1367,7 @@ const ADMIN_JS = `
   let renderInFlight = false;
   function setPreviewState(text, variant) {
     els.status.textContent = text;
-    els.previewBadge.className = 'badge badge-' + variant;
+    els.previewBadge.className = 'badge badge-' + variant + (variant === 'warning' ? ' badge-pulse' : '');
   }
   function scheduleRender() {
     setPreviewState('Updating', 'warning');
@@ -1737,7 +1497,7 @@ const ADMIN_JS = `
     if (!state.current) { toast('Save this page before deleting it'); return; }
     els.deleteMessage.textContent =
       'This removes the saved configuration for ' + state.current +
-      '. You can undo it until you dismiss the notice.';
+      ', and every message its forms collected. You can undo the page itself until you dismiss the notice.';
     els.deleteDialog.showModal();
   }
 
@@ -1746,11 +1506,12 @@ const ADMIN_JS = `
     const hostname = state.current;
     const record = { hostname, mode: state.mode, config: { ...state.fullConfig } };
     const res = await fetch(BASE + '/api/domains/' + encodeURIComponent(hostname), { method: 'DELETE' });
-    if (!res.ok) { toast('Not deleted — nothing was changed', true); return; }
+    if (!res.ok) { toast('Not deleted - nothing was changed', true); return; }
     state.current = null;
     await loadDomains();
     newDomain();
     showUndo(hostname, record);
+    state.inboxLoaded = false;
   }
 
   async function undoDelete() {
@@ -1790,9 +1551,12 @@ const ADMIN_JS = `
 
   function renderPresets() {
     const presets = window.__PRESETS__ || [];
-    els.presets.innerHTML = '';
+    els.presets.replaceChildren();
     if (!presets.length) {
-      els.presets.innerHTML = '<p class="hint">No presets configured.</p>';
+      const note = document.createElement('p');
+      note.className = 'help';
+      note.textContent = 'No presets configured.';
+      els.presets.appendChild(note);
       return;
     }
     presets.forEach((p) => {
@@ -1808,6 +1572,245 @@ const ADMIN_JS = `
       row.addEventListener('click', () => applyPreset(p));
       els.presets.appendChild(row);
     });
+  }
+
+  // ---- Inbox ----------------------------------------------------------------
+  const KIND_LABEL = { contact: 'Message', offer: 'Offer', waitlist: 'Waitlist', survey: 'Survey' };
+  const STATUS_TABS = [
+    ['open', 'Open'],
+    ['new', 'Unread'],
+    ['archived', 'Archived'],
+    ['spam', 'Spam'],
+    ['all', 'Everything'],
+  ];
+
+  function inboxQuery(extra = {}) {
+    const params = new URLSearchParams();
+    const filters = { ...state.inbox, ...extra };
+    params.set('status', filters.status);
+    if (filters.kind) params.set('kind', filters.kind);
+    if (filters.hostname) params.set('hostname', filters.hostname);
+    if (filters.q) params.set('q', filters.q);
+    return params.toString();
+  }
+
+  function relativeTime(seconds) {
+    const elapsed = Math.max(0, Date.now() - Number(seconds) * 1000);
+    if (elapsed < 60000) return 'just now';
+    if (elapsed < 3600000) return Math.floor(elapsed / 60000) + 'm ago';
+    if (elapsed < 86400000) return Math.floor(elapsed / 3600000) + 'h ago';
+    return Math.floor(elapsed / 86400000) + 'd ago';
+  }
+
+  function utc(seconds) {
+    if (!seconds) return '-';
+    return new Date(Number(seconds) * 1000).toISOString().replace(/\\.\\d{3}Z$/, 'Z');
+  }
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  /** The one line a reader scans. Built as nodes - none of it is our text. */
+  function previewNodes(item) {
+    const nodes = [];
+    if (item.kind === 'offer') {
+      if (item.offerAmount) nodes.push(el('b', null, item.offerAmount), document.createTextNode(' - '));
+      nodes.push(document.createTextNode(item.message || 'No message'));
+    } else if (item.kind === 'survey') {
+      nodes.push(document.createTextNode(item.answer || ''));
+    } else if (item.kind === 'waitlist') {
+      nodes.push(document.createTextNode('Joined the waitlist'));
+    } else {
+      if (item.subject) nodes.push(el('b', null, item.subject), document.createTextNode(' - '));
+      nodes.push(document.createTextNode(item.message || ''));
+    }
+    return nodes;
+  }
+
+  function bodyText(item) {
+    if (item.kind === 'survey') return item.answer || '';
+    if (item.kind === 'waitlist') return 'This address asked to be told when the domain goes live.';
+    return item.message || '';
+  }
+
+  function actionButton(label, glyph, handler, extra) {
+    const button = el('button', 'btn btn-sm' + (extra ? ' ' + extra : ''));
+    button.type = 'button';
+    button.innerHTML = glyph;
+    button.append(document.createTextNode(' ' + label));
+    button.addEventListener('click', handler);
+    return button;
+  }
+
+  const INBOX_ICONS = ${serializeForScript({
+    mail: icon("mail", { size: 16 }),
+    read: icon("mail-opened", { size: 16 }),
+    archive: icon("archive", { size: 16 }),
+    spam: icon("ban", { size: 16 }),
+    inbox: icon("inbox", { size: 16 }),
+    trash: icon("trash", { size: 16 }),
+  })};
+
+  function messageRow(item) {
+    const details = el('details', 'msg');
+    details.dataset.status = item.status;
+
+    const summary = document.createElement('summary');
+    summary.append(el('span', 'msg-mark'));
+    summary.append(el('span', 'msg-from', item.name ? item.name + ' · ' + (item.email || 'no address') : (item.email || 'Anonymous')));
+    const preview = el('span', 'msg-preview');
+    preview.append(...previewNodes(item));
+    summary.append(preview);
+    const meta = el('span', 'msg-meta');
+    meta.append(el('span', 'badge badge-plain', KIND_LABEL[item.kind] || item.kind));
+    meta.append(el('span', 'mono', item.hostname));
+    meta.append(el('span', null, relativeTime(item.createdAt)));
+    summary.append(meta);
+    details.append(summary);
+
+    const body = el('div', 'msg-body');
+    body.append(el('p', 'msg-text', bodyText(item) || 'No message body.'));
+
+    const facts = el('dl', 'kv-list');
+    const fact = (key, value) => { facts.append(el('dt', null, key), el('dd', null, value)); };
+    fact('Received', utc(item.createdAt));
+    fact('Domain', item.hostname);
+    fact('Type', KIND_LABEL[item.kind] || item.kind);
+    if (item.email) fact('Email', item.email);
+    if (item.offerAmount) fact('Offer', item.offerAmount);
+    if (item.consent) fact('Consent', 'Given with this submission');
+    body.append(facts);
+
+    const actions = el('div', 'msg-actions');
+    if (item.email) {
+      const subject = item.subject || (item.kind === 'offer'
+        ? 'Your offer for ' + item.hostname
+        : 'Re: ' + item.hostname);
+      const reply = el('a', 'btn btn-sm btn-primary');
+      reply.href = 'mailto:' + encodeURIComponent(item.email) + '?subject=' + encodeURIComponent(subject);
+      reply.innerHTML = INBOX_ICONS.mail;
+      reply.append(document.createTextNode(' Reply'));
+      actions.append(reply);
+    }
+    // Only the moves that make sense from where this message already is.
+    const moves = item.status === 'new'
+      ? [['read', 'Mark read', INBOX_ICONS.read, ''], ['archived', 'Archive', INBOX_ICONS.archive, ''], ['spam', 'Spam', INBOX_ICONS.spam, 'btn-danger-ghost']]
+      : item.status === 'read'
+        ? [['new', 'Mark unread', INBOX_ICONS.mail, ''], ['archived', 'Archive', INBOX_ICONS.archive, ''], ['spam', 'Spam', INBOX_ICONS.spam, 'btn-danger-ghost']]
+        : item.status === 'archived'
+          ? [['read', 'Move to inbox', INBOX_ICONS.inbox, ''], ['spam', 'Spam', INBOX_ICONS.spam, 'btn-danger-ghost']]
+          : [['read', 'Not spam', INBOX_ICONS.inbox, '']];
+    moves.forEach(([status, label, glyph, extra]) => {
+      actions.append(actionButton(label, glyph, () => setInboxStatus([item.id], status), extra));
+    });
+    actions.append(actionButton('Delete', INBOX_ICONS.trash, () => deleteMessage(item), 'btn-danger-ghost'));
+    body.append(actions);
+
+    details.append(body);
+    return details;
+  }
+
+  function renderStatusTabs(counts) {
+    els.inboxTabs.replaceChildren();
+    STATUS_TABS.forEach(([value, label]) => {
+      const tab = el('button', 'filter-tab', label);
+      tab.type = 'button';
+      if (state.inbox.status === value) tab.setAttribute('aria-current', 'page');
+      const count = value === 'all'
+        ? Object.values(counts.status || {}).reduce((sum, n) => sum + n, 0)
+        : value === 'open' ? counts.open : (counts.status || {})[value];
+      if (Number.isFinite(count)) tab.append(el('span', 'filter-count', String(count)));
+      tab.addEventListener('click', () => {
+        state.inbox.status = value;
+        loadInbox();
+      });
+      els.inboxTabs.append(tab);
+    });
+  }
+
+  function renderHostnameOptions(hostnames) {
+    const current = state.inbox.hostname;
+    els.inboxHostname.replaceChildren();
+    const all = document.createElement('option');
+    all.value = '';
+    all.textContent = 'All domains';
+    els.inboxHostname.append(all);
+    hostnames.forEach((row) => {
+      const option = document.createElement('option');
+      option.value = row.hostname;
+      option.textContent = row.hostname + ' (' + row.count + ')';
+      els.inboxHostname.append(option);
+    });
+    els.inboxHostname.value = current;
+  }
+
+  async function loadInbox() {
+    const query = inboxQuery();
+    const res = await fetch(BASE + '/api/inbox?' + query);
+    if (!res.ok) { toast('Could not load the inbox', true); return; }
+    const data = await res.json();
+    state.inboxLoaded = true;
+    els.inboxExport.href = BASE + '/api/inbox.csv?' + query;
+
+    renderStatusTabs(data.counts || {});
+    renderHostnameOptions(data.hostnames || []);
+
+    const unread = (data.counts && data.counts.status && data.counts.status.new) || 0;
+    els.inboxUnread.textContent = String(unread);
+    els.inboxUnread.hidden = unread === 0;
+    els.inboxReadAll.disabled = unread === 0;
+
+    els.inboxList.replaceChildren(...(data.submissions || []).map(messageRow));
+    const hasRows = (data.submissions || []).length > 0;
+    els.inboxList.hidden = !hasRows;
+    els.inboxEmpty.hidden = hasRows;
+    if (!hasRows && (state.inbox.q || state.inbox.kind || state.inbox.hostname || state.inbox.status !== 'open')) {
+      els.inboxEmpty.querySelector('.empty-state-title').textContent = 'Nothing matches';
+      els.inboxEmpty.querySelector('.empty-state-body').textContent = 'No message matches this filter. Try “Everything”, or clear the search.';
+    }
+  }
+
+  async function setInboxStatus(ids, status) {
+    const res = await fetch(BASE + '/api/inbox', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ids, status }),
+    });
+    if (!res.ok) { toast('Could not update the message', true); return; }
+    await loadInbox();
+  }
+
+  async function markAllRead() {
+    const res = await fetch(BASE + '/api/inbox?' + inboxQuery({ status: 'new' }));
+    if (!res.ok) { toast('Could not update the inbox', true); return; }
+    const data = await res.json();
+    const ids = (data.submissions || []).map((item) => item.id);
+    if (!ids.length) return;
+    await setInboxStatus(ids, 'read');
+    toast('Marked ' + ids.length + ' read');
+  }
+
+  async function deleteMessage(item) {
+    const res = await fetch(BASE + '/api/inbox/' + encodeURIComponent(item.id), { method: 'DELETE' });
+    if (!res.ok) { toast('Could not delete the message', true); return; }
+    toast('Deleted');
+    await loadInbox();
+  }
+
+  function setView(view) {
+    state.view = view;
+    document.body.dataset.view = view;
+    document.querySelectorAll('[data-view-panel]').forEach((panel) => {
+      panel.hidden = panel.dataset.viewPanel !== view;
+    });
+    document.querySelectorAll('.view-switcher [data-view]').forEach((button) => {
+      button.setAttribute('aria-selected', String(button.dataset.view === view));
+    });
+    if (view === 'inbox' && !state.inboxLoaded) loadInbox();
   }
 
   // ---- Event wiring ----
@@ -1886,12 +1889,37 @@ const ADMIN_JS = `
     else toast('Save this page before visiting it');
   });
 
+  let searchTimer = null;
+  els.inboxSearch.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      state.inbox.q = els.inboxSearch.value.trim();
+      loadInbox();
+    }, 250);
+  });
+  els.inboxHostname.addEventListener('change', () => {
+    state.inbox.hostname = els.inboxHostname.value;
+    loadInbox();
+  });
+  els.inboxKind.addEventListener('change', () => {
+    state.inbox.kind = els.inboxKind.value;
+    loadInbox();
+  });
+  els.inboxRefresh.addEventListener('click', loadInbox);
+  els.inboxReadAll.addEventListener('click', markAllRead);
+
+  document.querySelectorAll('.view-switcher [data-view]').forEach((button) => {
+    button.addEventListener('click', () => setView(button.dataset.view));
+  });
+
   window.addEventListener('keydown', (e) => {
+    if (state.view !== 'pages') return;
     if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveCurrent(); }
     if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); if (canDiscardChanges()) newDomain(); }
   });
 
-  document.querySelectorAll('.segmented [data-preview-size]').forEach((button) => {
+  document.querySelectorAll('[data-preview-size]').forEach((button) => {
+    if (button.tagName !== 'BUTTON') return;
     button.addEventListener('click', () => {
       const size = button.dataset.previewSize;
       els.preview.dataset.previewSize = size;
@@ -1923,5 +1951,8 @@ const ADMIN_JS = `
     await loadDomains();
     if (state.domains.length) loadDomain(state.domains[0].hostname);
     else newDomain();
+    // The unread count is part of the chrome, so the inbox is polled once even
+    // when the Pages view is the one on screen.
+    loadInbox().catch(() => {});
   })();
 `;

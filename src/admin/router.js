@@ -1,5 +1,5 @@
 /**
- * Admin panel router — mounted under /_admin_/.
+ * Admin panel router - mounted under /_admin_/.
  *
  * Routes:
  *   GET    /_admin_/                       → SPA HTML
@@ -7,6 +7,10 @@
  *   GET    /_admin_/api/domains/:hostname  → fetch one
  *   PUT    /_admin_/api/domains/:hostname  → upsert
  *   DELETE /_admin_/api/domains/:hostname  → remove
+ *   GET    /_admin_/api/inbox              → filtered submissions + filter counts
+ *   PATCH  /_admin_/api/inbox              → bulk status change
+ *   DELETE /_admin_/api/inbox/:id          → remove one submission
+ *   GET    /_admin_/api/inbox.csv          → export the current filter
  *   POST   /_admin_/preview                → render arbitrary unsaved config
  *   POST   /_admin_/api/uploads/profile-image → validate and store in R2
  */
@@ -14,6 +18,9 @@
 import { requireAdmin, adminCredentials } from "./auth.js";
 import { renderAdminUI } from "./ui.js";
 import { listDomains, getDomain, upsertDomain, deleteDomain } from "../db.js";
+import {
+  deleteForHostname, deleteSubmission, exportInbox, inboxCsv, listInbox, setStatusAll,
+} from "../inbox.js";
 import { DEMO_PRESETS } from "../config.js";
 import {
   ConfigValidationError,
@@ -93,7 +100,7 @@ function plainResponse(message, status) {
 
 /**
  * A bound but unmigrated database is the most common way a fresh checkout fails,
- * and it used to surface as a 500 with a stack trace — which says nothing about
+ * and it used to surface as a 500 with a stack trace - which says nothing about
  * the one command that fixes it. Every admin API route funnels through here, so
  * one guard covers all of them.
  */
@@ -232,6 +239,55 @@ export async function handleAdmin(request, env) {
     return json({ domains });
   }
 
+  // /_admin_/api/inbox - one filter vocabulary shared by the list and the export.
+  if (path === "/api/inbox" || path === "/api/inbox.csv" || path.startsWith("/api/inbox/")) {
+    try {
+      const filters = {
+        status: url.searchParams.get("status") || "open",
+        kind: url.searchParams.get("kind") || "",
+        hostname: url.searchParams.get("hostname") || "",
+        search: url.searchParams.get("q") || "",
+        limit: url.searchParams.get("limit"),
+        offset: url.searchParams.get("offset"),
+      };
+
+      if (path === "/api/inbox" && request.method === "GET") {
+        return json(await listInbox(env.DB, filters));
+      }
+
+      if (path === "/api/inbox.csv" && request.method === "GET") {
+        const csv = inboxCsv(await exportInbox(env.DB, filters));
+        return new Response(csv, {
+          headers: {
+            "content-type": "text/csv;charset=UTF-8",
+            "content-disposition": 'attachment; filename="domain-parkour-inbox.csv"',
+            "cache-control": "no-store",
+            "x-content-type-options": "nosniff",
+          },
+        });
+      }
+
+      if (path === "/api/inbox" && request.method === "PATCH") {
+        const originError = mutationOriginError(request);
+        if (originError) return originError;
+        const payload = await readJson(request);
+        const changed = await setStatusAll(env.DB, payload.ids, payload.status);
+        return json({ changed });
+      }
+
+      const submission = path.match(/^\/api\/inbox\/([^/]+)$/);
+      if (submission && request.method === "DELETE") {
+        const originError = mutationOriginError(request);
+        if (originError) return originError;
+        await deleteSubmission(env.DB, decodeURIComponent(submission[1]));
+        return new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
+      }
+      return methodNotAllowed();
+    } catch (error) {
+      return configurationError(error);
+    }
+  }
+
   // /_admin_/api/domains/:hostname
   const m = path.match(/^\/api\/domains\/([^/]+)$/);
   if (m) {
@@ -268,6 +324,7 @@ export async function handleAdmin(request, env) {
         if (originError) return originError;
         const previous = await getDomain(env.DB, hostname);
         await deleteDomain(env.DB, hostname);
+        await deleteForHostname(env.DB, hostname);
         await cleanupManagedAvatar(env, previous?.config);
         return new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
       }

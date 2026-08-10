@@ -6,7 +6,8 @@
 
 import { escapeHtml } from './safety.js';
 import { icon } from './icons.js';
-import { LABELS } from './defaults.js';
+import { label, LABELS } from './defaults.js';
+import { captureAllows, leadForm } from './forms.js';
 import { themeToggle } from './theme.js';
 
 const SOCIAL_ICONS = {
@@ -25,7 +26,7 @@ export const EXTERNAL_LINK_ICON = icon('external-link', { size: 18, cls: 'arrow'
 
 /**
  * The chrome line above the page: the hostname in mono, and one status badge.
- * `live` picks the success variant. Nothing here pulses — the design system
+ * `live` picks the success variant. Nothing here pulses - the design system
  * reserves badge motion for "propagating", which a served page never is.
  */
 export function masthead(title, status, live = false) {
@@ -63,7 +64,7 @@ export function socials(links) {
 }
 
 /**
- * `bare` drops the panel wrapper, for a caller that is already inside one —
+ * `bare` drops the panel wrapper, for a caller that is already inside one -
  * profile puts its links in the same card as the avatar.
  */
 export function linkList(links, { label = '', bare = false } = {}) {
@@ -92,6 +93,53 @@ export function features(list) {
     + `</article>`
   )).join('');
   return `<section class="dp-feature-grid" aria-label="${escapeHtml(LABELS.featuresRegion)}">${cards}</section>`;
+}
+
+/**
+ * A closed disclosure holding one capture form. Closed, because the page is the
+ * domain - the form is what a visitor opens when they have something to say.
+ *
+ * `quiet` is the outlined variant, for every way of reaching the owner after
+ * the first one on the page.
+ */
+export function captureDisclosure(summary, body, { quiet = false } = {}) {
+  return `<details class="dp-contact-disclosure${quiet ? ' dp-quiet' : ''}">`
+    + `<summary>${escapeHtml(summary)}</summary>`
+    + `<div class="dp-disclosure-body">${body}</div></details>`;
+}
+
+/**
+ * The capture forms that are not tied to one template's layout.
+ *
+ * `offer` belongs beside the price and `waitlist` beside the launch date, so
+ * those two stay in their templates. Contact and survey are the same block
+ * wherever they appear, and every template that can carry them renders this -
+ * which is what makes "let people write to me" one switch rather than six.
+ */
+export function captureBlock(mode, cfg, { quiet = false } = {}) {
+  const capture = cfg.capture || {};
+  const sections = [];
+  // Quiet from the second one onward, whether or not the template already
+  // placed a filled one of its own above.
+  const tone = () => ({ quiet: quiet || sections.length > 0 });
+
+  if (captureAllows('contact', mode, cfg)) {
+    sections.push(captureDisclosure(
+      label(cfg, 'contactSummary'),
+      `<p class="dp-copy">${escapeHtml(label(cfg, 'contactIntro'))}</p>${leadForm('contact', capture, cfg)}`,
+      tone(),
+    ));
+  }
+  if (captureAllows('survey', mode, cfg)) {
+    sections.push(captureDisclosure(LABELS.surveySummary, leadForm('survey', capture, cfg), tone()));
+  }
+  if (!sections.length) return '';
+  return `<section class="dp-capture" aria-label="${escapeHtml(LABELS.captureRegion)}">${sections.join('')}</section>`;
+}
+
+/** Whether a template needs the form stylesheet block for this config. */
+export function captureNeedsForm(mode, cfg, ...ownKinds) {
+  return [...ownKinds, 'contact', 'survey'].some((kind) => captureAllows(kind, mode, cfg));
 }
 
 export function footer(text, credit = true) {

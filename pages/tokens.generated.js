@@ -1,5 +1,5 @@
 /**
- * GENERATED from design-system/tokens.css by pages/build-tokens.mjs — do not edit.
+ * GENERATED from design-system/tokens.css by pages/build-tokens.mjs - do not edit.
  * Re-run `node pages/build-tokens.mjs` after changing a token.
  */
 

@@ -1,10 +1,10 @@
 /**
- * GENERATED from design-system/*.css by design-system/build.mjs — do not edit.
+ * GENERATED from design-system/*.css by design-system/build.mjs - do not edit.
  */
 
 export const tokensCss = `
 /* =============================================================================
- * Domain Parkour — canonical design tokens
+ * Domain Parkour - canonical design tokens
  * v2.0.0 · Signal base theme
  *
  * THIS FILE IS THE SOURCE OF TRUTH. Everything visual in the OSS runtime, the
@@ -27,13 +27,13 @@ export const tokensCss = `
    * served for a customer's domain replaces this single hex with their accent
    * (see "Retheming" below); a pair would make that contract take two values.
    */
-  --color-primary:   #E8590C;                        /* signal orange — actions, links, focus */
-  --color-accent:    #2C4FE0;                        /* cobalt — small marks and indices only */
+  --color-primary:   #E8590C;                        /* signal orange - actions, links, focus */
+  --color-accent:    #2C4FE0;                        /* cobalt - small marks and indices only */
 
   /* Ink inverts. In light mode this is a near-black chip with white text; in
    * dark mode a near-white chip with black text. Always pair the two.
    * Without this, toasts and solid-dark buttons rendered #101828 on a #0D1220
-   * surface — very nearly invisible.
+   * surface - very nearly invisible.
    */
   --color-secondary:    light-dark(#101828, #F4F6FA);
   --color-on-secondary: light-dark(#FFFFFF, #101828);
@@ -64,7 +64,7 @@ export const tokensCss = `
   --color-danger-solid:  #D92D20;
   --color-success-solid: #079455;
 
-  /* ── Derived — never author these by hand ──────────────────────────────
+  /* ── Derived - never author these by hand ──────────────────────────────
    * Everything below mixes a base token with ink or surface. Because ink and
    * surface are themselves light-dark(), each of these is automatically
    * correct in both schemes: mixing toward ink darkens on light and brightens
@@ -101,7 +101,7 @@ export const tokensCss = `
 
   /* ── Elevation ─────────────────────────────────────────────────────────
    * Two shadows only. Borders do the separating; shadow means "floating".
-   * light-dark() takes two COLORS, not two shadow values — so the scheme
+   * light-dark() takes two COLORS, not two shadow values - so the scheme
    * switch lives on the colour component and the geometry stays shared.
    */
   --shadow-color-hair: light-dark(rgba(16, 24, 40, 0.05), rgba(0, 0, 0, 0.35));
@@ -133,7 +133,7 @@ export const tokensCss = `
   --z-toast:    600;   /* always on top; it reports what just happened */
 
   /* ── Measure ───────────────────────────────────────────────────────────
-   * Breakpoints cannot be custom properties — they are listed here as the
+   * Breakpoints cannot be custom properties - they are listed here as the
    * canonical constants and must be written literally in @media:
    *   sm 560px · md 820px · lg 1120px
    */
@@ -146,7 +146,7 @@ export const tokensCss = `
  * every token above; that is the whole theme switch.
  *
  * colour and background are restated deliberately. An inherited \`color\` is a
- * finished value — it does NOT re-resolve when a descendant changes scheme, so
+ * finished value - it does NOT re-resolve when a descendant changes scheme, so
  * a light-themed panel inside a dark page would otherwise inherit near-white
  * text onto white. Harmless when data-theme sits on <html>, wrong the moment
  * anything nests one scheme inside the other, which the docs page does on
@@ -167,7 +167,7 @@ export const tokensCss = `
  *
  * That works ONLY because the override lands on the same element the derived
  * tokens are declared on. Setting --color-primary on a descendant does NOT
- * re-derive them — the mixes were already computed at :root and inherit down
+ * re-derive them - the mixes were already computed at :root and inherit down
  * as finished values, so you get a teal button with an orange hover.
  *
  * To theme a subtree, give it [data-accent] and the derived set is recomputed
@@ -205,11 +205,11 @@ export const tokensCss = `
 
 export const motionCss = `
 /* =============================================================================
- * Domain Parkour — motion
+ * Domain Parkour - motion
  * v2.0.0 · depends on tokens.css
  *
  * One easing, three durations, four things that move. Only colour, opacity and
- * transform animate — never width, height, top or left, which cost layout on
+ * transform animate - never width, height, top or left, which cost layout on
  * every frame and stutter on the low-end phones a parked domain gets visited on.
  *
  * Nothing here loops except the two genuine progress indicators (spinner,
@@ -284,11 +284,11 @@ export const motionCss = `
 
 /* ── Skeleton ──────────────────────────────────────────────────────────────
  * For content whose shape is known and whose data is not. Prefer it to a
- * spinner when you can predict the layout — it avoids the reflow jump.
+ * spinner when you can predict the layout - it avoids the reflow jump.
  * Give every skeleton an explicit height; a zero-height one is invisible.
  */
 /* Pulses rather than sweeping a gradient across itself. Principle 5 rules out
- * gradients, and the OSS suite fails a build for one — but the calmer reading
+ * gradients, and the OSS suite fails a build for one - but the calmer reading
  * is that a travelling highlight is decoration on top of a loading state that
  * a plain opacity pulse already communicates. */
 .skeleton {
@@ -301,7 +301,7 @@ export const motionCss = `
 .skeleton-line-short { width: 60%; }
 
 /* Motion-averse users get a still placeholder; the block itself still says
- * "loading". The spinner keeps turning, only slower — it is the only signal
+ * "loading". The spinner keeps turning, only slower - it is the only signal
  * that something is actually in flight, so stopping it would mislead. */
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; opacity: 0.7; }
@@ -313,7 +313,7 @@ export const motionCss = `
  */
 .press:active:not(:disabled) { transform: translateY(1px); }
 
-/* A row that reveals its actions on hover. Focus-within is not optional —
+/* A row that reveals its actions on hover. Focus-within is not optional -
  * without it the actions are unreachable by keyboard. */
 .reveal { opacity: 0; transition: opacity var(--t-fast) var(--ease); }
 :hover > .reveal,
@@ -325,7 +325,7 @@ export const motionCss = `
 
 export const componentsCss = `
 /* =============================================================================
- * Domain Parkour — component layer
+ * Domain Parkour - component layer
  * v2.0.0 · depends on tokens.css and motion.css
  *
  * The shared vocabulary: everything the OSS admin, the Cloud control plane and
@@ -335,7 +335,7 @@ export const componentsCss = `
  * markup.
  *
  * App-specific components stay in the app. If a thing exists in one product
- * only — plan pickers, zone candidates, health findings — it does not belong
+ * only - plan pickers, zone candidates, health findings - it does not belong
  * here. The test is whether a second product would want it unchanged.
  *
  * Visitor pages are NOT styled from this file. Those documents belong to the
@@ -352,6 +352,11 @@ export const componentsCss = `
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
+/* Many recipes below set \`display\`, and any author \`display\` beats the UA rule
+ * the \`hidden\` attribute relies on. Without this, hiding a card or an empty
+ * state with \`hidden\` silently does nothing. */
+[hidden] { display: none !important; }
+
 .mono, .machine { font-family: var(--font-mono); }
 .muted { color: var(--color-muted); }
 .fine  { font-size: 12.5px; }
@@ -371,6 +376,42 @@ export const componentsCss = `
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-muted);
+}
+
+/* A horizontal run of controls that wraps rather than overflowing. The one
+ * layout primitive both apps kept re-declaring under four different names. */
+.cluster { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.cluster-end { justify-content: flex-end; }
+.cluster-tight { gap: 6px; }
+
+/* A one-button form that has to sit in a line of links and buttons. */
+.inline-form { display: inline; }
+
+/* Back out of a detail view. Always says where it goes, never just "Back". */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--color-muted);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease);
+}
+.back-link:hover { color: var(--color-ink); }
+
+/* Present for a screen reader, absent for everything else. Not display:none -
+ * that removes it from the accessibility tree too, which is the opposite. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* First thing in the tab order, visible only when it has focus. */
@@ -426,15 +467,24 @@ export const componentsCss = `
 }
 .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
 .btn-primary:active:not(:disabled) { background: var(--color-primary-active); }
+/* A filled button at 45% opacity reads as a faded action, not a disabled one.
+ * Dropping the fill entirely is unambiguous in both schemes. */
+.btn-primary:disabled { border-color: var(--color-line); background: var(--color-surface-3); color: var(--color-muted); opacity: 1; }
 
 /* Ink button. Uses the inverting pair, so it is a dark chip on light and a
- * light chip on dark — never invisible against its own surface. */
+ * light chip on dark - never invisible against its own surface. */
 .btn-ink {
   border-color: transparent;
   background: var(--color-secondary);
   color: var(--color-on-secondary);
 }
 .btn-ink:hover:not(:disabled) { background: var(--color-secondary-hover); }
+
+/* Quiet: an action that lives inside a row of data. It has to be reachable
+ * without competing with the page's one primary button, so it borrows the
+ * body colour and only gains a surface on hover. */
+.btn-quiet { border-color: transparent; background: transparent; color: var(--color-body); }
+.btn-quiet:hover:not(:disabled) { background: var(--color-surface-3); color: var(--color-ink); }
 
 .btn-ghost {
   border-color: transparent;
@@ -454,6 +504,12 @@ export const componentsCss = `
 
 .btn-danger-ghost { border-color: transparent; background: transparent; color: var(--color-danger); }
 .btn-danger-ghost:hover:not(:disabled) { background: var(--color-danger-soft); }
+
+/* Outlined danger: the step that opens a destructive flow, not the one that
+ * performs it. Keeping a border means it still reads as a button beside its
+ * neutral peers, which a borderless one stops doing in a settings row. */
+.btn-danger-outline { border-color: color-mix(in srgb, var(--color-danger) 32%, var(--color-line)); background: transparent; color: var(--color-danger); }
+.btn-danger-outline:hover:not(:disabled) { background: var(--color-danger-soft); }
 
 .btn-sm { min-height: 32px; padding: 6px 12px; font-size: 13px; gap: 6px; }
 .btn-lg { min-height: 44px; padding: 11px 20px; font-size: 15px; }
@@ -510,7 +566,22 @@ input[type="color"]:disabled {
   cursor: not-allowed;
   opacity: 0.72;
 }
-.input.mono, .textarea.mono { font-family: var(--font-mono); font-size: 13px; }
+.input.mono, .textarea.mono, .select.mono { font-family: var(--font-mono); font-size: 13px; }
+
+/* A colour well is a form control, so it matches the height and border of the
+ * inputs beside it rather than whatever the platform draws by default. */
+.input-color {
+  appearance: none;
+  width: 100%;
+  height: 40px;
+  padding: 3px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+.input-color::-webkit-color-swatch-wrapper { padding: 0; }
+.input-color::-webkit-color-swatch { border: 0; border-radius: var(--radius-sm); }
 
 /* The chevron is an inline data: URI so a page can stay request-free. */
 .select {
@@ -522,7 +593,7 @@ input[type="color"]:disabled {
 }
 
 /* Invalid state is announced by aria-invalid, so style that rather than a
- * class — the two can never disagree. */
+ * class - the two can never disagree. */
 .input[aria-invalid="true"], .textarea[aria-invalid="true"], .select[aria-invalid="true"] {
   border-color: var(--color-danger);
 }
@@ -565,7 +636,7 @@ input[type="color"]:disabled {
 }
 .search { padding-left: 36px; }
 
-/* Switch — the control itself is a real checkbox, visually hidden. */
+/* Switch - the control itself is a real checkbox, visually hidden. */
 .switch { position: relative; display: inline-flex; flex: 0 0 auto; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
 .switch-track {
@@ -643,6 +714,10 @@ input[type="color"]:disabled {
   color: var(--color-ink);
   font: 600 15px/1.3 var(--font-display);
 }
+/* A heading with a trailing aside - a count, a link - rather than one run of
+ * words. Opt-in, because a heading whose second child is its own body text
+ * must not have that text flung to the far edge. */
+.section-heading-split { justify-content: space-between; }
 
 /* List: rows that are not tabular. Hairline between, none at the ends. */
 .list-card { border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); overflow: hidden; }
@@ -662,7 +737,7 @@ input[type="color"]:disabled {
 .kv-list dd { margin: 0; color: var(--color-ink); font-family: var(--font-mono); word-break: break-all; }
 
 /* Stat tile. The number is the point, so it gets display type and tabular
- * figures — otherwise a counter ticking 9→10 shifts everything beside it. */
+ * figures - otherwise a counter ticking 9→10 shifts everything beside it. */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
 .stat-card { border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); padding: 18px 20px; }
 .stat-label { color: var(--color-muted); font-size: 12.5px; font-weight: 600; }
@@ -679,7 +754,7 @@ input[type="color"]:disabled {
 .progress { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 6px; border: 0; border-radius: var(--radius-pill); background: var(--color-surface-3); overflow: hidden; }
 .progress::-webkit-progress-bar { background: var(--color-surface-3); }
 /* No transition on the value: animating width costs layout on every frame, and
- * a usage meter re-renders on navigation anyway — there is nothing to tween. */
+ * a usage meter re-renders on navigation anyway - there is nothing to tween. */
 .progress::-webkit-progress-value { background: var(--color-primary); }
 .progress::-moz-progress-bar { background: var(--color-primary); }
 .progress-warn::-webkit-progress-value { background: var(--color-warning); }
@@ -709,6 +784,10 @@ input[type="color"]:disabled {
 .table tbody tr:hover { background: var(--color-surface-2); }
 .num-cell { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .actions-cell { width: 1%; white-space: nowrap; text-align: right; }
+/* A sentence under a table explaining what its states mean. */
+.table-note { padding: 10px 18px; border-top: 1px solid var(--color-line); background: var(--color-surface-2); color: var(--color-muted); font-size: 12px; }
+/* "Nothing matches that filter" - the table is right, it just has no rows. */
+.table-empty { margin: 0; padding: 26px 18px; color: var(--color-muted); font-size: 13px; text-align: center; }
 
 /* ── Badges ──────────────────────────────────────────────────────────────
  * A dot carries the status so it never rests on hue alone.
@@ -731,6 +810,9 @@ input[type="color"]:disabled {
 .badge-warning { background: var(--color-warning-soft); color: var(--color-warning); }
 .badge-danger  { background: var(--color-danger-soft);  color: var(--color-danger); }
 .badge-info    { background: var(--color-accent-soft);  color: var(--color-accent); }
+/* The only badge that moves, and only for "still settling" - never for a state
+ * that is simply true. Keyframes live in motion.css. */
+.badge-pulse::before { animation: pk-pulse 1.6s var(--ease) infinite; }
 
 .icon-chip {
   display: grid;
@@ -837,7 +919,6 @@ input[type="color"]:disabled {
   font-size: 13.5px;
   animation: pk-toast-in var(--t-enter) var(--ease);
 }
-.undo-bar[hidden] { display: none; }
 .undo-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .undo-dismiss {
   display: grid;
@@ -916,7 +997,7 @@ input[type="color"]:disabled {
 }
 .nav a:hover, .nav a[aria-current="page"] { background: var(--color-surface-3); color: var(--color-ink); }
 
-/* Tabs — a view switcher. aria-selected is the state, not a class. */
+/* Tabs - a view switcher. aria-selected is the state, not a class. */
 .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--color-line); }
 .tabs button {
   border: 0;
@@ -931,7 +1012,7 @@ input[type="color"]:disabled {
 .tabs button:hover { color: var(--color-ink); }
 .tabs button[aria-selected="true"] { border-bottom-color: var(--color-primary); color: var(--color-ink); }
 
-/* Segmented — mutually exclusive options, all visible at once. */
+/* Segmented - mutually exclusive options, all visible at once. */
 .segmented { display: inline-flex; gap: 2px; border-radius: var(--radius-md); padding: 3px; background: var(--color-surface-3); }
 .segmented button {
   border: 0;
@@ -943,7 +1024,8 @@ input[type="color"]:disabled {
   cursor: pointer;
   transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
-.segmented button[aria-pressed="true"] { background: var(--color-surface); color: var(--color-ink); box-shadow: var(--shadow-card); }
+.segmented button[aria-pressed="true"],
+.segmented button[aria-selected="true"] { background: var(--color-surface); color: var(--color-ink); box-shadow: var(--shadow-card); }
 
 .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-muted); }
 .breadcrumb a { color: var(--color-muted); text-decoration: none; }
@@ -954,7 +1036,7 @@ input[type="color"]:disabled {
 .pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--color-line); font-size: 13px; color: var(--color-muted); }
 .pagination-pages { display: flex; gap: 4px; }
 
-/* Menu — pair with a [popover] or a details/summary; this is only the surface. */
+/* Menu - pair with a [popover] or a details/summary; this is only the surface. */
 .menu {
   z-index: var(--z-dropdown);
   min-width: 190px;
@@ -985,7 +1067,7 @@ input[type="color"]:disabled {
 .menu-item-danger:hover { background: var(--color-danger-soft); color: var(--color-danger); }
 .menu-sep { height: 1px; margin: 5px 0; background: var(--color-line); }
 
-/* Tooltip — supplementary only. Never put the sole copy of anything in here;
+/* Tooltip - supplementary only. Never put the sole copy of anything in here;
  * it is unreachable on touch and by many assistive technologies. */
 .tooltip { position: relative; }
 .tooltip::after {
@@ -1039,12 +1121,128 @@ input[type="color"]:disabled {
 .danger-zone > .section-heading { padding: 16px 20px 0; color: var(--color-danger); }
 .danger-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; border-top: 1px solid var(--color-line); padding: 16px 20px; }
 
-/* Diff rows — what a change will do, before it does it. */
-.diff-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--color-line); padding: 10px 0; font-size: 13.5px; }
-.diff-row:last-child { border-bottom: 0; }
+/* Diff rows - what a change will do, before it does it. One line per effect,
+ * led by a glyph that says whether something is added, removed or unchanged.
+ */
+.diff-row { display: flex; align-items: flex-start; gap: 9px; margin: 0 0 8px; color: var(--color-body); font-size: 13.5px; line-height: 1.5; }
+.diff-row:last-child { margin-bottom: 0; }
+.diff-row .icon { flex: 0 0 auto; margin-top: 2px; }
 .diff-success { color: var(--color-success); }
 .diff-danger  { color: var(--color-danger); }
 .diff-muted   { color: var(--color-muted); }
+
+/* ── Choice cards ─────────────────────────────────────────────────────
+ * §06.3, the signature choice in the product: one radio card per template.
+ * The radio itself is the state - \`:has(:checked)\` draws the selection, so
+ * nothing has to keep a class in sync with a form control.
+ */
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 10px; }
+.choice-card {
+  position: relative;
+  display: block;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.choice-card:hover { border-color: var(--color-line-strong); }
+.choice-card:has(input:checked) { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.choice-card:has(input:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+/* Visually hidden, not display:none - a hidden radio is unreachable. */
+.choice-card input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+.choice-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--color-primary);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.choice-card:has(input:checked) .choice-check { opacity: 1; }
+/* Two illustration weights: a wide glyph that sketches the layout, or a single
+ * icon when the card is narrow enough that a sketch would be a smudge. */
+.choice-glyph { display: block; width: 100%; height: auto; color: var(--color-ink); }
+.choice-icon { display: block; width: 20px; height: 20px; color: var(--color-ink); }
+.choice-name { display: block; margin-top: 10px; color: var(--color-ink); font-size: 14px; font-weight: 600; }
+.choice-desc { display: block; margin-top: 2px; color: var(--color-muted); font-size: 12.5px; line-height: 1.4; }
+
+/* ── Filter rail ──────────────────────────────────────────────────────
+ * Filters are links, so a filtered view is a URL someone can bookmark and
+ * the back button does the obvious thing. The count belongs on the filter,
+ * not in a legend somewhere else.
+ */
+.filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.filter-tabs { display: flex; flex-wrap: wrap; gap: 3px; }
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  /* Works as a link or as a button: one is a URL you can share, the other is a
+     client-side filter, and they must look identical. */
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  padding: 6px 11px;
+  color: var(--color-body);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.filter-tab:hover { background: var(--color-surface-3); color: var(--color-ink); }
+.filter-tab[aria-current="page"] { background: var(--color-secondary); color: var(--color-on-secondary); }
+.filter-count { font-family: var(--font-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; opacity: 0.75; }
+
+/* ── Message list ─────────────────────────────────────────────────────
+ * The inbox row: who wrote, what about, when - and the whole message when
+ * the row is opened. A <details>, so it reads and operates without script,
+ * which is what lets the self-hosted admin and the control plane render the
+ * identical component from two very different stacks.
+ */
+.msg-list { border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); overflow: hidden; }
+.msg { border-top: 1px solid var(--color-line); }
+.msg:first-child { border-top: 0; }
+.msg summary {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 13rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.msg summary::-webkit-details-marker { display: none; }
+.msg summary:hover, .msg[open] summary { background: var(--color-surface-2); }
+/* The unread mark is a shape, not a weight - weight alone disappears once a
+ * few rows in a list are read. */
+.msg-mark { width: 7px; height: 7px; border-radius: var(--radius-pill); background: transparent; }
+.msg[data-status="new"] .msg-mark { background: var(--color-primary); }
+.msg[data-status="new"] .msg-from { color: var(--color-ink); font-weight: 600; }
+.msg-from, .msg-preview { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-from { color: var(--color-body); font-size: 13.5px; }
+.msg-preview { color: var(--color-muted); font-size: 13px; }
+.msg-preview b { color: var(--color-ink); font-weight: 500; }
+.msg-meta { display: flex; align-items: center; gap: 10px; color: var(--color-muted); font-size: 12.5px; white-space: nowrap; }
+.msg-body { padding: 2px 16px 18px 38px; }
+.msg-text {
+  margin: 0 0 14px;
+  color: var(--color-ink);
+  font-size: 13.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.msg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
 /* ── Repeater ────────────────────────────────────────────────────────── */
 .repeater { display: grid; gap: 10px; }
@@ -1162,20 +1360,32 @@ input[type="color"]:disabled {
 @media (max-width: 820px) {
   .editor-grid { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .nav { display: none; }
+  /* The nav is how you leave the page. It moves under the bar and scrolls
+   * rather than disappearing, which is what it used to do - leaving a phone
+   * with a logo and no way to reach Settings. */
+  .appbar-inner { flex-wrap: wrap; height: auto; padding: 10px 0; }
+  .nav { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  /* Two columns is the last honest layout for a five-column row. */
+  .msg summary { grid-template-columns: 8px minmax(0, 1fr); row-gap: 4px; }
+  .msg-preview, .msg-meta { grid-column: 2; }
+  .msg-body { padding-left: 16px; }
 }
 @media (max-width: 560px) {
   .page-shell, .appbar-inner, .page-footer { width: min(100% - 24px, var(--container)); }
   .page-heading, .settings-row, .danger-row { flex-direction: column; align-items: stretch; }
   .stat-grid { grid-template-columns: 1fr; }
+  /* A lone button on a phone is a full-width target; a button standing in a
+   * row of its peers is not, or every toolbar becomes a stack. */
   .btn { width: 100%; }
-  .form-actions .btn, .dialog-actions .btn { width: auto; }
+  .form-actions .btn, .dialog-actions .btn, .cluster .btn, .msg-actions .btn,
+  .filter-bar .btn, .table .btn, .card-actions .btn { width: auto; }
 }
 `;
 
 export const datavizCss = `
 /* =============================================================================
- * Domain Parkour — data visualisation
+ * Domain Parkour - data visualisation
  * v2.0.0 · depends on tokens.css
  *
  * Every value below was produced by the palette validator, not by eye. Do not
@@ -1191,16 +1401,16 @@ export const datavizCss = `
  * ========================================================================== */
 
 :root {
-  /* ── Categorical — identity, not magnitude ───────────────────────────────
+  /* ── Categorical - identity, not magnitude ───────────────────────────────
    * Fixed order. Slot 1 is the brand orange; it validates flat in both
    * schemes, so the product's own colour leads every chart. The remaining
-   * seven are stepped per scheme — the dark column is the same hues chosen
+   * seven are stepped per scheme - the dark column is the same hues chosen
    * for the dark band, never an automatic flip of the light ones.
    *
    * Assign in order and never cycle. Colour follows the entity, so filtering
    * a series out must not repaint the survivors.
    */
-  --viz-1: #E8590C;                          /* orange — brand, flat both modes */
+  --viz-1: #E8590C;                          /* orange - brand, flat both modes */
   --viz-2: light-dark(#2A78D6, #3987E5);     /* blue    */
   --viz-3: light-dark(#1BAF7A, #199E70);     /* aqua    */
   --viz-4: light-dark(#EDA100, #C98500);     /* yellow  */
@@ -1209,7 +1419,7 @@ export const datavizCss = `
   --viz-7: light-dark(#4A3AA7, #9085E9);     /* violet  */
   --viz-8: light-dark(#E34948, #E66767);     /* red     */
 
-  /* ── Sequential — magnitude ──────────────────────────────────────────────
+  /* ── Sequential - magnitude ──────────────────────────────────────────────
    * One hue, light to dark, monotonic in lightness. Never a rainbow: a hue
    * ramp has no inherent order, so readers invent one.
    */
@@ -1219,7 +1429,7 @@ export const datavizCss = `
   --viz-seq-4: light-dark(#E8590C, #B85A18);
   --viz-seq-5: light-dark(#A93F07, #E8590C);
 
-  /* ── Diverging — polarity around a meaningful zero ───────────────────────
+  /* ── Diverging - polarity around a meaningful zero ───────────────────────
    * Two hues with a NEUTRAL GRAY midpoint. A coloured midpoint reads as a
    * third category and destroys the "no change" signal.
    */
@@ -1259,8 +1469,8 @@ export const datavizCss = `
 .viz-tick     { fill: var(--viz-label); font: 400 11px var(--font-mono); font-variant-numeric: tabular-nums; }
 .viz-label    { fill: var(--viz-value); font: 500 12px var(--font-sans); }
 
-/* A 2px surface gap between adjacent fills — stacked segments and neighbouring
- * bars alike — so two similar hues never touch and blur into one shape. */
+/* A 2px surface gap between adjacent fills - stacked segments and neighbouring
+ * bars alike - so two similar hues never touch and blur into one shape. */
 .viz-stack > * { stroke: var(--viz-gap); stroke-width: 2; }
 
 /* ── Legend ─────────────────────────────────────────────────────────────── */

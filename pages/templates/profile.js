@@ -1,14 +1,14 @@
 /**
- * Profile — one person, one card. Straight from the OSS template, which was the
+ * Profile - one person, one card. Straight from the OSS template, which was the
  * only implementation with an avatar, initials fallback and link list; the cloud
  * runtime rendered a bio paragraph and nothing else.
  */
 
 import { escapeHtml } from '../safety.js';
-import { footer, linkList, masthead, socials } from '../components.js';
+import { captureBlock, captureNeedsForm, footer, linkList, masthead, socials } from '../components.js';
 
-export function needsForm() {
-  return false;
+export function needsForm(config) {
+  return captureNeedsForm('profile', config);
 }
 
 /** Up to two initials, so an unset avatar still reads as a person. */
@@ -46,6 +46,7 @@ export function render(view) {
       ${cfg.bio ? `<p class="dp-lede">${escapeHtml(cfg.bio)}</p>` : ''}
       ${linkList(cfg.links, { bare: true })}
       ${socials(cfg.socials)}
+      ${captureBlock('profile', cfg)}
     </section>
     ${footer(cfg.footer_text, cfg.footer_credit)}
   </div>`;

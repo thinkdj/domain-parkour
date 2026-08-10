@@ -1,24 +1,26 @@
 /**
- * Parking — the domain is for sale, or simply held.
+ * Parking - the domain is for sale, or simply held.
  *
  * OSS's two-column layout (hostname as hero, offer panel beside it), with the
  * cloud runtime's capture form and checkout handoff in place of the mailto link
  * OSS assembled with script.
  *
  * There is no mailto fallback. A parked page is exactly the surface spam harvests
- * from, so if the owner is reachable at all it is through the form — the address
+ * from, so if the owner is reachable at all it is through the form - the address
  * never reaches the HTML. The app that stores submissions owns the POST handler.
  */
 
 import { escapeHtml } from '../safety.js';
-import { eyebrow, footer, masthead, socials, stats } from '../components.js';
+import {
+  captureBlock, captureDisclosure, captureNeedsForm, eyebrow, footer, masthead, socials, stats,
+} from '../components.js';
 import { captureAllows, leadForm } from '../forms.js';
 import { label, LABELS } from '../defaults.js';
 
 export const CHECKOUT_PATH = '/_parkour/go/checkout';
 
 export function needsForm(config) {
-  return captureAllows('offer', 'parking', config);
+  return captureNeedsForm('parking', config, 'offer');
 }
 
 export function render(view) {
@@ -37,9 +39,10 @@ export function render(view) {
       : '',
     stats(view.stats),
     socials(cfg.socials),
-    takesOffers
-      ? `<details class="dp-contact-disclosure"><summary>Reach out</summary>${leadForm('offer', cfg.capture || {}, cfg)}</details>`
-      : '',
+    takesOffers ? captureDisclosure('Reach out', leadForm('offer', cfg.capture || {}, cfg)) : '',
+    // Contact and survey join the offer inside the panel rather than opening a
+    // second place to write to the owner further up the page.
+    captureBlock('parking', cfg, { quiet: takesOffers }),
   ].join('');
 
   return `<div class="dp-wrap">

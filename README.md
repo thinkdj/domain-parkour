@@ -16,16 +16,19 @@ It is deliberately independent: your Worker, D1 data, R2 assets, traffic, and Cl
 | coming-soon | A launch announcement and countdown |
 | landing | A focused information page and destination |
 | profile | A personal profile with links and an uploaded image |
+| redirect | Forwarding visitors to another URL |
+| maintenance | A temporary 503 status page |
 
 - Exact-hostname configuration in D1, with an intentional _default fallback.
 - A password-protected admin at /_admin_/ with live preview, presets, and mode-aware fields.
+- **One inbox** for everything visitors send: contact messages, purchase offers, waitlist signups and survey answers, from every hostname this Worker serves, with unread/archived/spam triage, search, CSV export, and a reply link that opens your own mail client. Your published address never appears on a page.
 - Private R2 image uploads delivered through the Worker.
 - Responsive light/dark rendering, safe configuration, local assets, and a configurable credit footer.
 - One shared design system across the pages and the admin, with no webfont, icon CDN, or other third-party request on a visitor page.
 - Manual Cloudflare deployment and domain attachment, with no external runtime dependency.
 - `defaults.json` supplies the bundled fallback, per-mode wording, and local gallery presets.
 
-Domain Parkour itself does not manage sales, payments, email, DNS changes, hosted analytics, inboxes, schedules, or Cloud plans. Those are not part of the self-hosted runtime.
+Domain Parkour itself does not manage sales, payments, DNS changes, hosted analytics, schedules, or Cloud plans, and it never sends email on your behalf - the inbox collects what arrives and hands a reply to your own mail client. Those boundaries are not part of the self-hosted runtime.
 
 ## Start locally
 
@@ -69,14 +72,16 @@ Set both admin secrets before using production. The admin remains disabled until
 | pnpm db:migrate:local | Apply local D1 migrations |
 | pnpm db:migrate:remote | Apply remote D1 migrations |
 | pnpm db:console | List local hostname records |
+| pnpm db:inbox | List the newest local inbox rows |
 | pnpm tail | Stream Worker logs |
 
 ## Architecture
 
     request
-      -> /_assets/* : private R2 asset delivery
-      -> /_admin_/* : Basic Auth admin and JSON API
-      -> public page : exact D1 hostname -> _default -> bundled fallback
+      -> /_assets/*      : private R2 asset delivery
+      -> /_admin_/*      : Basic Auth admin (Pages + Inbox) and JSON API
+      -> /_parkour/lead  : capture form POST -> submissions table
+      -> public page     : exact D1 hostname -> _default -> bundled fallback
 
 Apex and www are separate hostnames. Domain Parkour never attaches or changes DNS for you. Cloudflare's own product limits still apply, but Domain Parkour does not impose a hostname quota.
 

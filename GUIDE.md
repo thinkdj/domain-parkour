@@ -261,10 +261,36 @@ If `www.example.com` is also attached, create a separate row for it or create a 
 | `coming-soon` | Pre-launch announcement/countdown content |
 | `landing` | Small information/links page |
 | `profile` | Personal profile/link page |
+| `redirect` | Forward visitors to another URL |
+| `maintenance` | Temporary 503 status page |
 
 The complete implemented configuration fields are documented in [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
 
-## 11. `_default` fallback
+## 11. Collect messages, and read them
+
+Section **03 Messages** in the page editor decides which forms a page shows:
+
+| Switch | Renders on | What arrives |
+| --- | --- | --- |
+| Contact form | every content page | name, email, subject, message |
+| Offer form | parking | name, email, amount, message |
+| Waitlist form | coming soon | email only |
+| Survey question | every content page | one free-text answer, email optional |
+
+Consent text is optional and applies to every form on the page; when set, the
+checkbox is required and the answer is stored with the message.
+
+Your address is never printed on a page. Everything submitted goes straight into
+the `submissions` table in your own D1 and appears under the **Inbox** tab in the
+admin - one list across every hostname this Worker serves, with unread/archived/
+spam triage, search by name, address, subject or body, per-domain and per-type
+filters, and a CSV export of whatever the current filter shows.
+
+**Replying is deliberately not automated.** The Worker sends no mail. The Reply
+button opens a pre-addressed message in your own mail client, so the reply comes
+from you, arrives with your own deliverability, and leaves no copy behind.
+
+## 12. `_default` fallback
 
 Resolution order is:
 
@@ -274,7 +300,7 @@ Resolution order is:
 
 Create `_default` only when you intentionally want unconfigured attached hostnames to share a fallback page. It is not a substitute for attaching DNS/Custom Domains; it affects only requests that already reach the Worker.
 
-## 12. Admin security
+## 13. Admin security
 
 The current OSS admin uses HTTP Basic Auth. Treat `/_admin_/` as a privileged operational interface.
 
@@ -291,12 +317,18 @@ Required practices:
 
 See [`SECURITY.md`](SECURITY.md) for vulnerability reporting and the project threat model.
 
-## 13. Inspect the database
+## 14. Inspect the database
 
 List configured rows in the local database:
 
 ```bash
 pnpm db:console
+```
+
+List the newest inbox rows in the local database:
+
+```bash
+pnpm db:inbox
 ```
 
 For a remote read-only inspection:
@@ -307,7 +339,7 @@ pnpm exec wrangler d1 execute domain-parkour-db --remote --command "SELECT hostn
 
 Avoid pasting untrusted strings into SQL commands. Prefer the admin UI for routine edits.
 
-## 14. Back up
+## 15. Back up
 
 Back up before upgrades, mass edits, DNS changes, or uninstall.
 
@@ -317,7 +349,7 @@ Export the remote D1 database:
 pnpm exec wrangler d1 export domain-parkour-db --remote --output domain-parkour-backup.sql
 ```
 
-Store the export securely. It can contain contact addresses, links, descriptions, and other page content.
+Store the export securely. It contains everything visitors sent through your capture forms - names, email addresses, offers and messages - alongside contact addresses, links, descriptions, and other page content.
 
 Also record:
 
@@ -330,7 +362,7 @@ R2 objects are not included in a D1 export. Back up `domain-parkour-assets` sepa
 
 Do not commit backups; `.gitignore` does not cover every possible backup filename.
 
-## 15. Restore
+## 16. Restore
 
 Restore into a disposable/local database first when possible.
 
@@ -345,7 +377,7 @@ Restoring into a non-empty database can conflict with existing primary keys. Mak
 
 After restore, verify at least one exact hostname and `_default` behavior.
 
-## 16. Upgrade
+## 17. Upgrade
 
 For a Git clone:
 
@@ -369,13 +401,13 @@ pnpm deploy
 
 Do not run a new migration against production until you understand its rollback/compatibility implications.
 
-## 17. Roll back the Worker
+## 18. Roll back the Worker
 
 If a deployment breaks rendering but did not make an incompatible D1 migration, use Cloudflare's Workers deployment history to restore the prior Worker version. Current Wrangler releases may also expose deployment rollback commands; verify the command against the installed Wrangler version before using it.
 
 Database migrations and Worker versions are separate. Rolling back Worker code does not automatically roll back D1.
 
-## 18. Remove a hostname
+## 19. Remove a hostname
 
 Before detaching:
 
@@ -388,7 +420,7 @@ Before detaching:
 
 Removing a Workers Custom Domain can leave a generated certificate visible in Cloudflare. Consult Cloudflare documentation before deleting unrelated certificates.
 
-## 19. Uninstall
+## 20. Uninstall
 
 Uninstall is destructive. Export D1 and record DNS/Custom Domains first.
 
@@ -411,7 +443,7 @@ pnpm exec wrangler r2 bucket delete domain-parkour-assets
 
 Wrangler may prompt for confirmation. Resource deletion is not undone by Git. Never delete a same-name Worker or D1 unless you verified its binding and ownership.
 
-## 20. Troubleshooting
+## 21. Troubleshooting
 
 ### Admin returns `503 Disabled`
 
@@ -468,7 +500,7 @@ Cloudflare certificate provisioning is asynchronous. Wait, refresh the Custom Do
 
 Make sure you launched from the same repository directory and did not remove `.wrangler/`. Local D1 is separate from remote D1.
 
-## 21. Command reference
+## 22. Command reference
 
 | Command | Purpose |
 | --- | --- |
@@ -480,9 +512,10 @@ Make sure you launched from the same repository directory and did not remove `.w
 | `pnpm db:migrate:local` | Apply migrations to local D1 |
 | `pnpm db:migrate:remote` | Apply migrations to remote D1 |
 | `pnpm db:console` | List configured local domains |
+| `pnpm db:inbox` | List the newest local inbox rows |
 | `pnpm tail` | Tail the deployed Worker logs |
 
-## 22. Getting help
+## 23. Getting help
 
 - Review this guide and the [Cloudflare Workers documentation](https://developers.cloudflare.com/workers/).
 - Search existing repository issues before opening a new one.
