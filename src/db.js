@@ -3,19 +3,28 @@
  * a denormalized `mode` for quick filtering in admin listings.
  */
 
+import { normalizeHostname, normalizeMode, sanitizeStoredConfig } from "./safety.js";
+
 const DEFAULT_HOSTNAME = "_default";
 
 function rowToRecord(row) {
   if (!row) return null;
-  let config = {};
+  let hostname;
   try {
-    config = JSON.parse(row.config || "{}");
+    hostname = normalizeHostname(row.hostname);
   } catch {
-    config = {};
+    return null;
   }
+  let rawConfig = {};
+  try {
+    rawConfig = JSON.parse(row.config || "{}");
+  } catch {
+    rawConfig = {};
+  }
+  const { mode, config } = sanitizeStoredConfig(rawConfig, normalizeMode(row.mode));
   return {
-    hostname: row.hostname,
-    mode: row.mode,
+    hostname,
+    mode,
     config,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -23,9 +32,10 @@ function rowToRecord(row) {
 }
 
 export async function getDomain(db, hostname) {
+  const normalizedHostname = normalizeHostname(hostname);
   const row = await db
     .prepare("SELECT hostname, mode, config, created_at, updated_at FROM domains WHERE hostname = ?")
-    .bind(hostname)
+    .bind(normalizedHostname)
     .first();
   return rowToRecord(row);
 }
@@ -42,12 +52,15 @@ export async function listDomains(db) {
       "SELECT hostname, mode, config, created_at, updated_at FROM domains ORDER BY updated_at DESC",
     )
     .all();
-  return (results || []).map(rowToRecord);
+  return (results || []).map(rowToRecord).filter(Boolean);
 }
 
 export async function upsertDomain(db, hostname, mode, config) {
   const now = Math.floor(Date.now() / 1000);
-  const json = JSON.stringify(config || {});
+  const normalizedHostname = normalizeHostname(hostname);
+  const normalizedMode = normalizeMode(mode) || "landing";
+  const normalizedConfig = sanitizeStoredConfig(config, normalizedMode).config;
+  const json = JSON.stringify(normalizedConfig);
   await db
     .prepare(
       `INSERT INTO domains (hostname, mode, config, created_at, updated_at)
@@ -57,11 +70,11 @@ export async function upsertDomain(db, hostname, mode, config) {
          config = excluded.config,
          updated_at = excluded.updated_at`,
     )
-    .bind(hostname, mode || "landing", json, now, now)
+    .bind(normalizedHostname, normalizedMode, json, now, now)
     .run();
-  return getDomain(db, hostname);
+  return getDomain(db, normalizedHostname);
 }
 
 export async function deleteDomain(db, hostname) {
-  await db.prepare("DELETE FROM domains WHERE hostname = ?").bind(hostname).run();
+  await db.prepare("DELETE FROM domains WHERE hostname = ?").bind(normalizeHostname(hostname)).run();
 }

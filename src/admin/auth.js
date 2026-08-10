@@ -2,9 +2,14 @@
  * HTTP Basic Auth for the admin panel.
  * Credentials come from worker secrets/.dev.vars: ADMIN_USER, ADMIN_PASSWORD.
  *
- * If either is missing, the admin panel is disabled in production. In local
- * dev (localhost/workers.dev), missing creds fall back to "admin"/"admin"
- * with a visible warning surfaced by the UI.
+ * If either is missing, the admin panel is disabled everywhere reachable from
+ * the internet. Only loopback requests fall back to "admin"/"admin", with a
+ * visible warning surfaced by the UI.
+ *
+ * `*.workers.dev` is deliberately NOT local here: it is a public hostname, and
+ * a fresh deploy lands on one before any custom domain is attached. Compare
+ * isLocalHost() in ../config.js, which does treat it as development — that one
+ * only selects demo page content and is not a trust boundary.
  */
 
 const REALM = 'Domain Parkour Admin';
@@ -13,8 +18,7 @@ function isLocal(hostname) {
   return (
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
-    hostname === '0.0.0.0' ||
-    hostname.endsWith('.workers.dev')
+    hostname === '0.0.0.0'
   );
 }
 

@@ -8,6 +8,7 @@
  */
 
 import { getDomainOrDefault } from "./db.js";
+import { normalizeMode, sanitizeStoredConfig } from "./safety.js";
 import defaults from "../defaults.json" with { type: "json" };
 
 export const FALLBACK_DEFAULT = defaults.fallback;
@@ -32,7 +33,8 @@ function applyModeDefaults(cfg) {
 }
 
 function withDerived(hostname, raw) {
-  const cfg = { domain: hostname, ...raw };
+  const { mode, config } = sanitizeStoredConfig(raw, raw?.mode);
+  const cfg = { domain: hostname, ...config, mode };
   const domainTitle = cfg.domainTitle || cfg.domain || hostname;
   cfg.domainTitle = domainTitle;
 
@@ -50,7 +52,7 @@ function withDerived(hostname, raw) {
     }
   }
 
-  cfg.mode = cfg.mode || "landing";
+  cfg.mode = normalizeMode(cfg.mode) || "landing";
   cfg.accentColor = cfg.accentColor || FALLBACK_DEFAULT.accentColor;
   cfg.features = cfg.features || [];
   cfg.socialLinks = cfg.socialLinks || {};
@@ -68,7 +70,10 @@ function withDerived(hostname, raw) {
 export async function resolveConfig(hostname, env, request) {
   // 1. Local dev theme gallery (only when no admin/preview override is set)
   if (isLocalHost(hostname)) {
-    const themes = DEMO_PRESETS;
+    const themes = DEMO_PRESETS.map((preset, index) => ({
+      name: typeof preset.name === "string" ? preset.name.slice(0, 120) : `Template ${index + 1}`,
+      ...withDerived(hostname, preset),
+    }));
     if (themes) {
       let idx = 0;
       if (request) {
@@ -80,7 +85,7 @@ export async function resolveConfig(hostname, env, request) {
         }
       }
       return {
-        config: withDerived(hostname, themes[idx]),
+        config: themes[idx],
         allThemes: themes,
       };
     }

@@ -24,6 +24,10 @@ export default {
     const adminResponse = await handleAdmin(request, env);
     if (adminResponse) return adminResponse;
 
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new Response("Method not allowed", { status: 405, headers: { allow: "GET, HEAD" } });
+    }
+
     const url = new URL(request.url);
     const hostname = url.hostname;
 
@@ -35,10 +39,15 @@ export default {
     else if (cfg.mode === 'profile') html = generateProfileHTML(cfg, allThemes);
     else html = generateParkingHTML(cfg, allThemes);
 
-    return new Response(html, {
+    return new Response(request.method === "HEAD" ? null : html, {
       headers: {
         'content-type': 'text/html;charset=UTF-8',
         'cache-control': 'public, max-age=3600',
+        'content-security-policy': "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        'permissions-policy': 'geolocation=(), microphone=(), camera=(), payment=()',
+        'referrer-policy': 'strict-origin-when-cross-origin',
+        'x-content-type-options': 'nosniff',
+        'x-frame-options': 'DENY',
         'x-served-domain': hostname,
         'x-page-mode': cfg.mode,
       },

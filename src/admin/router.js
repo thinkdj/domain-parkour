@@ -15,6 +15,12 @@ import { requireAdmin, adminCredentials } from "./auth.js";
 import { renderAdminUI } from "./ui.js";
 import { listDomains, getDomain, upsertDomain, deleteDomain } from "../db.js";
 import { DEMO_PRESETS, previewConfig } from "../config.js";
+import {
+  ConfigValidationError,
+  assertMode,
+  normalizeHostname,
+  validateConfig,
+} from "../safety.js";
 import { generateParkingHTML } from "../templates/parking.js";
 import { generateComingSoonHTML } from "../templates/coming-soon.js";
 import { generateLandingHTML } from "../templates/landing.js";
@@ -22,11 +28,17 @@ import { generateProfileHTML } from "../templates/profile.js";
 import { deleteManagedAvatar, storeProfileImage } from "../assets.js";
 
 const PREFIX = "/_admin_";
+const MAX_JSON_BYTES = 64 * 1024;
 
 function json(data, init = {}) {
   return new Response(JSON.stringify(data), {
     ...init,
-    headers: { "content-type": "application/json", ...(init.headers || {}) },
+    headers: {
+      "content-type": "application/json;charset=UTF-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      ...(init.headers || {}),
+    },
   });
 }
 
@@ -36,6 +48,61 @@ function notFound() {
 
 function methodNotAllowed() {
   return new Response("Method not allowed", { status: 405 });
+}
+
+function requestTooLarge(request) {
+  const length = Number(request.headers.get("content-length"));
+  return Number.isFinite(length) && length > MAX_JSON_BYTES;
+}
+
+async function readJson(request) {
+  if (requestTooLarge(request)) throw new ConfigValidationError("Request body is too large");
+  try {
+    const payload = await request.json();
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      throw new ConfigValidationError("Request body must be an object");
+    }
+    return payload;
+  } catch (error) {
+    if (error instanceof ConfigValidationError) throw error;
+    throw new ConfigValidationError("Invalid JSON");
+  }
+}
+
+function mutationOriginError(request) {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    // CLI/API clients do not send Origin. Browsers that do identify the
+    // request as cross-site are never allowed to mutate an admin session.
+    return request.headers.get("sec-fetch-site") === "cross-site"
+      ? new Response("Cross-origin admin requests are not allowed", { status: 403 })
+      : null;
+  }
+  try {
+    return new URL(origin).origin === new URL(request.url).origin
+      ? null
+      : new Response("Cross-origin admin requests are not allowed", { status: 403 });
+  } catch {
+    return new Response("Cross-origin admin requests are not allowed", { status: 403 });
+  }
+}
+
+function configurationError(error) {
+  if (!(error instanceof ConfigValidationError)) throw error;
+  const message = error.message;
+  return new Response(message, {
+    status: 400,
+    headers: { "content-type": "text/plain;charset=UTF-8", "cache-control": "no-store" },
+  });
+}
+
+function decodeHostname(segment) {
+  try {
+    return normalizeHostname(decodeURIComponent(segment));
+  } catch (error) {
+    if (error instanceof ConfigValidationError) throw error;
+    throw new ConfigValidationError("Invalid hostname");
+  }
 }
 
 function renderConfigToHTML(cfg) {
@@ -86,6 +153,10 @@ export async function handleAdmin(request, env) {
       headers: {
         "content-type": "text/html;charset=UTF-8",
         "cache-control": "no-store",
+        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
         "x-robots-tag": "noindex, nofollow",
       },
     });
@@ -93,21 +164,27 @@ export async function handleAdmin(request, env) {
 
   // POST /_admin_/preview  → render unsaved config
   if (path === "/preview" && request.method === "POST") {
-    let payload;
     try {
-      payload = await request.json();
-    } catch {
-      return new Response("Invalid JSON", { status: 400 });
+      const originError = mutationOriginError(request);
+      if (originError) return originError;
+      const payload = await readJson(request);
+      const rawConfig = payload.config === undefined ? {} : payload.config;
+      const hostname = normalizeHostname(payload.hostname === undefined ? "preview.local" : payload.hostname);
+      const mode = assertMode(rawConfig?.mode === undefined ? "landing" : rawConfig.mode);
+      const config = validateConfig(rawConfig, mode);
+      const cfg = previewConfig(hostname, { ...config, mode });
+      const html = renderConfigToHTML(cfg);
+      return new Response(html, {
+        headers: {
+          "content-type": "text/html;charset=UTF-8",
+          "cache-control": "no-store",
+          "content-security-policy": "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+          "x-content-type-options": "nosniff",
+        },
+      });
+    } catch (error) {
+      return configurationError(error);
     }
-    const hostname = (payload?.hostname || "preview.local").toString();
-    const cfg = previewConfig(hostname, payload?.config || {});
-    const html = renderConfigToHTML(cfg);
-    return new Response(html, {
-      headers: {
-        "content-type": "text/html;charset=UTF-8",
-        "cache-control": "no-store",
-      },
-    });
   }
 
   // POST /_admin_/api/uploads/profile-image -> store a profile image in R2
@@ -116,11 +193,13 @@ export async function handleAdmin(request, env) {
       return json({ error: "R2 binding `ASSETS` is not configured." }, { status: 503 });
     }
     try {
+      const originError = mutationOriginError(request);
+      if (originError) return originError;
       const form = await request.formData();
       const result = await storeProfileImage(
         env.ASSETS,
         form.get("image"),
-        form.get("hostname"),
+        normalizeHostname(form.get("hostname")),
       );
       return json(result, { status: 201 });
     } catch (error) {
@@ -141,45 +220,46 @@ export async function handleAdmin(request, env) {
   // /_admin_/api/domains/:hostname
   const m = path.match(/^\/api\/domains\/([^/]+)$/);
   if (m) {
-    const hostname = decodeURIComponent(m[1]);
-    if (request.method === "GET") {
-      const record = await getDomain(env.DB, hostname);
-      if (!record)
-        return json({
-          hostname,
-          mode: "landing",
-          config: {},
-          createdAt: null,
-          updatedAt: null,
-        });
-      return json(record);
-    }
-    if (request.method === "PUT") {
-      let payload;
-      try {
-        payload = await request.json();
-      } catch {
-        return new Response("Invalid JSON", { status: 400 });
+    try {
+      const hostname = decodeHostname(m[1]);
+      if (request.method === "GET") {
+        const record = await getDomain(env.DB, hostname);
+        if (!record)
+          return json({
+            hostname,
+            mode: "landing",
+            config: {},
+            createdAt: null,
+            updatedAt: null,
+          });
+        return json(record);
       }
-      const mode = payload?.mode || "landing";
-      const config = payload?.config || {};
-      if (!["parking", "coming-soon", "landing", "profile"].includes(mode)) {
-        return new Response("Invalid mode", { status: 400 });
+      if (request.method === "PUT") {
+        const originError = mutationOriginError(request);
+        if (originError) return originError;
+        const payload = await readJson(request);
+        const rawConfig = payload.config === undefined ? {} : payload.config;
+        const mode = assertMode(payload.mode === undefined ? "landing" : payload.mode);
+        const config = validateConfig(rawConfig, mode);
+        const previous = await getDomain(env.DB, hostname);
+        const record = await upsertDomain(env.DB, hostname, mode, config);
+        if (previous?.config?.avatarObjectKey !== config.avatarObjectKey) {
+          await cleanupManagedAvatar(env, previous?.config);
+        }
+        return json(record);
       }
-      const previous = await getDomain(env.DB, hostname);
-      const record = await upsertDomain(env.DB, hostname, mode, config);
-      if (previous?.config?.avatarObjectKey !== config.avatarObjectKey) {
+      if (request.method === "DELETE") {
+        const originError = mutationOriginError(request);
+        if (originError) return originError;
+        const previous = await getDomain(env.DB, hostname);
+        await deleteDomain(env.DB, hostname);
         await cleanupManagedAvatar(env, previous?.config);
+        return new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
       }
-      return json(record);
+      return methodNotAllowed();
+    } catch (error) {
+      return configurationError(error);
     }
-    if (request.method === "DELETE") {
-      const previous = await getDomain(env.DB, hostname);
-      await deleteDomain(env.DB, hostname);
-      await cleanupManagedAvatar(env, previous?.config);
-      return new Response(null, { status: 204 });
-    }
-    return methodNotAllowed();
   }
 
   return notFound();
