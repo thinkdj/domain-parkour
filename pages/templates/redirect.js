@@ -16,14 +16,19 @@ export function needsForm() {
 
 export function render(view) {
   const { cfg, title, status } = view;
-  const target = cfg.delivery?.redirect?.target_url || '';
+  const rule = cfg.delivery?.redirect || {};
+  const target = rule.target_url || '';
+  const showUi = rule.show_ui === true;
+  const seconds = rule.countdown_seconds || 5;
 
   return `<div class="dp-wrap dp-wrap-narrow">
     ${masthead(title, status)}
     <section class="dp-panel">
       <div class="dp-panel-label">Redirect</div>
       <h1 class="dp-heading">${escapeHtml(target ? 'This domain forwards on.' : 'No destination is set.')}</h1>
-      ${target ? `<p class="dp-copy dp-mono">${escapeHtml(target)}</p>` : ''}
+      ${target && showUi
+        ? `<p class="dp-copy">You will be redirected to <a href="${escapeHtml(target)}" rel="noopener noreferrer">${escapeHtml(target)}</a> in <strong>${seconds} seconds</strong>.</p>`
+        : target ? `<p class="dp-copy dp-mono">${escapeHtml(target)}</p>` : ''}
     </section>
     ${footer(cfg.footer_text, cfg.footer_credit)}
   </div>`;

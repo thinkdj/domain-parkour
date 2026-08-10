@@ -102,6 +102,22 @@ test('retry-after is clamped to a range a client will honour', () => {
   assert.equal(at(999999), 0, 'over a week is ignored anyway');
 });
 
+test('redirect UI defaults safely and validates its countdown', () => {
+  const hidden = normalize({ delivery: { redirect: { target_url: 'https://dest.example' } } }, { mode: 'redirect' });
+  assert.equal(hidden.config.delivery.redirect.show_ui, false);
+  assert.equal(hidden.config.delivery.redirect.countdown_seconds, 5);
+
+  const shown = normalize({
+    delivery: { redirect: { target_url: 'https://dest.example', show_ui: true, countdown_seconds: 12 } },
+  }, { mode: 'redirect' });
+  assert.equal(shown.config.delivery.redirect.show_ui, true);
+  assert.equal(shown.config.delivery.redirect.countdown_seconds, 12);
+  assert.throws(
+    () => validate({ delivery: { redirect: { target_url: 'https://dest.example', show_ui: true, countdown_seconds: 61 } } }, 'redirect'),
+    ConfigError,
+  );
+});
+
 test('stats are derived without being stored', () => {
   // Relative to now, so the expectation does not rot with the calendar.
   const tenAndAHalfYearsAgo = new Date(Date.now() - 10.5 * 31557600000).toISOString();

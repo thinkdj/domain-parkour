@@ -10,7 +10,7 @@ import {
 } from "../src/config.js";
 import { renderAdminUI } from "../src/admin/ui.js";
 
-const MODES = ["parking", "coming-soon", "landing", "profile"];
+const MODES = ["parking", "coming-soon", "landing", "profile", "redirect", "maintenance"];
 
 test("defaults.json is the single source for fallback, wording, and demos", () => {
   const defaults = JSON.parse(readFileSync(new URL("../defaults.json", import.meta.url), "utf8"));

@@ -255,8 +255,17 @@ function normalizeDelivery(raw, strict) {
   const redirect = object(delivery.redirect);
   const maintenance = object(delivery.maintenance);
   const code = Number(redirect.status_code);
+  const showUi = redirect.show_ui;
+  const countdown = Number(redirect.countdown_seconds);
   if (strict && redirect.status_code !== undefined && !REDIRECT_CODES.includes(code)) {
     throw new ConfigError(`delivery.redirect.status_code must be one of ${REDIRECT_CODES.join(', ')}`);
+  }
+  if (strict && showUi !== undefined && typeof showUi !== 'boolean') {
+    throw new ConfigError('delivery.redirect.show_ui must be a boolean');
+  }
+  if (strict && redirect.countdown_seconds !== undefined
+      && (!Number.isInteger(countdown) || countdown < 1 || countdown > 60)) {
+    throw new ConfigError('delivery.redirect.countdown_seconds must be between 1 and 60');
   }
   const retry = Number(maintenance.retry_after_seconds);
   return {
@@ -265,6 +274,8 @@ function normalizeDelivery(raw, strict) {
       status_code: REDIRECT_CODES.includes(code) ? code : 302,
       preserve_path: bool(redirect.preserve_path),
       preserve_query: bool(redirect.preserve_query),
+      show_ui: bool(showUi),
+      countdown_seconds: Number.isInteger(countdown) && countdown >= 1 && countdown <= 60 ? countdown : 5,
     },
     maintenance: {
       // 60s–7d. Below a minute it is noise; above a week no client will honour it.

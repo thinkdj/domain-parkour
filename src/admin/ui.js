@@ -65,6 +65,19 @@ const MODE_SVGS = {
     <rect x="24" y="32" width="48" height="4" rx="2" fill="var(--color-line)"/>
     <rect x="26" y="42" width="44" height="9" rx="4.5" fill="var(--color-muted)"/>
   </svg>`,
+  redirect: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+    <rect x="6" y="8" width="22" height="9" rx="4.5" fill="var(--color-line-strong)"/>
+    <path d="M30 12.5h28" stroke="var(--color-muted)" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 5"/>
+    <path d="m54 5 11 7.5L54 20" stroke="var(--color-line-strong)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="68" y="8" width="22" height="9" rx="4.5" fill="var(--color-muted)"/>
+    <rect x="22" y="34" width="52" height="5" rx="2.5" fill="var(--color-line)"/>
+    <rect x="32" y="44" width="32" height="5" rx="2.5" fill="var(--color-line)"/>
+  </svg>`,
+  maintenance: `<svg class="mode-glyph" viewBox="0 0 96 54" fill="none" aria-hidden="true">
+    <path d="m48 5 25 43H23L48 5Z" fill="var(--color-line)"/>
+    <path d="M48 18v13" stroke="var(--color-muted)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="48" cy="39" r="2.5" fill="var(--color-muted)"/>
+  </svg>`,
 };
 
 /** §06.3 — the signature choice in the product: one radio card per mode. */
@@ -73,6 +86,8 @@ const MODE_CARDS = [
   { mode: "coming-soon", glyph: MODE_SVGS.comingSoon, name: "Coming soon", copy: "Launch date and feature cards." },
   { mode: "landing", glyph: MODE_SVGS.landing, name: "Landing", copy: "Destination and social links." },
   { mode: "profile", glyph: MODE_SVGS.profile, name: "Profile", copy: "Image, bio, featured links." },
+  { mode: "redirect", glyph: MODE_SVGS.redirect, name: "Redirect", copy: "Forward visitors elsewhere." },
+  { mode: "maintenance", glyph: MODE_SVGS.maintenance, name: "Maintenance", copy: "Temporary 503 status page." },
 ];
 
 function renderModePicker() {
@@ -316,6 +331,55 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
           </div>
         </div>
 
+        <div data-mode-block="redirect" class="mode-block">
+          <div class="field">
+            <label for="redirect-target-url">Redirect target</label>
+            <input id="redirect-target-url" type="url" class="mono" placeholder="https://example.com/new-home" autocomplete="off" spellcheck="false" />
+            <p class="hint">HTTPS only. The target cannot be this hostname.</p>
+          </div>
+          <div class="field">
+            <span class="field-label">Redirect behavior</span>
+            <label class="toggle-row">
+              <span><span class="toggle-title">Show redirect page</span><span class="toggle-copy">Show a short message before forwarding.</span></span>
+              <span class="switch"><input id="redirect-show-ui" type="checkbox" /><span class="switch-track" aria-hidden="true"></span></span>
+            </label>
+          </div>
+          <div class="field" data-redirect-ui-field>
+            <label for="redirect-countdown-seconds">Redirect after</label>
+            <input id="redirect-countdown-seconds" type="number" min="1" max="60" step="1" class="mono" placeholder="5" disabled />
+            <p class="hint">Seconds to show the message before forwarding.</p>
+          </div>
+          <div class="field" data-redirect-ui-field>
+            <label for="redirect-status-code">Redirect type</label>
+            <select id="redirect-status-code" disabled>
+              <option value="302">302 — temporary (recommended)</option>
+              <option value="307">307 — temporary, keep method</option>
+              <option value="301">301 — permanent</option>
+              <option value="308">308 — permanent, keep method</option>
+            </select>
+          </div>
+          <label class="toggle-row" data-redirect-ui-field>
+            <span><span class="toggle-title">Preserve path</span><span class="toggle-copy">Append the incoming path to the target.</span></span>
+            <span class="switch"><input id="redirect-preserve-path" type="checkbox" disabled /><span class="switch-track" aria-hidden="true"></span></span>
+          </label>
+          <label class="toggle-row" data-redirect-ui-field>
+            <span><span class="toggle-title">Preserve query</span><span class="toggle-copy">Append incoming query parameters to the target.</span></span>
+            <span class="switch"><input id="redirect-preserve-query" type="checkbox" disabled /><span class="switch-track" aria-hidden="true"></span></span>
+          </label>
+        </div>
+
+        <div data-mode-block="maintenance" class="mode-block">
+          <div class="field">
+            <label for="maintenance-retry-after">Retry-After seconds <span class="muted">Optional</span></label>
+            <input id="maintenance-retry-after" type="number" min="60" max="604800" class="mono" placeholder="3600" />
+            <p class="hint">Between 60 seconds and 7 days. The page returns HTTP 503.</p>
+          </div>
+          <div class="field">
+            <label for="maintenance-help-url">Status or help link <span class="muted">Optional</span></label>
+            <input id="maintenance-help-url" type="url" class="mono" placeholder="https://status.example.com" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+
         </section>
 
         <section class="form-section extras-section" aria-labelledby="extras-heading">
@@ -374,6 +438,14 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
             </div>
             <div class="copy-block" data-copy-block="profile">
               <label>Status label<input data-config-key="statusLabel" type="text" /></label>
+            </div>
+            <div class="copy-block" data-copy-block="redirect">
+              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
+              <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
+            </div>
+            <div class="copy-block" data-copy-block="maintenance">
+              <label>Status label<input data-config-key="statusLabel" type="text" /></label>
+              <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
             </div>
           </div>
         </details>
@@ -1148,6 +1220,14 @@ const ADMIN_JS = `
     avatarUploadStatus: $('avatar-upload-status'),
     bio: $('f-bio'),
     profileLinksList: $('profile-links-list'),
+    redirectTargetUrl: $('redirect-target-url'),
+    redirectStatusCode: $('redirect-status-code'),
+    redirectPreservePath: $('redirect-preserve-path'),
+    redirectPreserveQuery: $('redirect-preserve-query'),
+    redirectShowUi: $('redirect-show-ui'),
+    redirectCountdownSeconds: $('redirect-countdown-seconds'),
+    maintenanceRetryAfter: $('maintenance-retry-after'),
+    maintenanceHelpUrl: $('maintenance-help-url'),
     footerText: $('f-footerText'),
     showCredit: $('f-showCredit'),
   };
@@ -1214,10 +1294,21 @@ const ADMIN_JS = `
       'coming-soon': ['Announcement', 'Supporting details'],
       landing: ['Headline', 'Additional context'],
       profile: ['Headline', 'Description'],
+      redirect: ['Redirect', 'Destination details'],
+      maintenance: ['Maintenance headline', 'Maintenance details'],
     };
-    $('title-label').textContent = labels[mode][0];
-    $('description-label').textContent = labels[mode][1];
+    $('title-label').textContent = (labels[mode] || labels.landing)[0];
+    $('description-label').textContent = (labels[mode] || labels.landing)[1];
+    syncRedirectUi();
     scheduleRender();
+  }
+
+  function syncRedirectUi() {
+    const enabled = els.redirectShowUi.checked;
+    document.querySelectorAll('[data-redirect-ui-field] input, [data-redirect-ui-field] select').forEach((field) => {
+      field.disabled = !enabled;
+      field.setAttribute('aria-disabled', String(!enabled));
+    });
   }
 
   function renderFeatures(features) {
@@ -1281,10 +1372,18 @@ const ADMIN_JS = `
       const defaults = MODE_DEFAULTS[blockMode] || {};
       block.querySelectorAll('[data-config-key]').forEach((input) => {
         const key = input.dataset.configKey;
-        const source = blockMode === mode && Object.prototype.hasOwnProperty.call(cfg, key)
-          ? cfg
-          : defaults;
-        input.value = source[key] != null ? source[key] : '';
+        const canonicalKey = {
+          statusLabel: 'status_label',
+          eyebrowText: 'eyebrow',
+          launchLabel: 'labels',
+          pageTitleSuffix: 'labels',
+        }[key];
+        let value;
+        if (blockMode === mode) {
+          if (canonicalKey === 'labels') value = cfg.labels?.[key];
+          else value = configValue(cfg, key, canonicalKey);
+        }
+        input.value = value != null ? value : (defaults[key] != null ? defaults[key] : '');
       });
     });
   }
@@ -1295,6 +1394,12 @@ const ADMIN_JS = `
     block.querySelectorAll('[data-config-key]').forEach((input) => {
       cfg[input.dataset.configKey] = input.value.trim();
     });
+  }
+
+  function configValue(cfg, legacyKey, canonicalKey) {
+    if (cfg[legacyKey] !== undefined) return cfg[legacyKey];
+    if (canonicalKey && cfg[canonicalKey] !== undefined) return cfg[canonicalKey];
+    return undefined;
   }
 
   function avatarInitials() {
@@ -1395,6 +1500,31 @@ const ADMIN_JS = `
       cfg.bio = els.bio.value.trim() || undefined;
       cfg.links = collectRepeater(els.profileLinksList, 'profileLink');
     }
+    if (state.mode === 'redirect') {
+      cfg.delivery = {
+        ...(cfg.delivery || {}),
+        redirect: {
+          ...((cfg.delivery && cfg.delivery.redirect) || {}),
+          target_url: els.redirectTargetUrl.value.trim() || undefined,
+          status_code: Number(els.redirectStatusCode.value || 302),
+          preserve_path: els.redirectPreservePath.checked,
+          preserve_query: els.redirectPreserveQuery.checked,
+          show_ui: els.redirectShowUi.checked,
+          countdown_seconds: Number(els.redirectCountdownSeconds.value || 5),
+        },
+      };
+    }
+    if (state.mode === 'maintenance') {
+      const retryAfter = els.maintenanceRetryAfter.value.trim();
+      cfg.delivery = {
+        ...(cfg.delivery || {}),
+        maintenance: {
+          ...((cfg.delivery && cfg.delivery.maintenance) || {}),
+          retry_after_seconds: retryAfter ? Number(retryAfter) : undefined,
+          help_url: els.maintenanceHelpUrl.value.trim() || undefined,
+        },
+      };
+    }
     Object.keys(cfg).forEach((k) => cfg[k] === undefined && delete cfg[k]);
     state.fullConfig = cfg;
     return cfg;
@@ -1410,32 +1540,44 @@ const ADMIN_JS = `
     const defaults = MODE_DEFAULTS[mode] || {};
     state.fullConfig = { ...cfg, mode };
     els.hostname.value = (record && record.hostname) || '';
-    els.domainTitle.value = cfg.domainTitle || '';
-    els.title.value = cfg.title || '';
-    els.description.value = cfg.description || '';
-    els.accentColor.value = cfg.accentColor || '#e8590c';
-    els.salePrice.value = cfg.salePrice || '';
-    els.contactEmail.value = cfg.contactEmail || '';
+    els.domainTitle.value = configValue(cfg, 'domainTitle', 'domain_title') || '';
+    els.title.value = configValue(cfg, 'title', 'headline') || '';
+    els.description.value = configValue(cfg, 'description', 'body') || '';
+    els.accentColor.value = configValue(cfg, 'accentColor') || cfg.theme?.accent || '#e8590c';
+    els.salePrice.value = configValue(cfg, 'salePrice', 'price') || '';
+    els.contactEmail.value = configValue(cfg, 'contactEmail', 'contact_email') || '';
     els.domainAgeYears.value = cfg.domainAgeYears || '';
     els.domainExtension.value = cfg.domainExtension || '';
-    els.domainRegistration.value = cfg.domainRegistration || '';
-    els.tagline.value = cfg.tagline || '';
-    els.launchDate.value = cfg.launchDate ? cfg.launchDate.slice(0, 16) : '';
-    els.subtitle.value = cfg.subtitle || '';
+    els.domainRegistration.value = configValue(cfg, 'domainRegistration', 'note') || '';
+    els.tagline.value = configValue(cfg, 'tagline', 'headline') || '';
+    const launchDate = configValue(cfg, 'launchDate', 'launch_date');
+    els.launchDate.value = launchDate ? launchDate.slice(0, 16) : '';
+    els.subtitle.value = configValue(cfg, 'subtitle', 'subhead') || '';
     els.name.value = cfg.name || '';
     els.role.value = Object.prototype.hasOwnProperty.call(cfg, 'role') ? cfg.role : (defaults.role || '');
-    els.avatarUrl.value = cfg.avatarUrl || '';
+    els.avatarUrl.value = configValue(cfg, 'avatarUrl', 'avatar_url') || '';
     state.avatarObjectKey = cfg.avatarObjectKey || null;
     els.bio.value = cfg.bio || '';
-    els.footerText.value = Object.prototype.hasOwnProperty.call(cfg, 'footerText')
-      ? cfg.footerText
+    els.footerText.value = Object.prototype.hasOwnProperty.call(cfg, 'footerText') || Object.prototype.hasOwnProperty.call(cfg, 'footer_text')
+      ? configValue(cfg, 'footerText', 'footer_text')
       : (defaults.footerText || '');
-    els.showCredit.checked = cfg.showCredit !== false;
+    els.showCredit.checked = configValue(cfg, 'showCredit', 'footer_credit') !== false;
+    const delivery = cfg.delivery || {};
+    const redirect = delivery.redirect || {};
+    const maintenance = delivery.maintenance || {};
+    els.redirectTargetUrl.value = redirect.target_url || '';
+    els.redirectStatusCode.value = String(redirect.status_code || 302);
+    els.redirectPreservePath.checked = redirect.preserve_path === true;
+    els.redirectPreserveQuery.checked = redirect.preserve_query === true;
+    els.redirectShowUi.checked = redirect.show_ui === true;
+    els.redirectCountdownSeconds.value = redirect.countdown_seconds || 5;
+    els.maintenanceRetryAfter.value = maintenance.retry_after_seconds || '';
+    els.maintenanceHelpUrl.value = maintenance.help_url || '';
     applyCopySettings(mode, cfg);
     renderFeatures(cfg.features);
     renderLinks(mode === 'profile' ? [] : cfg.links);
     renderProfileLinks(mode === 'profile' ? cfg.links : []);
-    const social = cfg.socialLinks || {};
+    const social = cfg.socialLinks || cfg.socials || {};
     document.querySelectorAll('[data-social]').forEach((el) => {
       el.value = social[el.dataset.social] || '';
     });
@@ -1707,6 +1849,7 @@ const ADMIN_JS = `
   els.accentColor.addEventListener('change', handleAccentColorInput);
   els.avatarUploadBtn.addEventListener('click', () => els.avatarFile.click());
   els.avatarFile.addEventListener('change', uploadProfileImage);
+  els.redirectShowUi.addEventListener('change', syncRedirectUi);
   els.avatarRemoveBtn.addEventListener('click', () => {
     els.avatarUrl.value = '';
     state.avatarObjectKey = null;

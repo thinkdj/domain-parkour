@@ -46,6 +46,16 @@
       "statusLabel": "Profile",
       "role": "Independent",
       "footerText": ""
+    },
+    "redirect": {
+      "statusLabel": "Redirecting",
+      "footerText": "",
+      "pageTitleSuffix": ""
+    },
+    "maintenance": {
+      "statusLabel": "Maintenance",
+      "footerText": "",
+      "pageTitleSuffix": ""
     }
   },
   "presets": [
@@ -200,6 +210,36 @@
         "twitter": "https://twitter.com/thinkdj",
         "linkedin": "https://linkedin.com/in/thinkdj"
       }
+    },
+    {
+      "name": "Forwarded domain",
+      "mode": "redirect",
+      "domainTitle": "old.example.com",
+      "title": "This domain forwards on",
+      "description": "Visitors are sent to the new home.",
+      "delivery": {
+        "redirect": {
+          "target_url": "https://example.com",
+          "status_code": 302,
+          "preserve_path": true,
+          "preserve_query": true
+        }
+      },
+      "accentColor": "#7c3aed"
+    },
+    {
+      "name": "Planned maintenance",
+      "mode": "maintenance",
+      "domainTitle": "status.example.com",
+      "title": "We are making a careful update",
+      "description": "Please try again shortly.",
+      "delivery": {
+        "maintenance": {
+          "retry_after_seconds": 3600,
+          "help_url": "https://status.example.com"
+        }
+      },
+      "accentColor": "#b45309"
     },
     {
       "name": "Defaults",

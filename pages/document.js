@@ -72,7 +72,7 @@ function jsonLd(mode, view, title, description) {
   return { '@context': 'https://schema.org', '@type': 'WebPage', name: title, description, url };
 }
 
-function metadata(mode, view, { configured }) {
+function metadata(mode, view, { configured, redirectUrl = '' }) {
   const seo = view.cfg.seo || {};
   // An explicit seo.title is the whole title. Otherwise the browser tab reads
   // "example.com - For sale", which is what the suffix is for.
@@ -85,11 +85,19 @@ function metadata(mode, view, { configured }) {
   const indexable = configured && isIndexable(mode, view.cfg);
   const image = seo.og_image_url;
   const favicon = view.cfg.brand?.favicon_url;
+  const redirectRule = view.cfg.delivery?.redirect;
+  const redirectTarget = mode === 'redirect' && redirectRule?.show_ui
+    ? redirectUrl || redirectRule.target_url
+    : '';
+  const redirectRefresh = redirectTarget
+    ? `<meta http-equiv="refresh" content="${redirectRule.countdown_seconds};url=${escapeHtml(redirectTarget)}">`
+    : '';
 
   const tags = [
     `<title>${escapeHtml(title)}</title>`,
     `<meta name="description" content="${escapeHtml(description)}">`,
     `<meta name="robots" content="${indexable ? 'index,follow' : 'noindex,nofollow'}">`,
+    redirectRefresh,
     canonical ? `<link rel="canonical" href="${escapeHtml(canonical)}">` : '',
     favicon ? `<link rel="icon" href="${escapeHtml(favicon)}">` : '',
     '<meta property="og:type" content="website">',
@@ -115,12 +123,12 @@ function metadata(mode, view, { configured }) {
  * @param {{ configured?: boolean }} [options] false for an unknown Host or a preview
  * @returns {{ html: string, title: string, description: string, indexable: boolean, mode: string }}
  */
-export function renderPage(mode, hostname, rawConfig = {}, { configured = true } = {}) {
+export function renderPage(mode, hostname, rawConfig = {}, { configured = true, redirectUrl = '' } = {}) {
   const normalized = normalize(rawConfig, { mode });
   const resolved = MODES.includes(normalized.mode) ? normalized.mode : DEFAULT_MODE;
   const template = TEMPLATES[resolved];
   const view = buildView(resolved, hostname, normalized.config);
-  const meta = metadata(resolved, view, { configured });
+  const meta = metadata(resolved, view, { configured, redirectUrl });
   const accent = safeAccentColor(normalized.config.theme?.accent) || ACCENT;
   const css = pageCss(resolved, { accent, withForm: template.needsForm(normalized.config) });
 

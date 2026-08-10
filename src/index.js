@@ -110,18 +110,22 @@ export default {
       });
     }
 
+    let redirectLocation = '';
     if (mode === 'redirect') {
       const { location, status } = resolveRedirect(request.url, config);
+      redirectLocation = location;
       if (location) {
-        return new Response(null, {
-          status,
-          headers: { location, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' },
-        });
+        if (config.delivery?.redirect?.show_ui !== true) {
+          return new Response(null, {
+            status,
+            headers: { location, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' },
+          });
+        }
       }
       // No usable destination: fall through and render the page, which says so.
     }
 
-    const page = renderPage(mode, hostname, config, { configured });
+    const page = renderPage(mode, hostname, config, { configured, redirectUrl: redirectLocation });
 
     if (mode === 'maintenance') {
       const headers = new Headers({ ...PAGE_HEADERS, 'cache-control': 'no-store' });

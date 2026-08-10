@@ -170,6 +170,22 @@ test('redirect resolution preserves path and query only when asked', () => {
   );
 });
 
+test('redirect UI shows a declarative countdown and refresh target', () => {
+  const page = renderPage('redirect', HOST, {
+    delivery: {
+      redirect: {
+        target_url: 'https://dest.example/app', show_ui: true, countdown_seconds: 12,
+      },
+    },
+  });
+  assert.match(page.html, /http-equiv="refresh" content="12;url=https:\/\/dest\.example\/app"/);
+  assert.match(page.html, /You will be redirected to/);
+  assert.match(page.html, />12 seconds<\/strong>/);
+  assert.doesNotMatch(renderPage('redirect', HOST, {
+    delivery: { redirect: { target_url: 'https://dest.example/app' } },
+  }).html, /http-equiv="refresh"/);
+});
+
 test('a redirect to its own host is refused', () => {
   const loop = { delivery: { redirect: { target_url: 'https://example.com/elsewhere' } } };
   assert.equal(resolveRedirect('https://example.com/', loop).location, '');

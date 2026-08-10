@@ -38,7 +38,7 @@ function adminConfigKeys() {
   return [...new Set(keys)].filter((key) => !NOT_CONFIG.has(key));
 }
 
-const MODES = ["parking", "coming-soon", "landing", "profile"];
+const MODES = ["parking", "coming-soon", "landing", "profile", "redirect", "maintenance"];
 
 test("every field the admin form offers survives strict validation", () => {
   const keys = adminConfigKeys();
@@ -53,8 +53,12 @@ test("every field the admin form offers survives strict validation", () => {
         : /^accentColor$/.test(key) ? "#0f766e"
         : /Date$/i.test(key) ? "2030-01-01"
         : "text";
+      const config = { [key]: value };
+      if (mode === "redirect") {
+        config.delivery = { redirect: { target_url: "https://example.com" } };
+      }
       assert.doesNotThrow(
-        () => validateConfig({ [key]: value }, mode),
+        () => validateConfig(config, mode),
         `${mode}: the admin offers "${key}" but the schema rejects it`,
       );
     }
@@ -63,8 +67,11 @@ test("every field the admin form offers survives strict validation", () => {
 
 test("the wording defaults the admin prefills are all accepted", () => {
   for (const [mode, defaults] of Object.entries(MODE_DEFAULTS)) {
+    const config = mode === "redirect"
+      ? { ...defaults, delivery: { redirect: { target_url: "https://example.com" } } }
+      : defaults;
     assert.doesNotThrow(
-      () => validateConfig({ ...defaults }, mode),
+      () => validateConfig({ ...config }, mode),
       `${mode}: defaults.json contains a field the schema rejects`,
     );
   }
@@ -127,4 +134,16 @@ test("the admin markup offers no control the renderer cannot honour", () => {
       `the admin still offers "${retired}", which no longer renders anywhere`,
     );
   }
+});
+
+test("redirect UI toggle sits above and gates its dependent options", () => {
+  const html = renderAdminUI({ presets: [], isDefaultCreds: true });
+  const toggle = html.indexOf('id="redirect-show-ui"');
+  const countdown = html.indexOf('id="redirect-countdown-seconds"');
+  const status = html.indexOf('id="redirect-status-code"');
+  assert.ok(toggle > 0 && toggle < countdown && toggle < status);
+  assert.match(html, /id="redirect-countdown-seconds"[^>]*disabled/);
+  assert.match(html, /id="redirect-status-code"[^>]*disabled/);
+  assert.match(html, /id="redirect-preserve-path"[^>]*disabled/);
+  assert.match(html, /id="redirect-preserve-query"[^>]*disabled/);
 });
