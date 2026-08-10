@@ -1,0 +1,9 @@
+# Normalise to LF in the repository regardless of platform.
+* text=auto eol=lf
+
+# Binary assets must never be touched.
+*.png binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

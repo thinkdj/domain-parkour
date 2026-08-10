@@ -70,7 +70,7 @@ const MODE_SVGS = {
 /** §06.3 — the signature choice in the product: one radio card per mode. */
 const MODE_CARDS = [
   { mode: "parking", glyph: MODE_SVGS.parking, name: "Parking", copy: "Price, history, contact, trust." },
-  { mode: "coming-soon", glyph: MODE_SVGS.comingSoon, name: "Coming soon", copy: "Countdown and feature cards." },
+  { mode: "coming-soon", glyph: MODE_SVGS.comingSoon, name: "Coming soon", copy: "Launch date and feature cards." },
   { mode: "landing", glyph: MODE_SVGS.landing, name: "Landing", copy: "Destination and social links." },
   { mode: "profile", glyph: MODE_SVGS.profile, name: "Profile", copy: "Image, bio, featured links." },
 ];
@@ -107,7 +107,7 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <title>Domain Parkour — Page Studio</title>
+  <title>Domain Parkour — Parking Page Studio</title>
   <link rel="icon" href="${ADMIN_FAVICON}" />
   <script>
     /* Restore an explicit choice only; with none, color-scheme follows the OS. */
@@ -126,7 +126,7 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
       <span class="logo" aria-hidden="true">${BRAND_GLYPH}</span>
       <span class="brand-copy">
         <span class="brand-name">Domain Parkour</span>
-        <span class="brand-subtitle">Page Studio</span>
+        <span class="brand-subtitle">Parking Page Studio</span>
       </span>
     </div>
     <div class="site-switcher">
@@ -362,12 +362,7 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
               <label>Eyebrow<input data-config-key="eyebrowText" type="text" /></label>
               <label>Launch label<input data-config-key="launchLabel" type="text" /></label>
               <label>Browser title suffix<input data-config-key="pageTitleSuffix" type="text" /></label>
-              <label>Days label<input data-config-key="daysLabel" type="text" /></label>
-              <label>Hours label<input data-config-key="hoursLabel" type="text" /></label>
-              <label>Minutes label<input data-config-key="minutesLabel" type="text" /></label>
-              <label>Seconds label<input data-config-key="secondsLabel" type="text" /></label>
               <label class="wide">Countdown note<textarea data-config-key="countdownNote" rows="2"></textarea></label>
-              <label>Countdown complete<input data-config-key="launchedText" type="text" /></label>
               <label>Fallback panel label<input data-config-key="statusPanelLabel" type="text" /></label>
               <label class="wide">Fallback panel heading<input data-config-key="statusPanelTitle" type="text" /></label>
               <label class="wide">Fallback panel copy<textarea data-config-key="statusPanelText" rows="2"></textarea></label>
@@ -1407,7 +1402,11 @@ const ADMIN_JS = `
 
   function applyConfig(record) {
     const cfg = (record && record.config) || {};
-    const mode = (record && record.mode) || cfg.mode || 'landing';
+    // The API speaks the renderer's canonical mode names (coming_soon); this form
+    // has always used hyphens, and so do its radio values, copy blocks and
+    // defaults keys. Converting once here beats renaming all of them.
+    const raw = (record && record.mode) || cfg.mode || 'landing';
+    const mode = String(raw).replace(/_/g, '-');
     const defaults = MODE_DEFAULTS[mode] || {};
     state.fullConfig = { ...cfg, mode };
     els.hostname.value = (record && record.hostname) || '';

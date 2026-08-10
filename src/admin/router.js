@@ -14,17 +14,14 @@
 import { requireAdmin, adminCredentials } from "./auth.js";
 import { renderAdminUI } from "./ui.js";
 import { listDomains, getDomain, upsertDomain, deleteDomain } from "../db.js";
-import { DEMO_PRESETS, previewConfig } from "../config.js";
+import { DEMO_PRESETS } from "../config.js";
 import {
   ConfigValidationError,
   assertMode,
   normalizeHostname,
   validateConfig,
 } from "../safety.js";
-import { generateParkingHTML } from "../templates/parking.js";
-import { generateComingSoonHTML } from "../templates/coming-soon.js";
-import { generateLandingHTML } from "../templates/landing.js";
-import { generateProfileHTML } from "../templates/profile.js";
+import { renderPage } from "../../pages/index.js";
 import { deleteManagedAvatar, storeProfileImage } from "../assets.js";
 
 const PREFIX = "/_admin_";
@@ -87,13 +84,33 @@ function mutationOriginError(request) {
   }
 }
 
-function configurationError(error) {
-  if (!(error instanceof ConfigValidationError)) throw error;
-  const message = error.message;
+function plainResponse(message, status) {
   return new Response(message, {
-    status: 400,
+    status,
     headers: { "content-type": "text/plain;charset=UTF-8", "cache-control": "no-store" },
   });
+}
+
+/**
+ * A bound but unmigrated database is the most common way a fresh checkout fails,
+ * and it used to surface as a 500 with a stack trace — which says nothing about
+ * the one command that fixes it. Every admin API route funnels through here, so
+ * one guard covers all of them.
+ */
+function isMissingSchema(error) {
+  return /no such table/i.test(String(error?.message || ""));
+}
+
+function configurationError(error) {
+  if (isMissingSchema(error)) {
+    return plainResponse(
+      "The database has no schema yet. Run `pnpm db:migrate:local` for local "
+      + "development, or `pnpm db:migrate:remote` for a deployed database, then retry.",
+      503,
+    );
+  }
+  if (!(error instanceof ConfigValidationError)) throw error;
+  return plainResponse(error.message, 400);
 }
 
 function decodeHostname(segment) {
@@ -105,11 +122,10 @@ function decodeHostname(segment) {
   }
 }
 
-function renderConfigToHTML(cfg) {
-  if (cfg.mode === "parking") return generateParkingHTML(cfg);
-  if (cfg.mode === "coming-soon") return generateComingSoonHTML(cfg);
-  if (cfg.mode === "profile") return generateProfileHTML(cfg);
-  return generateLandingHTML(cfg);
+function renderConfigToHTML(hostname, mode, config) {
+  // The admin preview and the served page are the same call, so what an admin
+  // approves is exactly what a visitor gets.
+  return renderPage(mode, hostname, config, { configured: false }).html;
 }
 
 function ensureDB(env) {
@@ -172,13 +188,12 @@ export async function handleAdmin(request, env) {
       const hostname = normalizeHostname(payload.hostname === undefined ? "preview.local" : payload.hostname);
       const mode = assertMode(rawConfig?.mode === undefined ? "landing" : rawConfig.mode);
       const config = validateConfig(rawConfig, mode);
-      const cfg = previewConfig(hostname, { ...config, mode });
-      const html = renderConfigToHTML(cfg);
+      const html = renderConfigToHTML(hostname, mode, config);
       return new Response(html, {
         headers: {
           "content-type": "text/html;charset=UTF-8",
           "cache-control": "no-store",
-          "content-security-policy": "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+          "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' https: data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
           "x-content-type-options": "nosniff",
         },
       });

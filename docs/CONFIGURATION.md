@@ -3,10 +3,10 @@
 | Field | Value |
 | --- | --- |
 | Status | Current OSS implementation |
-| Last updated | 2026-07-19 |
+| Last updated | 2026-08-10 |
 | Storage | D1 config JSON plus R2 image objects |
 
-This document describes fields implemented by the current runtime and admin. Planned modes and fields live in the private `domain-parkour-cloud` planning docs (`PRD_FEATURES_EXTENDED.md`) and must not be treated as available.
+This document describes fields implemented by the current runtime and admin. Private planning material may describe future work; it must not be treated as available here.
 
 ## 1. Resolution
 

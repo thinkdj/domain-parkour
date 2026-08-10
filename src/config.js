@@ -1,116 +1,78 @@
 /**
- * Resolve the rendered config for a hostname.
+ * Resolve the config for a hostname.
  *
  * Priority:
- *   1. Local demo presets from defaults.json - only on localhost
- *   2. D1 — exact hostname row, then `_default` row
- *   3. Bundled fallback from defaults.json
+ *   1. Bundled demo presets — localhost and *.workers.dev only
+ *   2. D1: the exact hostname row, then the `_default` row
+ *   3. The bundled fallback
+ *
+ * Everything returned is already in the shared vocabulary: `normalize` folds the
+ * older camelCase spellings in defaults.json into canonical keys, so the presets
+ * did not have to be rewritten.
  */
 
-import { getDomainOrDefault } from "./db.js";
-import { normalizeMode, sanitizeStoredConfig } from "./safety.js";
-import defaults from "../defaults.json" with { type: "json" };
+import { normalize } from '../pages/index.js';
+import { getDomainOrDefault } from './db.js';
+import defaults from '../defaults.json' with { type: 'json' };
 
 export const FALLBACK_DEFAULT = defaults.fallback;
-export const MODE_DEFAULTS = defaults.modes;
 export const DEMO_PRESETS = defaults.presets;
 
-const LOCAL_HOSTS = new Set([
-  "localhost",
-  "127.0.0.1",
-  "0.0.0.0",
-]);
+/**
+ * Per-mode starting copy for the admin form. Not schema: the renderer has its own
+ * defaults for all of it. These only prefill the fields an admin sees, so a new
+ * page reads well before anything is typed.
+ */
+export const MODE_DEFAULTS = defaults.modes;
+
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0']);
 
 function isLocalHost(hostname) {
-  return LOCAL_HOSTS.has(hostname) || hostname.endsWith(".workers.dev");
+  return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.workers.dev');
 }
 
-function applyModeDefaults(cfg) {
-  const defaults = MODE_DEFAULTS[cfg.mode] || MODE_DEFAULTS.landing;
-  for (const [key, value] of Object.entries(defaults)) {
-    if (cfg[key] === undefined) cfg[key] = value;
-  }
-}
-
-function withDerived(hostname, raw) {
-  const { mode, config } = sanitizeStoredConfig(raw, raw?.mode);
-  const cfg = { domain: hostname, ...config, mode };
-  const domainTitle = cfg.domainTitle || cfg.domain || hostname;
-  cfg.domainTitle = domainTitle;
-
-  const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(domainTitle);
-  if (cfg.domainExtension === undefined && !isIp && domainTitle.includes(".")) {
-    cfg.domainExtension = `.${domainTitle.split(".").pop()}`;
-  }
-
-  if (cfg.registrationDate && !cfg.domainAgeYears) {
-    const regDate = new Date(cfg.registrationDate);
-    if (!isNaN(regDate.getTime())) {
-      const years = (Date.now() - regDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-      cfg.domainAgeYears = `${Math.floor(years)}+`;
-      cfg.domainRegistration = cfg.domainRegistration || `Registered in ${regDate.getFullYear()}`;
-    }
-  }
-
-  cfg.mode = normalizeMode(cfg.mode) || "landing";
-  cfg.accentColor = cfg.accentColor || FALLBACK_DEFAULT.accentColor;
-  cfg.features = cfg.features || [];
-  cfg.socialLinks = cfg.socialLinks || {};
-  cfg.links = cfg.links || [];
-  cfg.showCredit = cfg.showCredit !== false;
-  applyModeDefaults(cfg);
-  return cfg;
+/**
+ * The local gallery renders a preset chosen by ?preset=N. It used to be a
+ * `<select>` on the page itself, which needed script; a query parameter needs
+ * none, and a visitor page ships no script now.
+ */
+function presetFor(request) {
+  if (!request) return null;
+  const requested = new URL(request.url).searchParams.get('preset');
+  if (requested === null) return null;
+  const index = Number.parseInt(requested, 10);
+  return Number.isInteger(index) && index >= 0 && index < DEMO_PRESETS.length
+    ? DEMO_PRESETS[index]
+    : null;
 }
 
 /**
  * @param {string} hostname
  * @param {{ DB?: D1Database }} env
  * @param {Request} [request]
+ * @returns {Promise<{ mode: string, config: object, configured: boolean }>}
  */
 export async function resolveConfig(hostname, env, request) {
-  // 1. Local dev theme gallery (only when no admin/preview override is set)
   if (isLocalHost(hostname)) {
-    const themes = DEMO_PRESETS.map((preset, index) => ({
-      name: typeof preset.name === "string" ? preset.name.slice(0, 120) : `Template ${index + 1}`,
-      ...withDerived(hostname, preset),
-    }));
-    if (themes) {
-      let idx = 0;
-      if (request) {
-        const url = new URL(request.url);
-        const param = url.searchParams.get("themeIndex");
-        if (param !== null) {
-          const n = parseInt(param, 10);
-          if (!isNaN(n) && n >= 0 && n < themes.length) idx = n;
-        }
-      }
-      return {
-        config: themes[idx],
-        allThemes: themes,
-      };
-    }
+    const preset = presetFor(request) || DEMO_PRESETS[0];
+    if (preset) return { ...normalize(preset, { mode: preset.mode }), configured: true };
   }
 
-  // 2. D1
   if (env.DB) {
     try {
       const record = await getDomainOrDefault(env.DB, hostname);
-      if (record) {
-        return { config: withDerived(hostname, { ...record.config, mode: record.mode }) };
-      }
-    } catch (e) {
-      console.error(`D1 lookup failed: ${e.message}`);
+      if (record) return { mode: record.mode, config: record.config, configured: true };
+    } catch (error) {
+      console.error(`D1 lookup failed: ${error.message}`);
     }
   }
 
-  // 3. Bundled fallback from defaults.json
-  return { config: withDerived(hostname, FALLBACK_DEFAULT) };
+  // Nothing is configured for this host. It still renders, but `configured:false`
+  // stops an unknown Host header becoming a canonical URL or a sitemap entry.
+  return { ...normalize(FALLBACK_DEFAULT, { mode: FALLBACK_DEFAULT.mode }), configured: false };
 }
 
-/**
- * Resolve a config from an arbitrary raw object (used by /preview API to render
- * unsaved edits live).
- */
-export function previewConfig(hostname, raw) {
-  return withDerived(hostname, raw || {});
+/** Render unsaved admin edits without touching the database. */
+export function previewConfig(raw) {
+  return normalize(raw, { mode: raw?.mode });
 }

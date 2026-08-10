@@ -1,9 +1,5 @@
 /**
- * GENERATED from design-system/*.css - do not edit.
- * Run \`node design-system/sync.mjs\` at the workspace root to refresh.
- *
- * Inlined rather than linked: every page this runtime serves must be
- * self-contained, which design-system.test.mjs enforces.
+ * GENERATED from design-system/*.css by design-system/build.mjs — do not edit.
  */
 
 export const tokensCss = `
@@ -14,16 +10,12 @@ export const tokensCss = `
  * THIS FILE IS THE SOURCE OF TRUTH. Everything visual in the OSS runtime, the
  * Cloud control plane, and the homepage resolves back to a value declared here.
  *
- * domain-parkour and domain-parkour-cloud are independently cloned repos, so
- * neither can import this file at build time. Each carries a generated copy and
- * a contract test that fails if its copy drifts from these values. Change a
- * value here first, then regenerate; never edit a repo's copy by hand.
+ * Both applications import this source through the workspace build. Change a
+ * value here first, then regenerate; never edit generated output by hand.
  *
- *   OSS    → domain-parkour/src/styles/tokens.js       (inlined; pages must
- *                                                       ship zero external
- *                                                       requests)
- *   Cloud  → domain-parkour-cloud/public/assets/tokens.css
- *   Docs   → parkour_design_system.html links this file directly
+ *   OSS    → design-system/index.js (inlined in the admin)
+ *   Cloud  → cloud/public/assets/tokens.css
+ *   Pages  → pages/src/tokens.generated.js
  * ========================================================================== */
 
 :root {

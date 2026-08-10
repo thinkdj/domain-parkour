@@ -12,17 +12,15 @@ This public MIT repository contains the self-hosted Domain Parkour runtime:
 - Shared templates/styles used by admin preview and public rendering.
 - pnpm-based setup and deployment tooling.
 
-Domain Parkour Cloud is an approved but not yet implemented private hosted control plane. Do not add OAuth client secrets, Polar integration secrets, encrypted-token storage, multi-tenant provider state, or private hosted operations to this public repository.
+Hosted-control-plane code is private and excluded from this repository. Do not add OAuth client secrets, Polar integration secrets, encrypted-token storage, multi-tenant provider state, or private hosted operations here.
 
 ## Canonical documentation
 
 - `GUIDE.md`: current self-hosting commands and operations.
 - `docs/CONFIGURATION.md`: implemented modes and fields.
 
-Product launch requirements, the hosted implementation contract, the public/private
-boundary, and the roadmap live in the private `domain-parkour-cloud` repository
-(`PRD.md`, `HOSTED_PLATFORM_PRD.md`, `OSS_VS_HOSTED.md`, `PRD_FEATURES_EXTENDED.md`)
-and are not part of this public repository.
+Product launch requirements, the hosted implementation contract, and future
+roadmap are private maintainer material and are not part of this repository.
 
 Do not describe roadmap features as shipped.
 

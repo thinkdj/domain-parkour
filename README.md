@@ -29,7 +29,7 @@ Domain Parkour itself does not manage sales, payments, email, DNS changes, hoste
 
 ## Start locally
 
-Requirements: Node 20+ and pnpm 10.
+Requirements: Node 22+ and pnpm 10.
 
     corepack enable
     pnpm install --frozen-lockfile

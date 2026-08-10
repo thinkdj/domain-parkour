@@ -57,7 +57,7 @@ Recommended hardening:
 
 ## Hosted security invariants
 
-The hosted platform is planned, not shipped in this repository. Its mandatory security requirements live in the private `domain-parkour-cloud` docs (`HOSTED_PLATFORM_PRD.md`), including:
+Hosted control-plane code is not shipped in this repository. Its mandatory security requirements are private maintainer material, including:
 
 - Cloudflare Authorization Code + PKCE.
 - Encrypted server-side access/refresh tokens.

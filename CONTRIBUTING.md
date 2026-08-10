@@ -12,13 +12,13 @@ Domain Parkour values:
 - A useful MIT-licensed runtime independent of the hosted service.
 - Clear distinction between shipped features and roadmap ideas.
 
-The product requirements and OSS/hosted boundary (`PRD.md`, `OSS_VS_HOSTED.md`) live in the private `domain-parkour-cloud` repository. If you are a maintainer, review them before proposing a large feature.
+The product requirements and OSS/hosted boundary are private maintainer material. Review them before proposing a large feature.
 
 ## Development setup
 
 Requirements:
 
-- Node.js 20 or newer.
+- Node.js 22 or newer.
 - pnpm matching the `packageManager` field in `package.json`.
 
 ```bash
@@ -114,11 +114,11 @@ Do not include generated local state, `.dev.vars`, backups, live Cloudflare IDs,
 
 ## Documentation conventions
 
-Use the status labels defined in [`docs/README.md`](docs/README.md). Do not advertise a planned feature as shipped.
+Do not advertise a planned feature as shipped.
 
 - Commands belong in `GUIDE.md`.
 - Current config belongs in `docs/CONFIGURATION.md`.
-- Product requirements and future ideas belong in the private `domain-parkour-cloud` planning docs (`PRD.md`, `PRD_FEATURES_EXTENDED.md`).
+- Product requirements and future ideas belong in private maintainer planning docs.
 
 ## Security reports
 

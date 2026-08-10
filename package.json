@@ -1,19 +1,20 @@
 {
   "name": "domain-parkour",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Minimalistic domain parking, coming soon and landing pages for Cloudflare Workers, with a built-in admin panel backed by D1.",
   "main": "src/index.js",
   "scripts": {
     "setup": "node scripts/setup.mjs",
-    "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage",
+    "test": "node --test \"test/*.test.mjs\" \"test/pages/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage \"test/*.test.mjs\" \"test/pages/*.test.js\"",
     "dev": "wrangler dev",
     "dev:local": "node scripts/dev-local.mjs",
     "deploy": "wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply domain-parkour-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply domain-parkour-db --remote",
     "db:console": "wrangler d1 execute domain-parkour-db --local --command \"SELECT hostname, mode, datetime(updated_at, 'unixepoch') AS updated FROM domains ORDER BY updated_at DESC\"",
+    "db:leads": "wrangler d1 execute domain-parkour-db --local --command \"SELECT datetime(created_at,'unixepoch') AS at, hostname, kind, email, offer_amount, message, answer FROM submissions ORDER BY created_at DESC LIMIT 50\"",
     "tail": "wrangler tail"
   },
   "keywords": [
@@ -29,6 +30,9 @@
   "author": "Deepak Thomas",
   "license": "MIT",
   "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22"
+  },
   "devDependencies": {
     "wrangler": "^4.112.0"
   }

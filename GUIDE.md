@@ -18,7 +18,7 @@ One Worker can serve multiple selected hostnames. Each hostname has its own row 
 
 ### Local preview only
 
-- Node.js 20 or newer.
+- Node.js 22 or newer.
 - pnpm 10; the repository pins `pnpm@10.15.1` in `package.json`.
 
 No Cloudflare account is needed for local preview.

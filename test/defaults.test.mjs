@@ -39,19 +39,19 @@ test("every configurable wording default has an admin control", () => {
 });
 
 test("local gallery and public fallback resolve from defaults.json", async () => {
-  const local = await resolveConfig(
-    "localhost",
-    {},
-    new Request("http://localhost/?themeIndex=1"),
-  );
-  assert.equal(local.config.mode, DEMO_PRESETS[1].mode);
-  assert.equal(local.config.domainTitle, DEMO_PRESETS[1].domainTitle);
-  assert.equal(local.allThemes.length, DEMO_PRESETS.length);
+  const local = await resolveConfig("localhost", {}, new Request("http://localhost/?preset=1"));
+  assert.equal(local.mode, DEMO_PRESETS[1].mode.replace("-", "_"));
+  assert.equal(local.config.domain_title, DEMO_PRESETS[1].domainTitle);
+  assert.equal(local.configured, true);
 
   const fallback = await resolveConfig("unconfigured.example", {});
-  assert.equal(fallback.config.mode, FALLBACK_DEFAULT.mode);
-  assert.equal(fallback.config.title, FALLBACK_DEFAULT.title);
-  assert.equal(fallback.config.description, FALLBACK_DEFAULT.description);
+  assert.equal(fallback.mode, FALLBACK_DEFAULT.mode);
+  // Nothing is configured for that host, so the page may claim nothing about it.
+  assert.equal(fallback.configured, false);
+  // `title` is the OSS spelling for the heading; it folds into `headline`.
+  assert.equal(fallback.config.headline, FALLBACK_DEFAULT.title);
+  // `description` is the OSS spelling; it folds into the canonical `body`.
+  assert.equal(fallback.config.body, FALLBACK_DEFAULT.description);
 });
 
 test("README presents the OSS project without SaaS positioning", () => {

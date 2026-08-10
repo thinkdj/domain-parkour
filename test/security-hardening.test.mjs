@@ -1,3 +1,11 @@
+/**
+ * Admin API and worker hardening.
+ *
+ * Template escaping moved to pages/test/xss.test.js with the renderer: it is
+ * shared with the hosted runtime now, so asserting it here would cover only one
+ * of its two consumers. What is left is this app's own boundary — admin auth,
+ * origin checks, hostname validation, and repairing a hostile legacy D1 row.
+ */
 import test from "node:test";
 import assert from "node:assert/strict";
 
@@ -5,10 +13,6 @@ import worker from "../src/index.js";
 import { handleAdmin } from "../src/admin/router.js";
 import { previewConfig } from "../src/config.js";
 import { validateConfig } from "../src/safety.js";
-import { generateParkingHTML } from "../src/templates/parking.js";
-import { generateComingSoonHTML } from "../src/templates/coming-soon.js";
-import { generateLandingHTML } from "../src/templates/landing.js";
-import { generateProfileHTML } from "../src/templates/profile.js";
 
 const ADMIN_ENV = { ADMIN_USER: "ada", ADMIN_PASSWORD: "s3cret" };
 const AUTH = { authorization: `Basic ${btoa("ada:s3cret")}` };
@@ -35,39 +39,6 @@ function hostileConfig(mode) {
     features: [{ title: '<img src=x onerror=10>', description: '<script>11</script>' }],
   };
 }
-
-const generators = {
-  parking: generateParkingHTML,
-  "coming-soon": generateComingSoonHTML,
-  landing: generateLandingHTML,
-  profile: generateProfileHTML,
-};
-
-test("all public templates treat hostile stored values as text and discard unsafe URLs", () => {
-  for (const [mode, generate] of Object.entries(generators)) {
-    const html = generate(previewConfig("example.com", hostileConfig(mode)));
-    assert.doesNotMatch(html, /<img\s+src=x/i, mode);
-    assert.doesNotMatch(html, /<svg\s+onload/i, mode);
-    assert.doesNotMatch(html, /<\/script><script>globalThis\.pwned/i, mode);
-    assert.doesNotMatch(html, /href="javascript:/i, mode);
-    assert.doesNotMatch(html, /src="data:/i, mode);
-    assert.match(html, /&lt;img src=x onerror/i, mode);
-    // The rejected accent falls back to the base theme, and the accent reaches
-    // the page only as --color-primary; everything else derives from it.
-    assert.match(html, /--color-primary: #e8590c/i, mode);
-    assert.doesNotMatch(html, /background:url\(javascript:/i, mode);
-    // The generated favicon embeds the accent too, so it must be the safe one.
-    assert.doesNotMatch(html, /rel="icon"[^>]*javascript/i, mode);
-  }
-});
-
-test("inline script data cannot close its script element", () => {
-  const cfg = previewConfig("example.com", { mode: "landing", domainTitle: "Example" });
-  const html = generateLandingHTML(cfg, [{ name: '</script><script>globalThis.pwned=1</script>' }]);
-  assert.doesNotMatch(html, /<\/script><script>globalThis\.pwned/i);
-  assert.match(html, /\\u003c\/script\\u003e\\u003cscript/i);
-  assert.match(html, /&lt;\/script&gt;&lt;script&gt;/i);
-});
 
 test("admin preview validates config before rendering and returns a no-store safe document", async () => {
   const unsafe = await handleAdmin(
@@ -100,7 +71,7 @@ test("admin preview validates config before rendering and returns a no-store saf
   assert.match(html, /&lt;img src=x onerror=/i);
   assert.doesNotMatch(html, /<img\s+src=x/i);
   assert.match(safeText.headers.get("cache-control"), /no-store/);
-  assert.match(safeText.headers.get("content-security-policy"), /object-src 'none'/);
+  assert.match(safeText.headers.get("content-security-policy"), /default-src 'none'/);
 });
 
 test("admin API rejects invalid hostnames, unknown fields, unsafe CSS, and cross-origin writes before D1", async () => {
@@ -186,9 +157,9 @@ test("strict validation keeps normal configuration and rejects dangerous URLs", 
     links: [{ title: "Docs", url: "https://docs.example.com/path" }],
     socialLinks: { github: "https://github.com/thinkdj", email: "mailto:hi@example.com" },
   }, "landing");
-  assert.equal(valid.contactEmail, "owner@example.com");
+  assert.equal(valid.contact_email, "owner@example.com");
   assert.equal(valid.links[0].url, "https://docs.example.com/path");
-  assert.equal(valid.socialLinks.email, "mailto:hi@example.com");
+  assert.equal(valid.socials.email, "mailto:hi@example.com");
   assert.throws(
     () => validateConfig({ avatarUrl: "javascript:alert(1)" }, "profile"),
     /safe HTTPS URL/,

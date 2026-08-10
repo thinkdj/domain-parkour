@@ -1,0 +1,41 @@
+/**
+ * @domainparkour/pages — the visitor page, in one place.
+ *
+ * Both apps import this and nothing deeper. The self-hosted Worker and the
+ * hosted control plane's editor preview import it directly; the customer Worker
+ * receives it bundled to source text, because a script uploaded through the
+ * Cloudflare API cannot import anything at runtime.
+ *
+ * What lives here: templates, CSS, the config vocabulary, safety primitives,
+ * form markup, robots/sitemap. What does not: storage, routing, headers, form
+ * handling, analytics — those differ legitimately between the two apps.
+ */
+
+export { renderPage, renderBody, renderPreviewParts, renderThanks, isIndexable } from './document.js';
+export { robotsTxt, sitemapXml } from './discovery.js';
+export { resolveRedirect } from './templates/redirect.js';
+export { leadForm, captureAllows, KINDS, LEAD_PATH, THANKS_PATH } from './forms.js';
+export { CHECKOUT_PATH } from './templates/parking.js';
+export { DESTINATION_PATH } from './templates/landing.js';
+export {
+  MODES, DEFAULT_MODE, SCHEMA_VERSION, ConfigError, normalize, validate, normalizeMode, derive,
+} from './schema.js';
+export {
+  escapeHtml, plainText, safeEmail, safeHostname, safeHttpsUrl, safeImageUrl, safeLinkUrl,
+  serializeForScript, SOCIAL_PLATFORMS,
+} from './safety.js';
+export { pageCss } from './css.js';
+
+/**
+ * The promise is small pages, so the size is a gate rather than an intention.
+ *
+ * Both numbers were set from measurement with a little headroom, not picked in
+ * advance: the heaviest mode renders ~11.6 KB raw and ~3.3 KB gzipped. Gzip is
+ * the one that matters, since it is what crosses the wire; the raw ceiling is
+ * there to catch markup that balloons without compressing worse.
+ */
+export const PAGE_BUDGET_BYTES = 12288;
+export const PAGE_BUDGET_GZIP_BYTES = 4096;
+
+/** Bumped when rendered output changes in a way a cached page must not survive. */
+export const RENDERER_VERSION = 'pages-1.0';

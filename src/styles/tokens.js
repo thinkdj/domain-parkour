@@ -1,24 +1,20 @@
 /**
- * Parkour design tokens — re-exported from the generated design system.
+ * Design tokens for the admin.
  *
- * The values themselves are no longer authored here. They live in
- * design-system/tokens.css at the workspace root and arrive via
- * ./design-system.js, which `node design-system/sync.mjs` regenerates.
- * design-system.test.mjs pins the contract, so a stale copy fails the build
- * instead of drifting.
+ * The values are not authored here. They live in design-system/tokens.css and
+ * arrive through the `@domainparkour/design-system` workspace package, which inlines the CSS
+ * into JS because an admin page must ship no external requests. There is no
+ * generated copy inside this app any more, so there is nothing to go stale.
  *
- * `--color-primary` is still the one value a page replaces: templates/base.js
- * substitutes the configured accent, and every hover, tint and ring derives
- * from it with color-mix(). That override must land on `:root` — a derived
- * token is computed where it is declared, so setting the accent further down
- * the tree leaves the hovers behind on the old colour.
+ * The visitor-page stylesheet moved out entirely — it is `pages/src/css.js` now,
+ * shared with the hosted runtime. What remains here is the admin's own layer.
  *
- * Appearance is `color-scheme` plus `light-dark()`. There is no `.theme-dark`
- * block any more: one declaration per token covers both schemes, which is why
- * pages no longer need a script before first paint to avoid a flash.
+ * Appearance is `color-scheme` plus `light-dark()`: one declaration per token
+ * covers both schemes, which is why no page needs a script before first paint to
+ * avoid a flash of the wrong theme.
  */
 
-import { tokensCss, motionCss, componentsCss } from "./design-system.js";
+import { tokensCss, motionCss, componentsCss } from './design-system.js';
 
 export const tokens = tokensCss;
 
@@ -27,11 +23,11 @@ export const motion = motionCss;
 export const components = componentsCss;
 
 /**
- * Element defaults for a Parkour document.
+ * Element defaults for an admin document.
  *
  * Focus, selection and the reduced-motion kill switch are NOT here — they are
- * part of the token contract and already ship in `tokens`. Repeating them
- * would be a second copy free to disagree with the first.
+ * part of the token contract and already ship in `tokens`. Repeating them would
+ * be a second copy free to disagree with the first.
  */
 export const baseRules = `
 * { box-sizing: border-box; }
