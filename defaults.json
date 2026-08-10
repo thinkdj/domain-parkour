@@ -1,8 +1,8 @@
 {
   "fallback": {
     "mode": "landing",
-    "title": "Welcome",
-    "description": "Your gateway to something amazing.",
+    "title": "This domain is active",
+    "description": "No page has been configured for this hostname yet.",
     "accentColor": "#e8590c",
     "features": [],
     "socialLinks": {},
@@ -14,10 +14,10 @@
       "eyebrowText": "Premium domain",
       "priceLabel": "Asking price",
       "inquiryLabel": "Purchase inquiries",
-      "noPriceTitle": "Make this domain yours",
-      "contactCopy": "Interested in acquiring this domain? Send a direct inquiry to start the conversation.",
-      "availabilityCopy": "This domain is currently available for acquisition.",
-      "contactButtonText": "Start an inquiry",
+      "noPriceTitle": "Price on request",
+      "contactCopy": "Email the owner to make an offer.",
+      "availabilityCopy": "This domain is available for purchase.",
+      "contactButtonText": "Make an offer",
       "domainAgeLabel": "Domain age",
       "extensionLabel": "Extension",
       "trustValue": "Verified",
@@ -33,12 +33,12 @@
       "hoursLabel": "Hours",
       "minutesLabel": "Minutes",
       "secondsLabel": "Seconds",
-      "countdownNote": "A new experience is taking shape. Check back when the clock reaches zero.",
+      "countdownNote": "Check back when the countdown reaches zero.",
       "launchedText": "We are live.",
       "statusPanelLabel": "Status",
-      "statusPanelTitle": "Thoughtfully in the works.",
-      "statusPanelText": "We are taking the time to make the first version worth the wait.",
-      "footerText": "Stay tuned for the launch",
+      "statusPanelTitle": "In progress",
+      "statusPanelText": "This site is being built. No launch date is set yet.",
+      "footerText": "",
       "pageTitleSuffix": "Coming soon"
     },
     "landing": {
@@ -54,156 +54,165 @@
     }
   },
   "presets": [
-  {
-    "name": "Parking - Premium Domain",
-    "mode": "parking",
-    "domainTitle": "cdn.farm",
-    "title": "Premium Domain For Sale",
-    "description": "A memorable and brandable domain name, perfect for your next project if your next project is a CDN Farm.",
-    "domainAgeYears": "9+",
-    "domainRegistration": "Registered in 2015",
-    "salePrice": "30,000 USD",
-    "contactEmail": "shout@think.dj",
-    "accentColor": "#3cbfa3",
-    "footerText": "This premium domain is available for purchase",
-    "socialLinks": {
-      "twitter": "https://twitter.com/thinkdj",
-      "linkedin": "https://linkedin.com/in/thinkdj",
-      "github": "https://github.com/thinkdj"
-    }
-  },
-  {
-    "name": "Parking - Minimal",
-    "mode": "parking",
-    "domainTitle": "upp.to",
-    "title": "Premium .to short domain",
-    "description": "A short, memorable .to domain perfect for tech startups and link forwarding services",
-    "salePrice": "30,000 USD",
-    "contactEmail": "shout@think.dj",
-    "accentColor": "#3b82f6",
-    "footerText": "Some footer text or disclaimer could go here",
-    "showCredit": false
-  },
-  {
-    "name": "Coming Soon - Minimal",
-    "mode": "coming-soon",
-    "domainTitle": "A Simple Launch",
-    "title": "Coming Soon",
-    "description": "Something exciting is on the way, like a tagline",
-    "accentColor": "#10b981"
-  },
-  {
-    "name": "Coming Soon - Full Featured",
-    "mode": "coming-soon",
-    "domainTitle": "The Pet Project",
-    "title": "I'm building something amazing",
-    "tagline": "Launching Jan 2048",
-    "description": "Stay tuned as I now try to build the next big thing in tech (*now with AI)",
-    "launchDate": "2048-01-01T01:01:01",
-    "accentColor": "#a855f7",
-    "footerText": "Stay tuned for THE launch",
-    "features": [
-      {
-        "title": "AI-Powered Project",
-        "description": "Because slapping 'AI' on it makes it revolutionary"
-      },
-      {
-        "title": "Launch Date Precision",
-        "description": "Totally not going to be delayed... again"
-      },
-      {
-        "title": "Unparalleled Hype",
-        "description": "The tagline alone would blow your mind (or confuse you)"
+    {
+      "name": "Premium domain",
+      "mode": "parking",
+      "domainTitle": "cdn.farm",
+      "title": "Premium Domain For Sale",
+      "description": "A memorable and brandable domain name, perfect for your next project if your next project is a CDN Farm.",
+      "domainAgeYears": "9+",
+      "domainRegistration": "Registered in 2015",
+      "salePrice": "30,000 USD",
+      "contactEmail": "shout@think.dj",
+      "accentColor": "#0f766e",
+      "footerText": "This premium domain is available for purchase",
+      "socialLinks": {
+        "twitter": "https://twitter.com/thinkdj",
+        "linkedin": "https://linkedin.com/in/thinkdj",
+        "github": "https://github.com/thinkdj"
       }
-    ],
-    "socialLinks": {
-      "twitter": "https://twitter.com/thinkdj",
-      "github": "https://github.com/thinkdj"
-    }
-  },
-  {
-    "name": "Landing Page - example.com",
-    "mode": "landing",
-    "domainTitle": "example.com",
-    "title": "Email & API Services",
-    "subtitle": "This domain is used for email and backend services",
-    "description": "For support or inquiries, please visit our main website",
-    "accentColor": "#06b6d4",
-    "footerText": "© 2026 example.com",
-    "links": [
-      {
-        "title": "Main Website",
-        "url": "https://www.example.com"
-      },
-      {
-        "title": "Documentation",
-        "url": "https://docs.example.com"
-      },
-      {
-        "title": "Support",
-        "url": "https://support.example.com"
+    },
+    {
+      "name": "Minimal for-sale page",
+      "mode": "parking",
+      "domainTitle": "upp.to",
+      "title": "Premium .to short domain",
+      "description": "A short, memorable .to domain perfect for tech startups and link forwarding services",
+      "salePrice": "30,000 USD",
+      "contactEmail": "shout@think.dj",
+      "accentColor": "#2c4fe0",
+      "footerText": "Some footer text or disclaimer could go here",
+      "showCredit": false
+    },
+    {
+      "name": "Simple launch",
+      "mode": "coming-soon",
+      "domainTitle": "A Simple Launch",
+      "title": "Coming Soon",
+      "description": "Something exciting is on the way, like a tagline",
+      "accentColor": "#0f7b5f"
+    },
+    {
+      "name": "Full launch page",
+      "mode": "coming-soon",
+      "domainTitle": "The Pet Project",
+      "title": "I'm building something amazing",
+      "tagline": "Launching Jan 2048",
+      "description": "Stay tuned as I now try to build the next big thing in tech (*now with AI)",
+      "launchDate": "2048-01-01T01:01:01",
+      "accentColor": "#5f3dc4",
+      "footerText": "Stay tuned for THE launch",
+      "features": [
+        {
+          "title": "AI-Powered Project",
+          "description": "Because slapping 'AI' on it makes it revolutionary"
+        },
+        {
+          "title": "Launch Date Precision",
+          "description": "Totally not going to be delayed... again"
+        },
+        {
+          "title": "Unparalleled Hype",
+          "description": "The tagline alone would blow your mind (or confuse you)"
+        }
+      ],
+      "socialLinks": {
+        "twitter": "https://twitter.com/thinkdj",
+        "github": "https://github.com/thinkdj"
       }
-    ],
-    "socialLinks": {
-      "twitter": "https://twitter.com/example",
-      "github": "https://github.com/example",
-      "linkedin": "https://linkedin.com/company/example"
-    }
-  },
-  {
-    "name": "Landing Page - Personal",
-    "mode": "landing",
-    "domainTitle": "think.dj",
-    "title": "Some inspiring tagline like `Code is Poetry`",
-    "subtitle": "Building tools that developers love etc. etc.",
-    "accentColor": "#f00",
-    "footerText": "© 2026 think.dj",
-    "links": [
-      {
-        "title": "Portfolio",
-        "url": "https://thinkdj.com"
-      },
-      {
-        "title": "Blog",
-        "url": "https://thinkdj.com"
-      },
-      {
-        "title": "Contact",
-        "url": "mailto:shout@think.dj"
+    },
+    {
+      "name": "Email and API notice",
+      "mode": "landing",
+      "domainTitle": "example.com",
+      "title": "Email & API Services",
+      "subtitle": "This domain is used for email and backend services",
+      "description": "For support or inquiries, please visit our main website",
+      "accentColor": "#155e75",
+      "footerText": "© 2026 example.com",
+      "links": [
+        {
+          "title": "Main Website",
+          "url": "https://www.example.com"
+        },
+        {
+          "title": "Documentation",
+          "url": "https://docs.example.com"
+        },
+        {
+          "title": "Support",
+          "url": "https://support.example.com"
+        }
+      ],
+      "socialLinks": {
+        "twitter": "https://twitter.com/example",
+        "github": "https://github.com/example",
+        "linkedin": "https://linkedin.com/company/example"
       }
-    ],
-    "socialLinks": {
-      "github": "https://github.com/thinkdj",
-      "twitter": "https://twitter.com/thinkdj",
-      "linkedin": "https://linkedin.com/in/thinkdj"
+    },
+    {
+      "name": "Personal links",
+      "mode": "landing",
+      "domainTitle": "think.dj",
+      "title": "Some inspiring tagline like `Code is Poetry`",
+      "subtitle": "Building tools that developers love etc. etc.",
+      "accentColor": "#c92a2a",
+      "footerText": "© 2026 think.dj",
+      "links": [
+        {
+          "title": "Portfolio",
+          "url": "https://thinkdj.com"
+        },
+        {
+          "title": "Blog",
+          "url": "https://thinkdj.com"
+        },
+        {
+          "title": "Contact",
+          "url": "mailto:shout@think.dj"
+        }
+      ],
+      "socialLinks": {
+        "github": "https://github.com/thinkdj",
+        "twitter": "https://twitter.com/thinkdj",
+        "linkedin": "https://linkedin.com/in/thinkdj"
+      }
+    },
+    {
+      "name": "Personal profile",
+      "mode": "profile",
+      "domainTitle": "ada.dev",
+      "role": "Designer & Engineer",
+      "bio": "Building delightful tools and writing about the craft. Currently exploring the edges of computation.",
+      "avatarUrl": "",
+      "accentColor": "#4338ca",
+      "links": [
+        {
+          "title": "Portfolio",
+          "url": "https://example.com"
+        },
+        {
+          "title": "Writing",
+          "url": "https://example.com/blog"
+        },
+        {
+          "title": "Get in touch",
+          "url": "mailto:hi@example.com"
+        }
+      ],
+      "socialLinks": {
+        "github": "https://github.com/thinkdj",
+        "twitter": "https://twitter.com/thinkdj",
+        "linkedin": "https://linkedin.com/in/thinkdj"
+      }
+    },
+    {
+      "name": "Defaults",
+      "mode": "",
+      "domainTitle": "",
+      "title": "",
+      "description": "",
+      "accentColor": ""
     }
-  },
-  {
-    "name": "Profile - Personal",
-    "mode": "profile",
-    "domainTitle": "ada.dev",
-    "role": "Designer & Engineer",
-    "bio": "Building delightful tools and writing about the craft. Currently exploring the edges of computation.",
-    "avatarUrl": "",
-    "accentColor": "#6366f1",
-    "links": [
-      { "title": "Portfolio", "url": "https://example.com" },
-      { "title": "Writing", "url": "https://example.com/blog" },
-      { "title": "Get in touch", "url": "mailto:hi@example.com" }
-    ],
-    "socialLinks": {
-      "github": "https://github.com/thinkdj",
-      "twitter": "https://twitter.com/thinkdj",
-      "linkedin": "https://linkedin.com/in/thinkdj"
-    }
-  },
-  {
-    "name": "Defaults",
-    "mode": "",
-    "domainTitle": "",
-    "title": "",
-    "description": "",
-    "accentColor": ""
-  }
   ]
 }

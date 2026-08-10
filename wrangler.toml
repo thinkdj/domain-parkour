@@ -1,6 +1,14 @@
 name = "domain-parkour"
 main = "src/index.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-07-01"
+
+# Worker logs in the Cloudflare dashboard (and `pnpm tail`). Off by default.
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
 
 # ──────────────────────────────────────────────────────────────────────────────
 # D1 database — stores per-hostname configs, edited via /_admin_/.

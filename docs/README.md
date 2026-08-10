@@ -15,6 +15,7 @@ Repository policy documents:
 - [`../LICENSE`](../LICENSE)
 - [`../SECURITY.md`](../SECURITY.md)
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+- [`../AGENTS.md`](../AGENTS.md)
 
 ## Product and hosted planning docs
 
@@ -24,7 +25,7 @@ boundary, decision log, and post-launch roadmap live in the private
 repository:
 
 - `PRD.md` — authoritative OSS + hosted product requirements
-- `HOSTED_PLATFORM_PRD.md` — OAuth, tenancy, provisioning, DNS safety, Undo, Polar
+- `HOSTED_PLATFORM_PRD.md` — OAuth, tenancy, provisioning, DNS safety, Undo, and the future Polar billing seam
 - `LAUNCH_PLAN.md` — phases, workstreams, release gates, launch checklists
 - `OSS_VS_HOSTED.md` — public/private code, ownership, costs, eject boundary
 - `DECISIONS.md` — locked product and architecture choices

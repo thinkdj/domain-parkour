@@ -40,7 +40,7 @@ Example:
     "title": "A small useful page",
     "subtitle": "More is coming soon",
     "description": "Follow the links below.",
-    "accentColor": "#3b82f6",
+    "accentColor": "#2c4fe0",
     "links": [
       { "title": "Main site", "url": "https://www.example.com" }
     ],
@@ -70,7 +70,7 @@ An unknown mode currently falls through to the landing renderer at the entrypoin
 | `domainTitle` | string | Request hostname | Main display identity |
 | `title` | string | Empty | Headline/supporting title, depending on mode |
 | `description` | string | Empty | Supporting copy |
-| `accentColor` | CSS hex color | `#3b82f6` | Admin uses a color input |
+| `accentColor` | CSS hex color | `#e8590c` | Admin uses a color input |
 | `footerText` | string | Mode-specific | Optional custom text beside the shared credit |
 | `showCredit` | boolean | `true` | `false` hides “Built with Domain Parkour · powered by Cloudflare” |
 | `socialLinks` | object | `{}` | Supported keys below |
@@ -119,7 +119,7 @@ Example:
   "contactEmail": "owner@example.net",
   "domainAgeYears": "12+",
   "domainRegistration": "Registered in 2014",
-  "accentColor": "#3cbfa3"
+  "accentColor": "#0f766e"
 }
 ```
 
@@ -160,7 +160,7 @@ Example:
   "features": [
     { "title": "Offline first", "description": "Keep working without a signal." }
   ],
-  "accentColor": "#10b981"
+  "accentColor": "#0f7b5f"
 }
 ```
 
@@ -252,27 +252,29 @@ Do not use the `workers.dev` gallery URL as a production customer domain.
 
 ## 13. Appearance
 
-- Templates declare both light and dark color schemes.
-- The page offers an appearance control where implemented by the shared base template.
-- Accent color is applied across both appearances.
-- Mobile layouts are designed to preserve a readable content gutter.
-- Motion respects the shared template styles and should be reviewed with reduced-motion preferences.
+- Templates declare both light and dark color schemes. Dark swaps the eight neutral tokens under a `.theme-dark` class on the document element; brand and semantic colors are unchanged.
+- The page offers an appearance control where implemented by the shared base template, and remembers the choice.
+- `accentColor` sets `--color-primary` and nothing else. Hover, active, soft-background, and focus-ring values derive from it with `color-mix()`, so one value rethemes the page across both appearances.
+- Tokens live in `src/styles/tokens.js` and are shared by the visitor templates and the admin.
+- Pages request nothing from a third party. Font stacks name Space Grotesk, Inter, and JetBrains Mono and fall back to system faces, so no webfont is downloaded and no visitor is reported to a font CDN. Icons are inlined from `src/icons.js`.
+- Mobile layouts preserve a readable content gutter.
+- Transitions use three durations (120ms, 160ms, 220ms) and one easing curve, and `prefers-reduced-motion` disables all of them.
 
 ## 14. Validation expectations
 
-Current launch hardening must enforce:
+Configuration is normalized at one boundary before it is saved and again before any stored record is rendered. This applies to current admin payloads, hand-written D1 rows, and records created by older Workers.
 
-- Supported `mode` allowlist.
-- Valid normalized hostname or `_default`.
-- Bounded lengths for all strings and arrays.
-- Valid hex accent color.
-- Valid date/time for `launchDate`.
-- `https:` or documented safe schemes for URLs.
-- Email normalization where used.
-- Context-aware HTML escaping in every renderer.
-- Safe image URL behavior.
+New admin payloads are rejected unless they satisfy all of the following:
 
-Until that validation is complete, only trusted administrators should edit configuration.
+- `mode` is one of parking, coming-soon, landing, or profile; the hostname is a normalized exact hostname or `_default`.
+- Configuration is a plain object with only allowlisted fields, supported social platforms, expected item object shapes, and bounded strings/arrays.
+- Accent colors are three- or six-digit hex values.
+- Dates are valid date/time values and emails are normalized.
+- External links and avatar URLs use HTTPS without embedded credentials. General links may also be a normalized `mailto:` address; non-email social links remain HTTPS-only.
+
+Saved configuration is treated as untrusted even if it predates this validation. Legacy records are sanitized rather than trusted: unsupported or unsafe values do not reach a renderer, and recoverable legacy values are normalized within the same bounds.
+
+Every renderer also escapes text and quoted attributes contextually, validates URL use at the output boundary, and serializes inline script data so it cannot terminate a script element. This is defense in depth, not permission to store HTML or scripts in configuration.
 
 ## 15. Compatibility
 

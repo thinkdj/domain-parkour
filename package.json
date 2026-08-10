@@ -7,6 +7,7 @@
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage",
     "dev": "wrangler dev",
     "dev:local": "node scripts/dev-local.mjs",
     "deploy": "wrangler deploy",
@@ -29,6 +30,6 @@
   "license": "MIT",
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
-    "wrangler": "^4.45.0"
+    "wrangler": "^4.112.0"
   }
 }
