@@ -628,7 +628,7 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}${components}
   }
   code, kbd { font-family: var(--font-mono); }
   /* A banner spanning the window, not a card floating in it. */
-  body > .alert { flex: 0 0 auto; border-radius: 0; border-bottom: 1px solid var(--color-line); padding: 14px 20px; }
+  body > .alert { flex: 0 0 auto; border: 0; border-bottom: 1px solid var(--color-line); border-radius: 0; padding: 14px 20px; }
   .help code {
     padding: 1px 5px;
     border-radius: var(--radius-sm);

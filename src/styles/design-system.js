@@ -383,6 +383,9 @@ export const componentsCss = `
 .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .cluster-end { justify-content: flex-end; }
 .cluster-tight { gap: 6px; }
+/* Pushes one child of a flex row to the far edge. A class rather than an
+ * inline style, because a strict style-src silently drops the attribute. */
+.push-end { margin-left: auto; }
 
 /* A one-button form that has to sit in a line of links and buttons. */
 .inline-form { display: inline; }
@@ -844,6 +847,9 @@ input[type="color"]:disabled {
 .alert {
   display: flex;
   gap: 12px;
+  /* A hairline in the alert's own hue, so it keeps its shape on surface-2 as
+     well as on surface. Info used to be surface-2 on surface-2: invisible. */
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: 14px 16px;
   font-size: 13.5px;
@@ -851,10 +857,11 @@ input[type="color"]:disabled {
 .alert-icon { flex: 0 0 auto; margin-top: 1px; }
 .alert-body { min-width: 0; }
 .alert-title { display: block; margin-bottom: 2px; color: var(--color-ink); font-weight: 600; }
-.alert-info    { background: var(--color-surface-2);   color: var(--color-body); }
-.alert-success { background: var(--color-success-soft); color: var(--color-success); }
-.alert-warning { background: var(--color-warning-soft); color: var(--color-warning); }
-.alert-danger  { background: var(--color-danger-soft);  color: var(--color-danger); }
+.alert-info    { border-color: color-mix(in srgb, var(--color-primary) 16%, transparent); background: var(--color-primary-soft); color: var(--color-body); }
+.alert-success { border-color: color-mix(in srgb, var(--color-success) 16%, transparent); background: var(--color-success-soft); color: var(--color-success); }
+.alert-warning { border-color: color-mix(in srgb, var(--color-warning) 16%, transparent); background: var(--color-warning-soft); color: var(--color-warning); }
+.alert-danger  { border-color: color-mix(in srgb, var(--color-danger) 16%,  transparent); background: var(--color-danger-soft);  color: var(--color-danger); }
+.alert-info .alert-icon { color: var(--color-primary); }
 
 /* ── Empty state ─────────────────────────────────────────────────────────
  * Says what is missing and offers the one action that fixes it.
