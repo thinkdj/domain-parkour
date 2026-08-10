@@ -490,8 +490,25 @@ export const componentsCss = `
 .input::placeholder, .textarea::placeholder { color: var(--color-muted); }
 .input:disabled, .textarea:disabled, .select:disabled {
   background: var(--color-surface-2);
+  border-color: var(--color-line);
   color: var(--color-muted);
+  opacity: 0.72;
   cursor: not-allowed;
+  box-shadow: none;
+}
+.input:disabled::placeholder, .textarea:disabled::placeholder { color: var(--color-muted); }
+.input:disabled:focus, .textarea:disabled:focus, .select:disabled:focus {
+  outline: none;
+}
+input[type="checkbox"]:disabled, input[type="radio"]:disabled {
+  cursor: not-allowed;
+  accent-color: var(--color-line-strong);
+}
+input[type="color"]:disabled {
+  border-color: var(--color-line);
+  background: var(--color-surface-2);
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 .input.mono, .textarea.mono { font-family: var(--font-mono); font-size: 13px; }
 
@@ -573,6 +590,15 @@ export const componentsCss = `
 .switch input:checked + .switch-track { background: var(--color-primary); }
 .switch input:checked + .switch-track::after { transform: translateX(16px); }
 .switch input:focus-visible + .switch-track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.switch:has(input:disabled), .switch-row:has(input:disabled), .checkbox-row:has(input:disabled) { cursor: not-allowed; }
+.switch input:disabled + .switch-track {
+  background: var(--color-line);
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+.switch-row:has(input:disabled) .switch-title,
+.switch-row:has(input:disabled) .switch-desc,
+.checkbox-row:has(input:disabled) { opacity: 0.72; }
 
 /* Switch in a bordered row with a title and description. */
 .switch-row {

@@ -683,6 +683,23 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
   /* Machine values render in the mono role, at the mono size. */
   input.mono, textarea.mono, select.mono { font-family: var(--font-mono); font-size: 13px; }
   input::placeholder, textarea::placeholder { color: var(--color-muted); }
+  select:disabled,
+  input:not([type="color"]):not([type="checkbox"]):not([type="radio"]):disabled,
+  textarea:disabled {
+    background: var(--color-surface-2);
+    border-color: var(--color-line);
+    color: var(--color-muted);
+    opacity: 0.72;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  select:disabled:focus,
+  input:not([type="color"]):not([type="checkbox"]):not([type="radio"]):disabled:focus,
+  textarea:disabled:focus { outline: none; }
+  input[type="checkbox"]:disabled, input[type="radio"]:disabled {
+    cursor: not-allowed;
+    accent-color: var(--color-line-strong);
+  }
   textarea { min-height: 76px; resize: vertical; line-height: 1.6; }
   select {
     appearance: none;
@@ -704,6 +721,12 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     border-radius: var(--radius-md);
     background: var(--color-surface);
     cursor: pointer;
+  }
+  input[type="color"]:disabled {
+    border-color: var(--color-line);
+    background: var(--color-surface-2);
+    cursor: not-allowed;
+    opacity: 0.72;
   }
   input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
   input[type="color"]::-webkit-color-swatch { border: none; border-radius: var(--radius-sm); }
@@ -741,6 +764,14 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
   .switch input:checked + .switch-track { background: var(--color-primary); }
   .switch input:checked + .switch-track::after { transform: translateX(16px); }
   .switch input:focus-visible + .switch-track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  .switch:has(input:disabled), .toggle-row:has(input:disabled) { cursor: not-allowed; }
+  .switch input:disabled + .switch-track {
+    background: var(--color-line);
+    opacity: 0.72;
+    cursor: not-allowed;
+  }
+  .toggle-row:has(input:disabled) .toggle-title,
+  .toggle-row:has(input:disabled) .toggle-copy { opacity: 0.72; }
 
   /* ---- §06.3 Template picker: radio cards ---- */
   .mode-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }

@@ -97,6 +97,15 @@ test("solid ink surfaces invert rather than hardcode white (§02)", () => {
   }
 });
 
+test("disabled form controls are visibly and behaviorally muted (§06.3)", () => {
+  const admin = styleOf(renderAdminUI({ presets: [] }));
+  assert.match(admin, /select:disabled[^{]*\{[^}]*background:var\(--color-surface-2\)/);
+  assert.match(admin, /select:disabled[^{]*\{[^}]*cursor:not-allowed/);
+  assert.match(admin, /input\[type="checkbox"\]:disabled/);
+  assert.match(admin, /\.switch input:disabled\s*\+\s*\.switch-track/);
+  assert.match(admin, /\.switch input:disabled\s*\+\s*\.switch-track[^}]*opacity:0\.72/);
+});
+
 test("reversible by design: deleting a page offers undo (§principles 4, §06.9)", () => {
   const html = renderAdminUI({ presets: [] });
   assert.match(html, /id="undo-bar"/);
