@@ -1,4 +1,5 @@
 import { renderBase } from "./base.js";
+import { escapeHtml, safeAvatarUrl, safeLinkUrl } from "../safety.js";
 import {
   EXTERNAL_LINK_ICON,
   renderFooter,
@@ -8,7 +9,7 @@ import {
 
 function initials(name) {
   if (!name) return "?";
-  return name
+  return String(name)
     .trim()
     .split(/\s+/)
     .slice(0, 2)
@@ -19,28 +20,31 @@ function initials(name) {
 
 function renderAvatar(cfg) {
   const displayName = cfg.name || cfg.domainTitle;
-  if (cfg.avatarUrl) {
-    return `<div class="dp-avatar"><img src="${cfg.avatarUrl}" alt="Portrait of ${displayName}"></div>`;
+  const avatarUrl = safeAvatarUrl(cfg.avatarUrl);
+  if (avatarUrl) {
+    return `<div class="dp-avatar"><img src="${escapeHtml(avatarUrl)}" alt="Portrait of ${escapeHtml(displayName)}"></div>`;
   }
-  return `<div class="dp-avatar" aria-label="${displayName}">${initials(displayName)}</div>`;
+  return `<div class="dp-avatar" aria-label="${escapeHtml(displayName)}">${escapeHtml(initials(displayName))}</div>`;
 }
 
 function renderLinks(links) {
   if (!links?.length) return "";
 
   return `
-    <nav class="dp-link-list fade-in-delay-2" style="margin-top: 30px;" aria-label="Featured links">
+    <nav class="dp-link-list" style="margin-top:24px" aria-label="Featured links">
       ${links
-        .map(
-          (link, index) => `
-        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="dp-link">
-          <span class="dp-link-main">
-            <span class="dp-link-index">${String(index + 1).padStart(2, "0")}</span>
-            <span class="label">${link.title}</span>
-          </span>
-          ${EXTERNAL_LINK_ICON}
-        </a>`,
-        )
+        .map((link, index) => {
+          const url = safeLinkUrl(link?.url);
+          if (!url) return "";
+          return `
+          <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="dp-link">
+            <span class="dp-link-main">
+              <span class="dp-link-index">${String(index + 1).padStart(2, "0")}</span>
+              <span class="label">${escapeHtml(link?.title)}</span>
+            </span>
+            ${EXTERNAL_LINK_ICON}
+          </a>`;
+        })
         .join("")}
     </nav>`;
 }
@@ -53,24 +57,24 @@ function renderContent(cfg) {
       <div class="dp-wrap dp-wrap-narrow">
         ${renderMasthead(cfg.domainTitle, cfg.statusLabel)}
 
-        <section class="dp-panel fade-in-delay-1">
+        <section class="dp-panel">
           <div class="dp-profile-head">
-            <div class="fade-in">${renderAvatar(cfg)}</div>
+            ${renderAvatar(cfg)}
             <div class="dp-profile-head-copy">
               ${
                 cfg.role
-                  ? `<div class="dp-eyebrow"><span class="dot" aria-hidden="true"></span>${cfg.role}</div>`
+                  ? `<div class="dp-eyebrow"><span class="dot" aria-hidden="true"></span>${escapeHtml(cfg.role)}</div>`
                   : ""
               }
-              <h1 class="dp-heading" style="font-size: clamp(1.9rem, 5vw, 2.8rem); margin-top: 10px;">${displayName}</h1>
+              <h1 class="dp-name">${escapeHtml(displayName)}</h1>
             </div>
           </div>
 
-          ${cfg.bio ? `<p class="dp-lede fade-in-delay-1">${cfg.bio}</p>` : ""}
+          ${cfg.bio ? `<p class="dp-lede">${escapeHtml(cfg.bio)}</p>` : ""}
 
           ${renderLinks(cfg.links)}
 
-          <div class="fade-in-delay-3">${renderSocialLinks(cfg.socialLinks)}</div>
+          ${renderSocialLinks(cfg.socialLinks)}
         </section>
 
         ${renderFooter(cfg.footerText, cfg.showCredit)}

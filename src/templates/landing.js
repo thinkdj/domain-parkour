@@ -1,4 +1,5 @@
 import { renderBase } from "./base.js";
+import { escapeHtml, safeLinkUrl } from "../safety.js";
 import {
   EXTERNAL_LINK_ICON,
   renderFooter,
@@ -10,23 +11,26 @@ function renderLinks(cfg) {
   const links = cfg.links;
   if (!links?.length) return "";
 
+  const renderedLinks = links
+    .map((link, index) => {
+      const url = safeLinkUrl(link?.url);
+      if (!url) return "";
+      return `
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="dp-link">
+          <span class="dp-link-main">
+            <span class="dp-link-index">${String(index + 1).padStart(2, "0")}</span>
+            <span class="label">${escapeHtml(link?.title)}</span>
+          </span>
+          ${EXTERNAL_LINK_ICON}
+        </a>`;
+    })
+    .join("");
+  if (!renderedLinks) return "";
+
   return `
-    <nav class="dp-panel fade-in-delay-2" aria-label="Primary links">
-      ${cfg.linksLabel ? `<div class="dp-panel-label" style="margin-bottom: 16px;">${cfg.linksLabel}</div>` : ""}
-      <div class="dp-link-list">
-        ${links
-          .map(
-            (link, index) => `
-          <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="dp-link">
-            <span class="dp-link-main">
-              <span class="dp-link-index">${String(index + 1).padStart(2, "0")}</span>
-              <span class="label">${link.title}</span>
-            </span>
-            ${EXTERNAL_LINK_ICON}
-          </a>`,
-          )
-          .join("")}
-      </div>
+    <nav class="dp-panel" aria-label="Primary links">
+      ${cfg.linksLabel ? `<div class="dp-panel-label" style="margin-bottom:16px">${escapeHtml(cfg.linksLabel)}</div>` : ""}
+      <div class="dp-link-list">${renderedLinks}</div>
     </nav>`;
 }
 
@@ -42,26 +46,26 @@ function renderContent(cfg) {
           <section>
             ${
               cfg.eyebrowText
-                ? `<div class="dp-eyebrow fade-in"><span class="dot" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
+                ? `<div class="dp-eyebrow"><span class="dot" aria-hidden="true"></span>${escapeHtml(cfg.eyebrowText)}</div>`
                 : ""
             }
-            <h1 class="dp-title dp-title-compact dp-mono fade-in-delay-1">${cfg.domainTitle}</h1>
+            <h1 class="dp-title dp-title-compact dp-mono">${escapeHtml(cfg.domainTitle)}</h1>
             ${
               cfg.title
-                ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 30px;">${cfg.title}</h2>`
+                ? `<h2 class="dp-heading" style="margin-top:24px">${escapeHtml(cfg.title)}</h2>`
                 : ""
             }
             ${
               cfg.subtitle
-                ? `<p class="dp-lede fade-in-delay-1">${cfg.subtitle}</p>`
+                ? `<p class="dp-lede">${escapeHtml(cfg.subtitle)}</p>`
                 : ""
             }
             ${
               cfg.description
-                ? `<p class="dp-copy fade-in-delay-2">${cfg.description}</p>`
+                ? `<p class="dp-copy">${escapeHtml(cfg.description)}</p>`
                 : ""
             }
-            <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
+            ${renderSocialLinks(cfg.socialLinks)}
           </section>
 
           ${renderLinks(cfg)}

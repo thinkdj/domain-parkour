@@ -1,14 +1,22 @@
 import { coreStyles } from "../styles/core.js";
+import { icon } from "../icons.js";
+import { escapeHtml, safeAccentColor, serializeForScript } from "../safety.js";
 
-const SUN_ICON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
-const MOON_ICON = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>`;
-
-/** Convert a six-digit hex color to the RGB tuple used by translucent accents. */
-function hexToRgb(hex) {
-  const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
-  return match
-    ? `${parseInt(match[1], 16)}, ${parseInt(match[2], 16)}, ${parseInt(match[3], 16)}`
-    : "59, 130, 246";
+/**
+ * The design system's mark on a tile in the configured accent — see
+ * /brand/mark.svg. The accent is the owner's, already through safeAccentColor.
+ */
+function favicon(accent) {
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'>` +
+    `<rect width='48' height='48' rx='11' fill='${accent}'/>` +
+    `<g fill='none' stroke='white' stroke-width='5.5'>` +
+    `<path d='M9.75 10V38' opacity='.22'/>` +
+    `<path d='M18.25 10V38' opacity='.45'/>` +
+    `<path d='M26.75 10V38'/>` +
+    `<path d='M26.75 12.75H32a6.25 6.25 0 0 1 0 12.5h-5.25'/>` +
+    `</g></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
 function minifyStyles(styles) {
@@ -29,7 +37,7 @@ function renderThemeSwitcher(allThemes) {
         ${allThemes
           .map(
             (theme, index) =>
-              `<option value="${index}">${theme.name || `Template ${index + 1}`}</option>`,
+              `<option value="${index}">${escapeHtml(theme?.name || `Template ${index + 1}`)}</option>`,
           )
           .join("")}
       </select>
@@ -40,8 +48,8 @@ function renderThemeToggle() {
   return `
     <div class="dp-chrome dp-chrome-right">
       <button id="theme-toggle" class="dp-chrome-btn" type="button" aria-label="Switch color theme">
-        <span id="theme-toggle-light-icon" hidden>${SUN_ICON}</span>
-        <span id="theme-toggle-dark-icon" hidden>${MOON_ICON}</span>
+        <span id="theme-toggle-light-icon" hidden>${icon("sun", { size: 18 })}</span>
+        <span id="theme-toggle-dark-icon" hidden>${icon("moon", { size: 18 })}</span>
       </button>
     </div>`;
 }
@@ -54,8 +62,9 @@ export function renderBase({
   additionalStyles = "",
   allThemes = null,
 }) {
-  const accent = accentColor || "#e8590c";
-  const accentRgb = hexToRgb(accent);
+  // The configured accent replaces --color-primary and nothing else. Hovers,
+  // tints, rings, and soft backgrounds derive from it with color-mix().
+  const accent = safeAccentColor(accentColor) || "#e8590c";
   const styles = minifyStyles(`${coreStyles}\n${additionalStyles}`);
 
   const html = `<!DOCTYPE html>
@@ -64,18 +73,28 @@ export function renderBase({
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="${accent}">
-    <title>${title}</title>
+    <meta name="theme-color" content="${escapeHtml(accent)}">
+    <link rel="icon" href="${escapeHtml(favicon(accent))}">
+    <title>${escapeHtml(title)}</title>
     <script>
+      /* Only an explicit choice needs restoring. Without one the page follows
+         the OS through color-scheme, so there is nothing to set before paint
+         and no flash of the wrong appearance to prevent. */
       (function () {
-        const saved = localStorage.getItem('theme');
-        const preferred = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.classList.toggle('dark', (saved || preferred) === 'dark');
+        try {
+          const saved = localStorage.getItem('theme');
+          if (saved) document.documentElement.dataset.theme = saved;
+        } catch (e) {}
       })();
     </script>
     <style>
-        :root { --accent-color: ${accent}; --accent-color-rgb: ${accentRgb}; }
         ${styles}
+        /* Last, not first. The token block declares its own --color-primary,
+           so an accent placed above it loses the cascade and the page silently
+           renders in brand orange. Declared here it wins, and because every
+           hover/tint/ring is a color-mix() of --color-primary on this same
+           :root, they all re-derive from the owner's colour. */
+        :root { --color-primary: ${accent}; }
     </style>
 </head>
 <body>
@@ -84,7 +103,7 @@ export function renderBase({
     ${content}
 
     <script>
-        ${allThemes ? `window.__ALL_THEMES__ = ${JSON.stringify(allThemes)};` : ""}
+        ${allThemes ? `window.__ALL_THEMES__ = ${serializeForScript(allThemes)};` : ""}
 
         (function () {
             const button = document.getElementById('theme-toggle');
@@ -92,24 +111,30 @@ export function renderBase({
             const moon = document.getElementById('theme-toggle-dark-icon');
             if (!button || !sun || !moon) return;
 
-            const apply = (theme) => {
-                const isDark = theme === 'dark';
-                document.documentElement.classList.toggle('dark', isDark);
-                sun.hidden = !isDark;
-                moon.hidden = isDark;
-                button.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
-                button.setAttribute('aria-pressed', String(isDark));
-            };
+            const root = document.documentElement;
+            const media = matchMedia('(prefers-color-scheme: dark)');
+            /* No stored choice means no attribute at all and the OS decides,
+               so the current state has to be read from the resolved scheme. */
+            const isDark = () => root.dataset.theme
+                ? root.dataset.theme === 'dark'
+                : media.matches;
 
-            const saved = localStorage.getItem('theme');
-            const preferred = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            apply(saved || preferred);
+            const syncButton = () => {
+                const dark = isDark();
+                sun.hidden = !dark;
+                moon.hidden = dark;
+                button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+                button.setAttribute('aria-pressed', String(dark));
+            };
+            syncButton();
 
             button.addEventListener('click', () => {
-                const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                localStorage.setItem('theme', next);
-                apply(next);
+                const next = isDark() ? 'light' : 'dark';
+                root.dataset.theme = next;
+                try { localStorage.setItem('theme', next); } catch (e) {}
+                syncButton();
             });
+            media.addEventListener('change', () => { if (!root.dataset.theme) syncButton(); });
         })();
 
         (function () {

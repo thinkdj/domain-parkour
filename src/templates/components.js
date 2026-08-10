@@ -1,33 +1,50 @@
 /** Shared, deliberately small components used by every public page mode. */
 
-const SOCIAL_GLYPHS = {
-  twitter: "X",
-  x: "X",
-  facebook: "f",
-  instagram: "IG",
-  linkedin: "in",
-  github: "GH",
-  email: "@",
+import { escapeHtml, safeSocialUrl, SOCIAL_PLATFORMS } from "../safety.js";
+import { icon } from "../icons.js";
+
+const SOCIAL_ICONS = {
+  twitter: "brand-x",
+  x: "brand-x",
+  facebook: "brand-facebook",
+  instagram: "brand-instagram",
+  linkedin: "brand-linkedin",
+  github: "brand-github",
+  email: "mail",
 };
 
-export const EXTERNAL_LINK_ICON = `<svg class="arrow" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>`;
+export const EXTERNAL_LINK_ICON = icon("external-link", { size: 18, cls: "arrow" });
+export const MAIL_ICON = icon("mail", { size: 18 });
+
+/** The accessible name for the link, spelled the way the platform spells it. */
+const PLATFORM_LABELS = {
+  twitter: "X",
+  x: "X",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  email: "Email",
+};
 
 function platformLabel(platform) {
-  if (platform.toLowerCase() === "x") return "X";
-  return platform.charAt(0).toUpperCase() + platform.slice(1);
+  const key = platform.toLowerCase();
+  return PLATFORM_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1);
 }
 
+/**
+ * The chrome line above the page: the hostname in mono, and one status badge.
+ * `isLive` picks the success variant; nothing here pulses, because the design
+ * system reserves badge motion for "propagating".
+ */
 export function renderMasthead(domainTitle, status, isLive = false) {
   return `
-    <header class="dp-masthead fade-in">
-      <div class="dp-brand">
-        <span class="dp-brand-mark" aria-hidden="true"></span>
-        <span class="dp-mono">${domainTitle}</span>
-      </div>
-      <div class="dp-status">
-        <span class="dp-status-dot${isLive ? " pulse" : ""}" aria-hidden="true"></span>
-        <span>${status}</span>
-      </div>
+    <header class="dp-masthead">
+      <span class="dp-mono">${escapeHtml(domainTitle)}</span>
+      <span class="dp-status${isLive ? " live" : ""}">
+        <span class="dp-status-dot" aria-hidden="true"></span>
+        <span>${escapeHtml(status)}</span>
+      </span>
     </header>`;
 }
 
@@ -37,13 +54,16 @@ export function renderSocialLinks(socialLinks) {
   return `
     <nav class="dp-socials" aria-label="Social links">
       ${Object.entries(socialLinks)
-        .map(([platform, url]) => {
+        .map(([platform, value]) => {
+          if (!SOCIAL_PLATFORMS.has(platform)) return "";
+          const url = safeSocialUrl(platform, value);
+          if (!url) return "";
           const label = platformLabel(platform);
-          const external = !String(url).startsWith("mailto:");
+          const external = !url.startsWith("mailto:");
           return `
-        <a href="${url}"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}
-           class="dp-social" aria-label="${label}" title="${label}">
-          <span class="dp-social-glyph" aria-hidden="true">${SOCIAL_GLYPHS[platform.toLowerCase()] || "\u2197"}</span>
+        <a href="${escapeHtml(url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}
+           class="dp-social" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">
+          ${icon(SOCIAL_ICONS[platform.toLowerCase()] || "external-link")}
         </a>`;
         })
         .join("")}
@@ -61,8 +81,8 @@ export function renderFooter(footerText, showCredit = true) {
     : "";
 
   return `
-    <footer class="dp-footer fade-in-delay-3">
-      ${footerText ? `<div>${footerText}</div>` : "<div></div>"}
+    <footer class="dp-footer">
+      ${footerText ? `<div>${escapeHtml(footerText)}</div>` : "<div></div>"}
       ${credit}
     </footer>`;
 }

@@ -1,4 +1,5 @@
 import { renderBase } from "./base.js";
+import { escapeHtml, serializeForScript } from "../safety.js";
 import {
   renderFooter,
   renderMasthead,
@@ -8,7 +9,7 @@ import {
 function formatLaunchDate(value) {
   if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) return escapeHtml(value);
   return new Intl.DateTimeFormat("en", {
     month: "long",
     day: "numeric",
@@ -21,19 +22,19 @@ function renderCountdown(cfg) {
   const cell = (id, label) => `
     <div class="dp-stat">
       <div class="v" id="${id}">00</div>
-      <div class="l">${label}</div>
+      <div class="l">${escapeHtml(label)}</div>
     </div>`;
 
   return `
-    <aside id="countdown-panel" class="dp-panel fade-in-delay-2" aria-label="Launch countdown">
-      <div class="dp-panel-label">${cfg.launchLabel} ${formatLaunchDate(cfg.launchDate)}</div>
+    <aside id="countdown-panel" class="dp-panel" aria-label="Launch countdown">
+      <div class="dp-panel-label">${escapeHtml(cfg.launchLabel)} ${formatLaunchDate(cfg.launchDate)}</div>
       <div id="countdown" class="dp-stats" role="timer" aria-live="off">
         ${cell("days", cfg.daysLabel)}
         ${cell("hours", cfg.hoursLabel)}
         ${cell("minutes", cfg.minutesLabel)}
         ${cell("seconds", cfg.secondsLabel)}
       </div>
-      ${cfg.countdownNote ? `<p class="dp-note">${cfg.countdownNote}</p>` : ""}
+      ${cfg.countdownNote ? `<p class="dp-note">${escapeHtml(cfg.countdownNote)}</p>` : ""}
     </aside>`;
 }
 
@@ -41,7 +42,7 @@ function renderCountdownScript(cfg) {
   if (!cfg.launchDate) return "";
   return `
     (function () {
-      const target = new Date(${JSON.stringify(cfg.launchDate)}).getTime();
+      const target = new Date(${serializeForScript(cfg.launchDate)}).getTime();
       const countdown = document.getElementById('countdown');
       const get = (id) => document.getElementById(id);
       let timer;
@@ -49,8 +50,13 @@ function renderCountdownScript(cfg) {
       function tick() {
         const diff = target - Date.now();
         if (!Number.isFinite(target) || diff <= 0) {
-          if (countdown) countdown.innerHTML = '<div style="padding: 20px; color: var(--text); font-weight: 650;"></div>';
-          if (countdown && countdown.firstElementChild) countdown.firstElementChild.textContent = ${JSON.stringify(cfg.launchedText)};
+          if (countdown) {
+            countdown.replaceChildren();
+            const done = document.createElement('div');
+            done.className = 'dp-launched';
+            done.textContent = ${serializeForScript(cfg.launchedText)};
+            countdown.appendChild(done);
+          }
           if (timer) clearInterval(timer);
           return;
         }
@@ -70,15 +76,16 @@ function renderFeatures(cfg) {
   if (!cfg.features?.length) return "";
 
   return `
-    <section class="dp-feature-grid fade-in-delay-3" aria-label="What to expect">
+    <section class="dp-feature-grid" aria-label="What to expect">
       ${cfg.features
         .map((feature, index) => {
-          const title = feature.title || feature;
+          const title = feature && typeof feature === "object" ? feature.title : feature;
+          const description = feature && typeof feature === "object" ? feature.description : "";
           return `
         <article class="dp-card">
           <div class="dp-feature-index">${String(index + 1).padStart(2, "0")}</div>
-          <h3 class="dp-feature-title">${title}</h3>
-          ${feature.description ? `<p class="dp-feature-copy">${feature.description}</p>` : ""}
+          <h3 class="dp-feature-title">${escapeHtml(title)}</h3>
+          ${description ? `<p class="dp-feature-copy">${escapeHtml(description)}</p>` : ""}
         </article>`;
         })
         .join("")}
@@ -89,41 +96,41 @@ function renderContent(cfg) {
   return `
     <main class="dp-page">
       <div class="dp-wrap">
-        ${renderMasthead(cfg.domainTitle, cfg.statusLabel, true)}
+        ${renderMasthead(cfg.domainTitle, cfg.statusLabel)}
 
         <div class="dp-grid">
           <section>
             ${
               cfg.eyebrowText
-                ? `<div class="dp-eyebrow fade-in"><span class="dot pulse" aria-hidden="true"></span>${cfg.eyebrowText}</div>`
+                ? `<div class="dp-eyebrow"><span class="dot" aria-hidden="true"></span>${escapeHtml(cfg.eyebrowText)}</div>`
                 : ""
             }
-            <h1 class="dp-title dp-title-compact dp-mono fade-in-delay-1">${cfg.domainTitle}</h1>
+            <h1 class="dp-title dp-title-compact dp-mono">${escapeHtml(cfg.domainTitle)}</h1>
             ${
               cfg.tagline
-                ? `<h2 class="dp-heading fade-in-delay-1" style="margin-top: 28px;">${cfg.tagline}</h2>`
+                ? `<h2 class="dp-heading" style="margin-top:24px">${escapeHtml(cfg.tagline)}</h2>`
                 : ""
             }
             ${
               cfg.title
-                ? `<p class="dp-lede fade-in-delay-1">${cfg.title}</p>`
+                ? `<p class="dp-lede">${escapeHtml(cfg.title)}</p>`
                 : ""
             }
             ${
               cfg.description
-                ? `<p class="dp-copy fade-in-delay-2">${cfg.description}</p>`
+                ? `<p class="dp-copy">${escapeHtml(cfg.description)}</p>`
                 : ""
             }
-            <div class="fade-in-delay-2">${renderSocialLinks(cfg.socialLinks)}</div>
+            ${renderSocialLinks(cfg.socialLinks)}
           </section>
 
           ${
             cfg.launchDate
               ? renderCountdown(cfg)
-              : `<aside class="dp-panel fade-in-delay-2">
-                   ${cfg.statusPanelLabel ? `<div class="dp-panel-label">${cfg.statusPanelLabel}</div>` : ""}
-                   ${cfg.statusPanelTitle ? `<h2 class="dp-heading" style="margin-top: 12px;">${cfg.statusPanelTitle}</h2>` : ""}
-                   ${cfg.statusPanelText ? `<p class="dp-copy">${cfg.statusPanelText}</p>` : ""}
+              : `<aside class="dp-panel">
+                   ${cfg.statusPanelLabel ? `<div class="dp-panel-label">${escapeHtml(cfg.statusPanelLabel)}</div>` : ""}
+                   ${cfg.statusPanelTitle ? `<h2 class="dp-heading" style="margin-top:12px">${escapeHtml(cfg.statusPanelTitle)}</h2>` : ""}
+                   ${cfg.statusPanelText ? `<p class="dp-copy">${escapeHtml(cfg.statusPanelText)}</p>` : ""}
                  </aside>`
           }
         </div>
