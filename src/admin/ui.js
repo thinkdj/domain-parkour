@@ -12,6 +12,7 @@ import { MODE_DEFAULTS } from "../config.js";
 import { serializeForScript } from "../safety.js";
 import { tokens, baseRules, motion } from "../styles/tokens.js";
 import { icon } from "../icons.js";
+import { themeScript, themeToggle } from "../../pages/index.js";
 
 // The trail — brand mark and favicon share these exact paths. Two fading echoes
 // of the stem, then the P. The echoes are stems only, not whole letters: that is
@@ -124,15 +125,7 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
   <meta name="color-scheme" content="light dark" />
   <title>Domain Parkour — Parking Page Studio</title>
   <link rel="icon" href="${ADMIN_FAVICON}" />
-  <script>
-    /* Restore an explicit choice only; with none, color-scheme follows the OS. */
-    (function () {
-      try {
-        var saved = localStorage.getItem('parkour-admin-theme');
-        if (saved) document.documentElement.dataset.theme = saved;
-      } catch (e) {}
-    })();
-  </script>
+  <script data-theme-script>${themeScript()}</script>
   <style>${ADMIN_CSS}</style>
 </head>
 <body data-mobile-view="editor">
@@ -152,10 +145,7 @@ export function renderAdminUI({ isDefaultCreds, presets } = {}) {
       <button id="new-btn" class="btn" title="New page (Ctrl/Command + N)">${icon("plus", { size: 16 })}<span>New page</span></button>
       <button id="open-btn" class="btn" title="Open the live page in a new tab">${icon("external-link", { size: 16 })}<span>Visit</span></button>
       <button id="delete-btn" class="btn btn-danger-ghost" title="Delete this page">${icon("trash", { size: 16 })}<span class="sr-only">Delete page</span></button>
-      <button id="theme-toggle" class="btn btn-icon" type="button" aria-pressed="false" aria-label="Switch to dark mode">
-        <span id="theme-icon-light" hidden>${icon("sun", { size: 16 })}</span>
-        <span id="theme-icon-dark" hidden>${icon("moon", { size: 16 })}</span>
-      </button>
+      ${themeToggle({ className: 'btn btn-icon' })}
       <button id="save-btn" class="btn btn-primary" title="Save changes (Ctrl/Command + S)">
         <span id="save-label">Saved</span><kbd>Ctrl S</kbd>
       </button>
@@ -577,6 +567,9 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-line);
   }
+  .topbar > .brand,
+  .topbar > .site-switcher,
+  .topbar > .topbar-actions { align-self: center; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 160px; }
   .logo {
     width: 28px; height: 28px;
@@ -592,7 +585,8 @@ const ADMIN_CSS = `${tokens}${baseRules}${motion}
   .brand-copy { display: flex; flex-direction: column; line-height: 1.2; }
   .brand-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--color-ink); }
   .brand-subtitle { color: var(--color-muted); font-size: 12px; }
-  .site-switcher { width: min(100%, 420px); justify-self: center; }
+  .site-switcher { width: min(100%, 420px); justify-self: center; display: flex; align-items: center; }
+  .site-switcher #domain-picker { height: 32px; min-height: 32px; }
   .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
   /* ---- §06.1 Buttons: 40 default, 32 small, radius 10, hover is color ---- */
@@ -1207,9 +1201,6 @@ const ADMIN_JS = `
     saveLabel: $('save-label'),
     deleteBtn: $('delete-btn'),
     openBtn: $('open-btn'),
-    themeToggle: $('theme-toggle'),
-    themeIconLight: $('theme-icon-light'),
-    themeIconDark: $('theme-icon-dark'),
     dirtyState: $('dirty-state'),
     dirtyLabel: $('dirty-label'),
     iframe: $('preview-frame'),
@@ -1272,33 +1263,6 @@ const ADMIN_JS = `
     fullConfig: {},          // accumulates fields from every mode so switching tabs never drops data
     undo: null,              // last deleted record, restorable until dismissed
   };
-
-  // ---- Appearance ----
-  // One attribute drives it: tokens.css turns data-theme into a color-scheme
-  // and every light-dark() token re-resolves. With no stored choice there is
-  // no attribute and the OS decides, so read the resolved scheme, not the DOM.
-  const themeMedia = matchMedia('(prefers-color-scheme: dark)');
-  const isDarkTheme = () => document.documentElement.dataset.theme
-    ? document.documentElement.dataset.theme === 'dark'
-    : themeMedia.matches;
-
-  function syncThemeToggle() {
-    const dark = isDarkTheme();
-    els.themeIconLight.hidden = !dark;
-    els.themeIconDark.hidden = dark;
-    els.themeToggle.setAttribute('aria-pressed', String(dark));
-    els.themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
-  }
-  els.themeToggle.addEventListener('click', () => {
-    const next = isDarkTheme() ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('parkour-admin-theme', next); } catch (e) {}
-    syncThemeToggle();
-  });
-  themeMedia.addEventListener('change', () => {
-    if (!document.documentElement.dataset.theme) syncThemeToggle();
-  });
-  syncThemeToggle();
 
   function toast(msg, isError = false) {
     els.toast.textContent = msg;

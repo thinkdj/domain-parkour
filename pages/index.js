@@ -25,17 +25,15 @@ export {
   serializeForScript, SOCIAL_PLATFORMS,
 } from './safety.js';
 export { pageCss } from './css.js';
+export { themeToggle, themeScript, THEME_STORAGE_KEY } from './theme.js';
 
 /**
  * The promise is small pages, so the size is a gate rather than an intention.
- *
- * Both numbers were set from measurement with a little headroom, not picked in
- * advance: the heaviest mode renders ~11.6 KB raw and ~3.3 KB gzipped. Gzip is
- * the one that matters, since it is what crosses the wire; the raw ceiling is
- * there to catch markup that balloons without compressing worse.
+ * The shared theme control adds a small inline script and two icons to every
+ * document; the raw ceiling leaves measured headroom for that reusable chrome.
  */
-export const PAGE_BUDGET_BYTES = 12288;
-export const PAGE_BUDGET_GZIP_BYTES = 4096;
+export const PAGE_BUDGET_BYTES = 16384;
+export const PAGE_BUDGET_GZIP_BYTES = 5120;
 
 /** Bumped when rendered output changes in a way a cached page must not survive. */
 export const RENDERER_VERSION = 'pages-1.0';

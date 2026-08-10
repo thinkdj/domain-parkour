@@ -92,8 +92,11 @@ test('radius and colour come from the scale, never a loose value (§04)', () => 
 
 test('appearance is one declaration per token, not a second palette (§07)', () => {
   for (const [mode, html] of documents()) {
-    assert.doesNotMatch(styleOf(html), /prefers-color-scheme/i,
-      `${mode}: light-dark() covers both schemes, so no media query is needed`);
-    assert.match(styleOf(html), /color-scheme:light dark/, mode);
+    const style = styleOf(html);
+    assert.doesNotMatch(style, /@media\([^)]*prefers-color-scheme[^)]*\)[^{]*\{[^}]*--color-/i,
+      `${mode}: the palette must still come from light-dark() tokens`);
+    assert.match(style, /color-scheme:light dark/, mode);
+    assert.match(style, /\[data-theme="light"\]\{color-scheme:light\}/, `${mode}: explicit light override`);
+    assert.match(style, /\[data-theme="dark"\]\{color-scheme:dark\}/, `${mode}: explicit dark override`);
   }
 });

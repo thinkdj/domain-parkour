@@ -147,3 +147,11 @@ test("redirect UI toggle sits above and gates its dependent options", () => {
   assert.match(html, /id="redirect-preserve-path"[^>]*disabled/);
   assert.match(html, /id="redirect-preserve-query"[^>]*disabled/);
 });
+
+test("admin uses the shared theme toggle component", () => {
+  const html = renderAdminUI({ presets: [], isDefaultCreds: true });
+  assert.match(html, /data-theme-script/);
+  assert.match(html, /data-theme-toggle/);
+  assert.match(html, /data-theme-icon="moon"/);
+  assert.match(html, /data-theme-icon="sun"/);
+});

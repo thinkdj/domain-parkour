@@ -112,6 +112,6 @@ test('a hostile Host header cannot become a canonical URL', () => {
   for (const host of ['exa"mple.com', 'example.com/<script>', 'exa mple.com', '../../etc']) {
     const { html } = renderPage('landing', host, { headline: 'ok' });
     assert.doesNotMatch(html, /rel="canonical"/, `host "${host}" should not produce a canonical URL`);
-    assert.doesNotMatch(html, /<script(?![^>]*ld\+json)/i);
+    assert.doesNotMatch(html, /<script(?![^>]*(?:ld\+json|data-theme-script))/i);
   }
 });

@@ -32,9 +32,9 @@ function isLocalHost(hostname) {
 }
 
 /**
- * The local gallery renders a preset chosen by ?preset=N. It used to be a
- * `<select>` on the page itself, which needed script; a query parameter needs
- * none, and a visitor page ships no script now.
+ * The local gallery renders a preset chosen by ?preset=N. The loopback-only
+ * template switcher submits that query with a plain GET form, so it needs no
+ * additional client script.
  */
 function presetFor(request) {
   if (!request) return null;

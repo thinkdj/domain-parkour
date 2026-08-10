@@ -35,9 +35,11 @@ export function render(view) {
     cfg.checkout_url
       ? `<a class="dp-button dp-button-block" href="${CHECKOUT_PATH}">${escapeHtml(LABELS.checkoutButton)}</a>`
       : '',
-    takesOffers ? leadForm('offer', cfg.capture || {}, cfg) : '',
     stats(view.stats),
     socials(cfg.socials),
+    takesOffers
+      ? `<details class="dp-contact-disclosure"><summary>Reach out</summary>${leadForm('offer', cfg.capture || {}, cfg)}</details>`
+      : '',
   ].join('');
 
   return `<div class="dp-wrap">

@@ -4,12 +4,14 @@
  * The design system specifies Tabler outline. A webfont is a third-party request
  * the page CSP forbids, so the handful actually used ship as markup. The admin's
  * larger set stays in the app that needs it — sun/moon in particular are gone,
- * because a visitor page no longer has a theme toggle.
+ * because visitors now have a shared theme toggle.
  *
  * Source: Tabler Icons v3 (MIT). 24x24 grid, 2px stroke, round caps/joins.
  */
 
 const PATHS = {
+  moon: '<path d="M12 3h.39a7.5 7.5 0 0 0 7.92 12.45A9 9 0 1 1 12 3Z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m14.66-5.66-.71.71M6.34 17.66l-.7.7m0-12.02.7.7m11.32 11.32.7.7"/>',
   'external-link': '<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>',
   mail: '<path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 7l9 6l9 -6"/>',
   'brand-x': '<path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>',

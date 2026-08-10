@@ -17,19 +17,20 @@ import {
   CHECKOUT_PATH, DESTINATION_PATH, KINDS, LEAD_PATH, renderPage, renderThanks, resolveRedirect,
   robotsTxt, sitemapXml, THANKS_PATH,
 } from '../pages/index.js';
-import { resolveConfig } from './config.js';
+import { DEMO_PRESETS, resolveConfig } from './config.js';
+import { addDevTemplateSwitcher } from './dev-switcher.js';
 import { handleAdmin } from './admin/router.js';
 import { handleAssetRequest } from './assets.js';
 import { submitLead } from './leads.js';
 
 /**
- * No script-src at all: the renderer emits no executable script, and saying so
- * in the policy is what keeps it that way.
+ * The visitor renderer emits one self-contained theme switcher script; no
+ * third-party or external script source is allowed.
  */
 const PAGE_HEADERS = {
   'content-type': 'text/html;charset=UTF-8',
   'content-security-policy':
-    "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' https: data:; "
+    "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; "
     + "form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
   'x-content-type-options': 'nosniff',
   'x-frame-options': 'DENY',
@@ -125,7 +126,11 @@ export default {
       // No usable destination: fall through and render the page, which says so.
     }
 
-    const page = renderPage(mode, hostname, config, { configured, redirectUrl: redirectLocation });
+    const page = addDevTemplateSwitcher(
+      renderPage(mode, hostname, config, { configured, redirectUrl: redirectLocation }),
+      hostname,
+      DEMO_PRESETS,
+    );
 
     if (mode === 'maintenance') {
       const headers = new Headers({ ...PAGE_HEADERS, 'cache-control': 'no-store' });

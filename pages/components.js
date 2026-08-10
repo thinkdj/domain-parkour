@@ -7,6 +7,7 @@
 import { escapeHtml } from './safety.js';
 import { icon } from './icons.js';
 import { LABELS } from './defaults.js';
+import { themeToggle } from './theme.js';
 
 const SOCIAL_ICONS = {
   twitter: 'brand-x', x: 'brand-x', facebook: 'brand-facebook',
@@ -29,9 +30,9 @@ export const EXTERNAL_LINK_ICON = icon('external-link', { size: 18, cls: 'arrow'
  */
 export function masthead(title, status, live = false) {
   return `<header class="dp-masthead"><span class="dp-mono">${escapeHtml(title)}</span>`
-    + `<span class="dp-status${live ? ' live' : ''}">`
+    + `<div class="dp-masthead-actions"><span class="dp-status${live ? ' live' : ''}">`
     + `<span class="dp-status-dot" aria-hidden="true"></span>`
-    + `<span>${escapeHtml(status)}</span></span></header>`;
+    + `<span>${escapeHtml(status)}</span></span>${themeToggle()}</div></header>`;
 }
 
 export function eyebrow(text) {

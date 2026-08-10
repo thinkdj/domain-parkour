@@ -12,7 +12,7 @@ This document describes fields implemented by the current runtime and admin. Pri
 
 For a public request, Domain Parkour resolves configuration in this order:
 
-1. Local preset selected by `themeIndex` on localhost/`workers.dev` development requests.
+1. Local preset selected by `preset` on localhost/`workers.dev` development requests.
 2. Exact hostname row from D1.
 3. D1 row named `_default`.
 4. Bundled fallback from `defaults.json`.
@@ -242,18 +242,20 @@ The intentionally blank Defaults preset is useful for testing normalization. Pre
 On localhost/`workers.dev` development requests:
 
 ```text
-/?themeIndex=0
-/?themeIndex=1
+/?preset=0
+/?preset=1
 ```
 
 selects a preset by zero-based index when the index exists. This development behavior takes precedence over D1 on those hosts.
+
+Loopback pages also show a dev-only template dropdown in the top-left corner. It offers one quick-preview option for each shipped template and is not rendered on deployed or `workers.dev` pages.
 
 Do not use the `workers.dev` gallery URL as a production customer domain.
 
 ## 13. Appearance
 
-- Templates declare both light and dark color schemes. Dark swaps the eight neutral tokens under a `.theme-dark` class on the document element; brand and semantic colors are unchanged.
-- The page offers an appearance control where implemented by the shared base template, and remembers the choice.
+- Templates declare both light and dark color schemes. The shared appearance control sets `data-theme="light"` or `data-theme="dark"` on the document element; brand and semantic colors are unchanged.
+- Visitor pages and the admin use the same control and the same `parkour-theme` local-storage key, so the preference follows the user between both surfaces.
 - `accentColor` sets `--color-primary` and nothing else. Hover, active, soft-background, and focus-ring values derive from it with `color-mix()`, so one value rethemes the page across both appearances.
 - Tokens live in `src/styles/tokens.js` and are shared by the visitor templates and the admin.
 - Pages request nothing from a third party. Font stacks name Space Grotesk, Inter, and JetBrains Mono and fall back to system faces, so no webfont is downloaded and no visitor is reported to a font CDN. Icons are inlined from `src/icons.js`.

@@ -11,6 +11,7 @@ import { escapeHtml, safeAccentColor, serializeForScript } from './safety.js';
 import { derive, DEFAULT_MODE, MODES, normalize } from './schema.js';
 import { pageCss } from './css.js';
 import { ACCENT, EYEBROW, label, LABELS, STATUS } from './defaults.js';
+import { themeScript } from './theme.js';
 import * as parking from './templates/parking.js';
 import * as comingSoon from './templates/coming-soon.js';
 import * as landing from './templates/landing.js';
@@ -136,7 +137,7 @@ export function renderPage(mode, hostname, rawConfig = {}, { configured = true, 
     + '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
     + `<meta name="theme-color" content="${escapeHtml(accent)}">`
     + meta.head
-    + `<style>${css}</style></head><body><main class="dp-page">`
+    + `<script data-theme-script>${themeScript()}</script><style>${css}</style></head><body><main class="dp-page">`
     + template.render(view)
     + '</main></body></html>';
 

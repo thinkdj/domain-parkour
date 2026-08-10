@@ -193,7 +193,7 @@ export async function handleAdmin(request, env) {
         headers: {
           "content-type": "text/html;charset=UTF-8",
           "cache-control": "no-store",
-          "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' https: data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+          "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
           "x-content-type-options": "nosniff",
         },
       });

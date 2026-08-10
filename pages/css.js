@@ -7,9 +7,8 @@
  * string with no design system at all.
  *
  * Two changes from the OSS original:
- *   - the page chrome (theme toggle, template switcher) is gone; both needed
- *     script, and a visitor page now ships none. Appearance follows the OS
- *     through color-scheme + light-dark().
+ *   - the page chrome is intentionally small: the shared theme toggle is the
+ *     only control, while appearance still follows the OS until overridden.
  *   - blocks are selected per mode, so a profile page does not carry the
  *     countdown grid and a parking page does not carry the feature cards.
  *
@@ -48,6 +47,23 @@ button,input,select,textarea{font:inherit;color:inherit}
   min-height:32px;display:flex;align-items:center;justify-content:space-between;
   gap:16px;margin-bottom:64px;
 }
+.dp-masthead-actions{display:inline-flex;align-items:center;gap:12px}
+.dp-theme-toggle{
+  width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;border:1px solid var(--color-line-strong);border-radius:var(--radius-pill);
+  background:var(--color-surface);color:var(--color-ink);cursor:pointer;
+  transition:background-color var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease),color var(--t-fast) var(--ease);
+}
+.dp-theme-toggle:hover{background:var(--color-surface-2)}
+.dp-theme-toggle:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.dp-theme-toggle [data-theme-icon]{display:inline-flex;align-items:center;justify-content:center}
+.dp-theme-toggle [data-theme-icon][hidden]{display:none}
+[data-theme="light"]{color-scheme:light}
+[data-theme="dark"]{color-scheme:dark}
+[data-theme="light"] .dp-theme-toggle [data-theme-icon="sun"],
+[data-theme="dark"] .dp-theme-toggle [data-theme-icon="moon"]{display:none}
+@media(prefers-color-scheme:light){:root:not([data-theme]) .dp-theme-toggle [data-theme-icon="sun"]{display:none}}
+@media(prefers-color-scheme:dark){:root:not([data-theme]) .dp-theme-toggle [data-theme-icon="moon"]{display:none}}
 .dp-eyebrow,.dp-panel-label,.dp-stat .l{
   color:var(--color-muted);font-family:var(--font-mono);font-size:12px;font-weight:600;
   letter-spacing:0.14em;line-height:1.4;text-transform:uppercase;
@@ -107,6 +123,25 @@ const PANEL = `
 .dp-price{
   margin-top:12px;color:var(--color-ink);font-family:var(--font-display);
   font-size:clamp(1.75rem,4vw,2.25rem);font-weight:700;line-height:1.15;letter-spacing:-0.02em;
+}
+.dp-contact-disclosure{
+  margin-top:24px;overflow:hidden;border:1px solid var(--color-primary);border-radius:var(--radius-md);
+}
+.dp-contact-disclosure summary{
+  min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 16px;background:var(--color-primary);color:#fff;font-size:14px;font-weight:600;
+  cursor:pointer;list-style:none;transition:background-color var(--t-fast) var(--ease);
+}
+.dp-contact-disclosure summary:hover{background:var(--color-primary-hover)}
+.dp-contact-disclosure summary::-webkit-details-marker{display:none}
+.dp-contact-disclosure summary::after{
+  content:'';width:8px;height:8px;flex:0 0 auto;
+  border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+  transform:translateY(-2px) rotate(45deg);transition:transform var(--t-fast) var(--ease);
+}
+.dp-contact-disclosure[open] summary::after{transform:translateY(2px) rotate(225deg)}
+.dp-contact-disclosure .dp-form{
+  margin:0;padding:16px;background:var(--color-surface);border-top:1px solid var(--color-line);
 }`;
 
 const BUTTON = `

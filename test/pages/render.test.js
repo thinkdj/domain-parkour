@@ -71,13 +71,15 @@ test('tags are balanced in every mode', () => {
   }
 });
 
-test('no mode ships executable script', () => {
+test('only the shared theme script and optional JSON-LD ship in a page', () => {
   for (const mode of MODES) {
     const html = renderPage(mode, HOST, FIXTURES[mode]).html;
     const scripts = [...html.matchAll(/<script([^>]*)>/g)].map((m) => m[1]);
     for (const attrs of scripts) {
-      assert.match(attrs, /type="application\/ld\+json"/, `${mode}: only JSON-LD may use a script tag`);
+      assert.match(attrs, /(?:type="application\/ld\+json"|data-theme-script)/, `${mode}: unexpected executable script`);
     }
+    assert.equal(scripts.filter((attrs) => /data-theme-script/.test(attrs)).length, 1, `${mode}: missing shared theme script`);
+    assert.match(html, /data-theme-toggle/, `${mode}: missing shared theme toggle`);
     assert.doesNotMatch(html, /\son[a-z]+=/i, `${mode}: no inline event handlers`);
     assert.doesNotMatch(html, /javascript:/i, `${mode}: no javascript: urls`);
   }
@@ -105,6 +107,16 @@ test('an unconfigured host claims nothing about itself', () => {
 test('the preview body is the same code path as the page', () => {
   const body = renderBody('parking', HOST, FIXTURES.parking);
   assert.ok(renderPage('parking', HOST, FIXTURES.parking).html.includes(body));
+});
+
+test('parking offer form is collapsed below the visible domain details', () => {
+  const html = renderPage('parking', HOST, FIXTURES.parking).html;
+  const disclosure = html.match(/<details class="dp-contact-disclosure">([\s\S]*?)<\/details>/)?.[1] || '';
+  assert.match(disclosure, /<summary>Reach out<\/summary>/);
+  assert.match(disclosure, /<form class="dp-form"/);
+  assert.doesNotMatch(html, /<details class="dp-contact-disclosure"[^>]*\bopen\b/);
+  assert.ok(html.indexOf('class="dp-stats"') < html.indexOf('class="dp-contact-disclosure"'), 'stats precede the form disclosure');
+  assert.ok(html.indexOf('class="dp-socials"') < html.indexOf('class="dp-contact-disclosure"'), 'socials precede the form disclosure');
 });
 
 test('parking with a price is a schema.org Offer', () => {
